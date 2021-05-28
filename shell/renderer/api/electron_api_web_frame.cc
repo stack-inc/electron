@@ -496,9 +496,6 @@ class WebFrameRenderer : public gin::Wrappable<WebFrameRenderer>,
 
     if (pref_name == options::kPreloadScripts) {
       return gin::ConvertToV8(isolate, prefs.preloads);
-    } else if (pref_name == options::kOpenerID) {
-      // NOTE: openerId is internal-only.
-      return gin::ConvertToV8(isolate, prefs.opener_id);
     } else if (pref_name == "isWebView") {
       return gin::ConvertToV8(isolate, prefs.is_webview);
     } else if (pref_name == options::kHiddenPage) {
@@ -508,8 +505,6 @@ class WebFrameRenderer : public gin::Wrappable<WebFrameRenderer>,
       return gin::ConvertToV8(isolate, prefs.offscreen);
     } else if (pref_name == options::kPreloadScript) {
       return gin::ConvertToV8(isolate, prefs.preload.value());
-    } else if (pref_name == options::kNativeWindowOpen) {
-      return gin::ConvertToV8(isolate, prefs.native_window_open);
     } else if (pref_name == options::kNodeIntegration) {
       return gin::ConvertToV8(isolate, prefs.node_integration);
     } else if (pref_name == options::kNodeIntegrationInWorker) {
