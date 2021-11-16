@@ -159,7 +159,7 @@ void BrowserView::SetBackgroundColor(const std::string& color_name) {
     return;
 
   auto* wc = web_contents()->web_contents();
-  wc->SetPageBaseBackgroundColor(ParseHexColor(color_name));
+  wc->SetPageBaseBackgroundColor(ParseCSSColor(color_name));
 }
 
 v8::Local<v8::Value> BrowserView::GetWebContents(v8::Isolate* isolate) {
