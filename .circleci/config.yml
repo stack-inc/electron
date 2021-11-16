@@ -5,6 +5,7 @@ setup: true
 
 # Orbs
 orbs:
+  continuation: circleci/continuation@0.2.0
   path-filtering: circleci/path-filtering@0.1.0
 
 # All input parameters to pass to build config
@@ -128,17 +129,46 @@ jobs:
       <<: *env-linux-medium
     <<: *steps-lint
 
+  conditional-build:
+    executor:
+      name: linux-docker
+      size: medium
+    steps:
+      - when:
+          condition:
+            or:
+              - equal: [<< pipeline.parameters.run-macos-publish >>, false]
+              - equal: [<< pipeline.parameters.run-linux-publish >>, false]
+          steps:
+            # Job inherited from path-filtering orb
+            - path-filtering/filter:
+                base-revision: << pipeline.git.branch >>
+                # Params for mapping; `path-to-test parameter-to-set value-for-parameter` for each row
+                mapping: |
+                  ^((?!docs/).)*$ run-build-mac true
+                  ^((?!docs/).)*$ run-build-linux true
+                  docs/.* run-docs-only true
+                config-path: .circleci/build_config.yml
+
+  conditional-publish:
+    executor:
+      name: linux-docker
+      size: medium
+    steps:
+      - when:
+          condition:
+            or:
+              - equal: [<< pipeline.parameters.run-macos-publish >>, true]
+              - equal: [<< pipeline.parameters.run-linux-publish >>, true]
+          steps:
+            # Job inherited from continuation orb
+            - continuation/continue:
+                configuration_path: .circleci/build_config.yml
+
 # Initial setup workflow
 workflows:
-  lint:
+  setup:
     jobs:
-      # Job inherited from path-filtering orb
-      - path-filtering/filter:
-          base-revision: << pipeline.git.branch >>
-          # Params for mapping; `path-to-test parameter-to-set value-for-parameter` for each row
-          mapping: |
-            ^((?!docs/).)*$ run-build-mac true
-            ^((?!docs/).)*$ run-build-linux true
-            docs/.* run-docs-only true
-          config-path: .circleci/build_config.yml
+      - conditional-build
+      - conditional-publish
       - lint
