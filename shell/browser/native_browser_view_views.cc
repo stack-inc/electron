@@ -137,6 +137,10 @@ gfx::Rect NativeBrowserViewViews::GetBounds() {
   return iwc_view->GetView()->bounds();
 }
 
+gfx::Rect NativeBrowserViewViews::GetLastBounds() {
+  return GetBounds();
+}
+
 void NativeBrowserViewViews::RenderViewReady() {
   InspectableWebContentsView* iwc_view = GetInspectableWebContentsView();
   if (iwc_view)

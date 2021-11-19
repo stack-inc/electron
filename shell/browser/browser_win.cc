@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_hdc.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/icon_manager.h"
@@ -41,6 +42,7 @@
 #include "shell/common/skia_util.h"
 #include "skia/ext/legacy_display_globals.h"
 #include "third_party/skia/include/core/SkFont.h"
+#include "third_party/yoga/Yoga.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_code_conversion_win.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -279,6 +281,33 @@ std::unique_ptr<FileVersionInfo> FetchFileVersionInfo() {
     return FileVersionInfo::CreateFileVersionInfo(path);
   }
   return std::unique_ptr<FileVersionInfo>();
+}
+
+const float kDefaultDPI = 96.f;
+
+gfx::Size GetDPI() {
+  static int dpi_x = 0;
+  static int dpi_y = 0;
+  static bool should_initialize = true;
+
+  if (should_initialize) {
+    should_initialize = false;
+    base::win::ScopedGetDC screen_dc(NULL);
+    // This value is safe to cache for the life time of the app since the
+    // user must logout to change the DPI setting. This value also applies
+    // to all screens.
+    dpi_x = GetDeviceCaps(screen_dc, LOGPIXELSX);
+    dpi_y = GetDeviceCaps(screen_dc, LOGPIXELSY);
+  }
+  return gfx::Size(dpi_x, dpi_y);
+}
+
+float GetScalingFactorFromDPI(int dpi) {
+  return static_cast<float>(dpi) / kDefaultDPI;
+}
+
+float GetDefaultScaleFactor() {
+  return GetScalingFactorFromDPI(GetDPI().width());
 }
 
 }  // namespace
@@ -851,6 +880,10 @@ void Browser::ShowAboutPanel() {
 
 void Browser::SetAboutPanelOptions(base::DictionaryValue options) {
   about_panel_options_ = std::move(options);
+}
+
+void Browser::SetPointScaleFactorForYogaConfig() {
+  YGConfigSetPointScaleFactor(yoga_config(), GetDefaultScaleFactor());
 }
 
 }  // namespace electron

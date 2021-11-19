@@ -23,6 +23,7 @@
 #include "shell/common/application_info.h"
 #include "shell/common/electron_paths.h"
 #include "shell/common/gin_helper/arguments.h"
+#include "third_party/yoga/Yoga.h"
 
 namespace electron {
 
@@ -52,11 +53,16 @@ Browser::LoginItemSettings::~LoginItemSettings() = default;
 Browser::LoginItemSettings::LoginItemSettings(const LoginItemSettings& other) =
     default;
 
-Browser::Browser() {
+Browser::Browser()
+    : yoga_config_(YGConfigNew()) {
+  SetPointScaleFactorForYogaConfig();
   WindowList::AddObserver(this);
 }
 
 Browser::~Browser() {
+  YGConfigFree(yoga_config_);
+  DCHECK_EQ(YGConfigGetInstanceCount(), 0) <<
+      "There are instances of YGConfig leaked on exit";
   WindowList::RemoveObserver(this);
 }
 

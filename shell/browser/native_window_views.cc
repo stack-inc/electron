@@ -22,6 +22,8 @@
 #include "shell/browser/ui/drag_util.h"
 #include "shell/browser/ui/inspectable_web_contents.h"
 #include "shell/browser/ui/inspectable_web_contents_view.h"
+#include "shell/browser/ui/native_container_view.h"
+#include "shell/browser/ui/views/native_container_view_impl.h"
 #include "shell/browser/ui/views/root_view.h"
 #include "shell/browser/web_contents_preferences.h"
 #include "shell/browser/web_view_manager.h"
@@ -1238,6 +1240,46 @@ void NativeWindowViews::SetTopBrowserView(NativeBrowserView* view) {
         view->GetInspectableWebContentsView()->GetView(), -1);
 }
 
+void NativeWindowViews::AddContainerView(NativeContainerView* view) {
+  if (!content_view())
+    return;
+
+  if (!view)
+    return;
+
+  add_container_view(view);
+  view->SetOwnerWindow(this);
+  content_view()->AddChildView(view->GetView());
+  content_view()->Layout();
+}
+
+void NativeWindowViews::RemoveContainerView(NativeContainerView* view) {
+  if (!content_view())
+    return;
+
+  if (!view)
+    return;
+
+  content_view()->RemoveChildView(view->GetView());
+  content_view()->Layout();
+  remove_container_view(view);
+  view->SetOwnerWindow(nullptr);
+}
+
+void NativeWindowViews::SetTopContainerView(NativeContainerView* view) {
+  if (!content_view())
+    return;
+
+  if (!view)
+    return;
+
+  remove_container_view(view);
+  add_container_view(view);
+  view->SetOwnerWindow(this);
+  content_view()->ReorderChildView(view->GetView(), -1);
+  content_view()->Layout();
+}
+
 void NativeWindowViews::SetParentWindow(NativeWindow* parent) {
   NativeWindow::SetParentWindow(parent);
 
@@ -1488,6 +1530,12 @@ void NativeWindowViews::OnWidgetBoundsChanged(views::Widget* changed_widget,
     int height_delta = new_bounds.height() - widget_size_.height();
     for (NativeBrowserView* item : browser_views()) {
       auto* native_view = static_cast<NativeBrowserViewViews*>(item);
+      native_view->SetAutoResizeProportions(widget_size_);
+      native_view->AutoResize(new_bounds, width_delta, height_delta);
+    }
+
+    for (NativeContainerView* item : container_views()) {
+      auto* native_view = item->GetViewImpl();
       native_view->SetAutoResizeProportions(widget_size_);
       native_view->AutoResize(new_bounds, width_delta, height_delta);
     }

@@ -121,6 +121,9 @@ class NativeWindowViews : public NativeWindow,
   void AddBrowserView(NativeBrowserView* browser_view) override;
   void RemoveBrowserView(NativeBrowserView* browser_view) override;
   void SetTopBrowserView(NativeBrowserView* browser_view) override;
+  void AddContainerView(NativeContainerView* container_view) override;
+  void RemoveContainerView(NativeContainerView* container_view) override;
+  void SetTopContainerView(NativeContainerView* container_view) override;
   void SetParentWindow(NativeWindow* parent) override;
   gfx::NativeView GetNativeView() const override;
   gfx::NativeWindow GetNativeWindow() const override;

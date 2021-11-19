@@ -29,6 +29,7 @@
 #include "shell/common/gin_helper/error_thrower.h"
 #include "shell/common/gin_helper/promise.h"
 #include "shell/common/platform_util.h"
+#include "third_party/yoga/Yoga.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
@@ -530,6 +531,11 @@ void Browser::SetSecureKeyboardEntryEnabled(bool enabled) {
   } else {
     password_input_enabler_.reset();
   }
+}
+
+void Browser::SetPointScaleFactorForYogaConfig() {
+  YGConfigSetPointScaleFactor(yoga_config(),
+                              [NSScreen mainScreen].backingScaleFactor);
 }
 
 }  // namespace electron

@@ -714,7 +714,7 @@ WebContents::WebContents(v8::Isolate* isolate,
   // BrowserViews are not attached to a window initially so they should start
   // off as hidden. This is also important for compositor recycling. See:
   // https://github.com/electron/electron/pull/21372
-  bool initially_shown = type_ != Type::kBrowserView;
+  bool initially_shown = false; //type_ != Type::kBrowserView;
   options.Get(options::kShow, &initially_shown);
 
   // Obtain the session.

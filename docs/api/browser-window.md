@@ -1799,7 +1799,8 @@ Replacement API for setBrowserView supporting work with multi browser views.
 
 * `browserView` [BrowserView](browser-view.md)
 
-Raises `browserView` above other `BrowserView`s attached to `win`.
+Raises `browserView` above other `BrowserView`s and `ContainerView`s attached
+to `win`.
 Throws an error if `browserView` is not attached to `win`.
 
 #### `win.getBrowserViews()` _Experimental_
@@ -1809,6 +1810,29 @@ with `addBrowserView` or `setBrowserView`.
 
 **Note:** The BrowserView API is currently experimental and may change or be
 removed in future Electron releases.
+
+#### `win.addContainerView(containerView)` _Experimental_
+
+* `containerView` [ContainerView](container-view.md)
+
+Supporting work with multi container views.
+
+#### `win.removeContainerView(containerView)` _Experimental_
+
+* `containerView` [ContainerView](container-view.md)
+
+#### `win.setTopContainerView(containerView)` _Experimental_
+
+* `containerView` [ContainerView](container-view.md)
+
+Raises `containerView` above other `ContainerView`s and `BrowserView`s attached
+to `win`.
+Throws an error if `containerView` is not attached to `win`.
+
+#### `win.getContainerViews()` _Experimental_
+
+Returns `ContainerView[]` - an array of all ContainerViews that have been attached
+with `addContainerView`.
 
 [runtime-enabled-features]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/runtime_enabled_features.json5?l=70
 [page-visibility-api]: https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API

@@ -17,6 +17,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "extensions/browser/app_window/size_constraints.h"
 #include "shell/browser/native_window_observer.h"
+#include "shell/browser/ui/native_container.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -45,6 +46,7 @@ namespace electron {
 
 class ElectronMenuModel;
 class NativeBrowserView;
+class NativeContainerView;
 
 #if defined(OS_MAC)
 typedef NSView* NativeWindowHandle;
@@ -65,6 +67,11 @@ class NativeWindow : public base::SupportsUserData,
   void InitFromOptions(const gin_helper::Dictionary& options);
 
   virtual void SetContentView(views::View* view) = 0;
+
+  virtual void SetContentView(scoped_refptr<NativeView> view) = 0;
+  virtual NativeView* GetContentView() const = 0;
+
+  virtual YGConfigRef GetYogaConfig() const = 0;
 
   virtual void Close() = 0;
   virtual void CloseImmediately() = 0;
@@ -172,6 +179,9 @@ class NativeWindow : public base::SupportsUserData,
   virtual void AddBrowserView(NativeBrowserView* browser_view) = 0;
   virtual void RemoveBrowserView(NativeBrowserView* browser_view) = 0;
   virtual void SetTopBrowserView(NativeBrowserView* browser_view) = 0;
+  virtual void AddContainerView(NativeContainerView* container_view) = 0;
+  virtual void RemoveContainerView(NativeContainerView* container_view) = 0;
+  virtual void SetTopContainerView(NativeContainerView* container_view) = 0;
   virtual content::DesktopMediaID GetDesktopMediaID() const = 0;
   virtual gfx::NativeView GetNativeView() const = 0;
   virtual gfx::NativeWindow GetNativeWindow() const = 0;
@@ -335,6 +345,8 @@ class NativeWindow : public base::SupportsUserData,
 
   std::list<NativeBrowserView*> browser_views() const { return browser_views_; }
 
+  std::list<NativeContainerView*> container_views() const { return container_views_; }
+
   int32_t window_id() const { return next_id_; }
 
  protected:
@@ -353,6 +365,14 @@ class NativeWindow : public base::SupportsUserData,
   void remove_browser_view(NativeBrowserView* browser_view) {
     browser_views_.remove_if(
         [&browser_view](NativeBrowserView* n) { return (n == browser_view); });
+  }
+
+  void add_container_view(NativeContainerView* container_view) {
+    container_views_.push_back(container_view);
+  }
+  void remove_container_view(NativeContainerView* container_view) {
+    container_views_.remove_if(
+        [&container_view](NativeContainerView* n) { return (n == container_view); });
   }
 
   // The boolean parsing of the "titleBarOverlay" option
@@ -402,6 +422,9 @@ class NativeWindow : public base::SupportsUserData,
 
   // The browser view layer.
   std::list<NativeBrowserView*> browser_views_;
+
+  // The container view layer.
+  std::list<NativeContainerView*> container_views_;
 
   // Observers of this window.
   base::ObserverList<NativeWindowObserver> observers_;

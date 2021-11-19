@@ -91,8 +91,8 @@ InspectableWebContentsViewViews::InspectableWebContentsViewViews(
   }
 
   devtools_web_view_->SetVisible(false);
-  AddChildView(devtools_web_view_);
-  AddChildView(contents_web_view_);
+  //AddChildView(devtools_web_view_);
+  //AddChildView(contents_web_view_);
 }
 
 InspectableWebContentsViewViews::~InspectableWebContentsViewViews() {
@@ -102,7 +102,8 @@ InspectableWebContentsViewViews::~InspectableWebContentsViewViews() {
 }
 
 views::View* InspectableWebContentsViewViews::GetView() {
-  return this;
+  //return this;
+  return contents_web_view_;
 }
 
 views::View* InspectableWebContentsViewViews::GetWebView() {
@@ -217,6 +218,8 @@ void InspectableWebContentsViewViews::Layout() {
   }
 
   gfx::Size container_size(width(), height());
+  if (container_size.width() == 0 || container_size.height() == 0)
+    container_size = GetVisibleBounds().size();
   gfx::Rect new_devtools_bounds;
   gfx::Rect new_contents_bounds;
   ApplyDevToolsContentsResizingStrategy(

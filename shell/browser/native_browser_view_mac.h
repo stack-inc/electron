@@ -22,6 +22,7 @@ class NativeBrowserViewMac : public NativeBrowserView {
   void SetAutoResizeFlags(uint8_t flags) override;
   void SetBounds(const gfx::Rect& bounds) override;
   gfx::Rect GetBounds() override;
+  gfx::Rect GetLastBounds() override;
   void SetBackgroundColor(SkColor color) override;
 
   void UpdateDraggableRegions(
@@ -29,6 +30,8 @@ class NativeBrowserViewMac : public NativeBrowserView {
 
   void UpdateDraggableRegions(
       const std::vector<gfx::Rect>& drag_exclude_rects) override;
+
+  gfx::Rect last_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeBrowserViewMac);
 };

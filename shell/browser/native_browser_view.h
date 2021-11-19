@@ -49,6 +49,7 @@ class NativeBrowserView : public content::WebContentsObserver {
   virtual void SetAutoResizeFlags(uint8_t flags) = 0;
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
   virtual gfx::Rect GetBounds() = 0;
+  virtual gfx::Rect GetLastBounds() = 0;
   virtual void SetBackgroundColor(SkColor color) = 0;
 
   virtual void UpdateDraggableRegions(

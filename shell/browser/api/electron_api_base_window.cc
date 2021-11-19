@@ -11,9 +11,11 @@
 #include "electron/buildflags/buildflags.h"
 #include "gin/dictionary.h"
 #include "shell/browser/api/electron_api_browser_view.h"
+#include "shell/browser/api/electron_api_container_view.h"
 #include "shell/browser/api/electron_api_menu.h"
 #include "shell/browser/api/electron_api_view.h"
 #include "shell/browser/api/electron_api_web_contents.h"
+#include "shell/browser/browser.h"
 #include "shell/browser/javascript_environment.h"
 #include "shell/common/color_util.h"
 #include "shell/common/gin_converters/callback_converter.h"
@@ -164,6 +166,7 @@ void BaseWindow::OnWindowClosed() {
 
   RemoveFromParentChildWindows();
   BaseWindow::ResetBrowserViews();
+  BaseWindow::ResetContainerViews();
 
   // Destroy the native class when window is closed.
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, GetDestroyClosure());
@@ -320,8 +323,24 @@ void BaseWindow::OnWindowMessage(UINT message, WPARAM w_param, LPARAM l_param) {
 
 void BaseWindow::SetContentView(gin::Handle<View> view) {
   ResetBrowserViews();
+  ResetContainerViews();
   content_view_.Reset(isolate(), view.ToV8());
   window_->SetContentView(view->view());
+}
+
+void BaseWindow::SetContainerView(gin::Handle<ContainerView> view) {
+  ResetBrowserViews();
+  ResetContainerViews();
+  // If we're reparenting a ContainerView, ensure that it's detached from
+  // its previous owner window/container.
+  view->DetachFromParent(window_.get());
+  content_view_.Reset(isolate(), view.ToV8());
+  window_->SetContentView(view->view()->GetView());
+  view->view()->SetOwnerWindow(window_.get());
+}
+
+void BaseWindow::SetUseYoga(bool val) {
+  Browser::Get()->set_use_yoga(val);
 }
 
 void BaseWindow::CloseImmediately() {
@@ -820,6 +839,54 @@ void BaseWindow::SetTopBrowserView(v8::Local<v8::Value> value,
   }
 }
 
+void BaseWindow::AddContainerView(v8::Local<v8::Value> value) {
+  gin::Handle<ContainerView> container_view;
+  if (value->IsObject() &&
+      gin::ConvertFromV8(isolate(), value, &container_view)) {
+    auto get_that_view = container_views_.find(container_view->ID());
+    if (get_that_view == container_views_.end()) {
+      // If we're reparenting a ContainerView, ensure that it's detached from
+      // its previous owner window/container.
+      container_view->DetachFromParent(window_.get());
+
+      window_->AddContainerView(container_view->view());
+      container_view->view()->SetOwnerWindow(window_.get());
+      container_views_[container_view->ID()].Reset(isolate(), value);
+    }
+  }
+}
+
+void BaseWindow::RemoveContainerView(v8::Local<v8::Value> value) {
+  gin::Handle<ContainerView> container_view;
+  if (value->IsObject() &&
+      gin::ConvertFromV8(isolate(), value, &container_view)) {
+    auto get_that_view = container_views_.find(container_view->ID());
+    if (get_that_view != container_views_.end()) {
+      window_->RemoveContainerView(container_view->view());
+      container_view->view()->SetOwnerWindow(nullptr);
+      (*get_that_view).second.Reset(isolate(), value);
+      container_views_.erase(get_that_view);
+    }
+  }
+}
+
+void BaseWindow::SetTopContainerView(v8::Local<v8::Value> value,
+                                     gin_helper::Arguments* args) {
+  gin::Handle<ContainerView> container_view;
+  if (value->IsObject() &&
+      gin::ConvertFromV8(isolate(), value, &container_view)) {
+    auto* owner_window = container_view->view()->GetOwnerWindow();
+    auto get_that_view = container_views_.find(container_view->ID());
+    if (get_that_view == container_views_.end() ||
+        (owner_window && owner_window != window_.get())) {
+      args->ThrowError("Given ContainerView is not attached to the window");
+      return;
+    }
+
+    window_->SetTopContainerView(container_view->view());
+  }
+}
+
 std::string BaseWindow::GetMediaSourceId() const {
   return window_->GetDesktopMediaID().ToString();
 }
@@ -1029,6 +1096,16 @@ std::vector<v8::Local<v8::Value>> BaseWindow::GetBrowserViews() const {
   return ret;
 }
 
+std::vector<v8::Local<v8::Value>> BaseWindow::GetContainerViews() const {
+  std::vector<v8::Local<v8::Value>> ret;
+
+  for (auto const& views_iter : container_views_) {
+    ret.push_back(v8::Local<v8::Value>::New(isolate(), views_iter.second));
+  }
+
+  return ret;
+}
+
 bool BaseWindow::IsModal() const {
   return window_->is_modal();
 }
@@ -1152,6 +1229,30 @@ void BaseWindow::ResetBrowserViews() {
   browser_views_.clear();
 }
 
+void BaseWindow::ResetContainerViews() {
+  v8::HandleScope scope(isolate());
+
+  for (auto& item : container_views_) {
+    gin::Handle<ContainerView> container_view;
+    if (gin::ConvertFromV8(isolate(),
+                           v8::Local<v8::Value>::New(isolate(), item.second),
+                           &container_view) &&
+        !container_view.IsEmpty()) {
+      // There's a chance that the ContainerView may have been reparented - only
+      // reset if the owner window is *this* window.
+      auto* owner_window = container_view->view()->GetOwnerWindow();
+      if (owner_window && owner_window == window_.get()) {
+        container_view->view()->SetOwnerWindow(nullptr);
+        owner_window->RemoveContainerView(container_view->view());
+      }
+    }
+
+    item.second.Reset();
+  }
+
+  container_views_.clear();
+}
+
 void BaseWindow::RemoveFromParentChildWindows() {
   if (parent_window_.IsEmpty())
     return;
@@ -1181,6 +1282,8 @@ void BaseWindow::BuildPrototype(v8::Isolate* isolate,
   gin_helper::Destroyable::MakeDestroyable(isolate, prototype);
   gin_helper::ObjectTemplateBuilder(isolate, prototype->PrototypeTemplate())
       .SetMethod("setContentView", &BaseWindow::SetContentView)
+      .SetMethod("setContainerView", &BaseWindow::SetContainerView)
+      .SetMethod("setUseYoga", &BaseWindow::SetUseYoga)
       .SetMethod("close", &BaseWindow::Close)
       .SetMethod("focus", &BaseWindow::Focus)
       .SetMethod("blur", &BaseWindow::Blur)
@@ -1266,6 +1369,9 @@ void BaseWindow::BuildPrototype(v8::Isolate* isolate,
       .SetMethod("addBrowserView", &BaseWindow::AddBrowserView)
       .SetMethod("removeBrowserView", &BaseWindow::RemoveBrowserView)
       .SetMethod("setTopBrowserView", &BaseWindow::SetTopBrowserView)
+      .SetMethod("addContainerView", &BaseWindow::AddContainerView)
+      .SetMethod("removeContainerView", &BaseWindow::RemoveContainerView)
+      .SetMethod("setTopContainerView", &BaseWindow::SetTopContainerView)
       .SetMethod("getMediaSourceId", &BaseWindow::GetMediaSourceId)
       .SetMethod("getNativeWindowHandle", &BaseWindow::GetNativeWindowHandle)
       .SetMethod("setProgressBar", &BaseWindow::SetProgressBar)
@@ -1315,6 +1421,7 @@ void BaseWindow::BuildPrototype(v8::Isolate* isolate,
       .SetMethod("getChildWindows", &BaseWindow::GetChildWindows)
       .SetMethod("getBrowserView", &BaseWindow::GetBrowserView)
       .SetMethod("getBrowserViews", &BaseWindow::GetBrowserViews)
+      .SetMethod("getContainerViews", &BaseWindow::GetContainerViews)
       .SetMethod("isModal", &BaseWindow::IsModal)
       .SetMethod("setThumbarButtons", &BaseWindow::SetThumbarButtons)
 #if defined(TOOLKIT_VIEWS)
