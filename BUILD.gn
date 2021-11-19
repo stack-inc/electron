@@ -416,7 +416,9 @@ source_set("electron_lib") {
   public_deps = [
     "//base",
     "//base:i18n",
+    "//components/enterprise/common:download_item_reroute_info",
     "//content/public/app",
+    "//services/cert_verifier/public/mojom",
   ]
 
   include_dirs = [
@@ -631,7 +633,15 @@ source_set("electron_lib") {
       # On windows the implementation relies on unexported
       # DxgiDuplicatorController class.  On macOS the implementation
       # relies on unexported webrtc::GetWindowOwnerPid method.
-      deps += [ "//third_party/webrtc/modules/desktop_capture" ]
+      #! deps += [ "//third_party/webrtc/modules/desktop_capture" ]
+      # Begin Stack
+      # This change is needed after this chromium change:
+      # https://chromium-review.googlesource.com/c/chromium/src/+/1874722
+      # Electron doesn't support debug component builds anymore
+      # so they don't need this change as this code is not used
+      # by them and it will probably be removed in the future.
+      deps += [ "//third_party/webrtc_overrides:webrtc_component" ]
+      # End Stack
     }
     sources += [
       "shell/browser/api/electron_api_desktop_capturer.cc",
