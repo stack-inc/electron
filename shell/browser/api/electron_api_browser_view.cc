@@ -12,6 +12,7 @@
 #include "shell/browser/ui/drag_util.h"
 #include "shell/common/color_util.h"
 #include "shell/common/gin_converters/gfx_converter.h"
+#include "shell/common/gin_converters/value_converter.h"
 #include "shell/common/gin_helper/dictionary.h"
 #include "shell/common/gin_helper/object_template_builder.h"
 #include "shell/common/node_includes.h"
@@ -49,6 +50,79 @@ struct Converter<electron::AutoResizeFlags> {
     }
 
     *auto_resize_flags = static_cast<electron::AutoResizeFlags>(flags);
+    return true;
+  }
+};
+
+template <>
+struct Converter<electron::NativeBrowserView::RoundedCornersOptions> {
+  static bool FromV8(
+      v8::Isolate* isolate,
+      v8::Local<v8::Value> val,
+      electron::NativeBrowserView::RoundedCornersOptions* options) {
+    gin_helper::Dictionary params;
+    if (!ConvertFromV8(isolate, val, &params)) {
+      return false;
+    }
+
+    *options = electron::NativeBrowserView::RoundedCornersOptions();
+
+    float radius;
+    if (params.Get("radius", &radius)) {
+      options->radius = radius;
+    }
+
+    bool top_left = false;
+    if (params.Get("topLeft", &top_left) && top_left) {
+      options->top_left = top_left;
+    }
+    bool top_right = false;
+    if (params.Get("topRight", &top_right) && top_right) {
+      options->top_right = top_right;
+    }
+    bool bottom_left = false;
+    if (params.Get("bottomLeft", &bottom_left) && bottom_left) {
+      options->bottom_left = bottom_left;
+    }
+    bool bottom_right = false;
+    if (params.Get("bottomRight", &bottom_right) && bottom_right) {
+      options->bottom_right = bottom_right;
+    }
+
+    return true;
+  }
+};
+
+template <>
+struct Converter<electron::NativeBrowserView::ClippingInsetOptions> {
+  static bool FromV8(
+      v8::Isolate* isolate,
+      v8::Local<v8::Value> val,
+      electron::NativeBrowserView::ClippingInsetOptions* options) {
+    gin_helper::Dictionary params;
+    if (!ConvertFromV8(isolate, val, &params)) {
+      return false;
+    }
+
+    *options = electron::NativeBrowserView::ClippingInsetOptions();
+
+    int top = 0;
+    if (params.Get("top", &top) && top) {
+      options->top = top;
+    }
+    int left = 0;
+    if (params.Get("left", &left) && left) {
+      options->left = left;
+    }
+    int bottom = 0;
+    if (params.Get("bottom", &bottom) && bottom) {
+      options->bottom = bottom;
+    }
+    int right = 0;
+    if (params.Get("right", &right) && right) {
+      options->right = right;
+    }
+
     return true;
   }
 };
@@ -150,6 +224,32 @@ void BrowserView::SetBackgroundColor(const std::string& color_name) {
   view_->SetBackgroundColor(ParseHexColor(color_name));
 }
 
+void BrowserView::SetZIndex(int z_index) {
+  view_->SetZIndex(z_index);
+}
+
+int BrowserView::GetZIndex() {
+  return view_->GetZIndex();
+}
+
+void BrowserView::SetRoundedCorners(
+    const NativeBrowserView::RoundedCornersOptions& options) {
+  return view_->SetRoundedCorners(options);
+}
+
+void BrowserView::SetClippingInsets(
+    const NativeBrowserView::ClippingInsetOptions& options) {
+  return view_->SetClippingInsets(options);
+}
+
+bool BrowserView::IsClickThrough() {
+  return view_->GetInspectableWebContents()->IsClickThrough();
+}
+
+void BrowserView::SetClickThrough(bool clickThrough) {
+  view_->GetInspectableWebContents()->SetClickThrough(clickThrough);
+}
+
 v8::Local<v8::Value> BrowserView::GetWebContents(v8::Isolate* isolate) {
   if (web_contents_.IsEmpty()) {
     return v8::Null(isolate);
@@ -167,6 +267,11 @@ v8::Local<v8::ObjectTemplate> BrowserView::FillObjectTemplate(
       .SetMethod("setBounds", &BrowserView::SetBounds)
       .SetMethod("getBounds", &BrowserView::GetBounds)
       .SetMethod("setBackgroundColor", &BrowserView::SetBackgroundColor)
+      .SetMethod("setRoundedCorners", &BrowserView::SetRoundedCorners)
+      .SetProperty("zIndex", &BrowserView::GetZIndex, &BrowserView::SetZIndex)
+      .SetProperty("clickThrough", &BrowserView::IsClickThrough,
+                   &BrowserView::SetClickThrough)
+      .SetMethod("setClippingInsets", &BrowserView::SetClippingInsets)
       .SetProperty("webContents", &BrowserView::GetWebContents)
       .Build();
 }

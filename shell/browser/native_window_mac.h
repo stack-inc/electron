@@ -207,6 +207,8 @@ class NativeWindowMac : public NativeWindow,
     default_frame_for_zoom_ = frame;
   }
 
+  void RearrangeBrowserViews() override;
+
  protected:
   // views::WidgetDelegate:
   views::View* GetContentsView() override;

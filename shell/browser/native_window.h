@@ -349,6 +349,8 @@ class NativeWindow : public base::SupportsUserData,
 
   int32_t window_id() const { return next_id_; }
 
+  virtual void RearrangeBrowserViews() = 0;
+
  protected:
   NativeWindow(const gin_helper::Dictionary& options, NativeWindow* parent);
 

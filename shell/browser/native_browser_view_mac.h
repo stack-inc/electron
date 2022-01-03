@@ -25,6 +25,12 @@ class NativeBrowserViewMac : public NativeBrowserView {
   gfx::Rect GetLastBounds() override;
   void SetBackgroundColor(SkColor color) override;
 
+  void SetZIndex(int z_index) override;
+  int GetZIndex() override;
+
+  void SetRoundedCorners(const RoundedCornersOptions& options) override;
+  void SetClippingInsets(const ClippingInsetOptions& options) override;
+
   void UpdateDraggableRegions(
       const std::vector<mojom::DraggableRegionPtr>& regions) override;
 
