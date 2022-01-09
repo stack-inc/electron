@@ -34,8 +34,6 @@ function createWindow () {
   const contentView = new ContainerView();
   //contentView.setStyle({ flexDirection: "row", backgroundColor: "#1F2937" });
   contentView.setStringProperty("flexDirection", "row");
-  contentView.setNumericProperty("width", 1400);
-  contentView.setStringProperty("height", "100%");
   contentView.setBackgroundColor("#1F2937");
   contentView.layout();
 
@@ -65,9 +63,9 @@ function createWindow () {
   scrollContent.setNumericProperty("flex", 1);
   scrollContent.setNumericProperty("padding", 30);
   scrollContent.setNumericProperty("flexShrink", 0);
+  scrollContent.setBounds({x: 0, y: 0, width: APPS.length * (APP_WIDTH + GAP), height: 600});
   scrollContent.layout();
   scrollContent.setBackgroundColor("#FF0000");
-  scrollContent.setBounds({x: 0, y: 0, width: APPS.length * (APP_WIDTH + GAP), height: 600});
   scroll.setContentView(scrollContent);
 
   // Webview
@@ -99,7 +97,7 @@ function createWindow () {
     addWebview(scrollContent, app, i++);
   });
 
-  contentView.layout();
+  //contentView.layout();
 }
 
 // This method will be called when Electron has finished

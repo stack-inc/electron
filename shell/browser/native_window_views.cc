@@ -32,6 +32,7 @@
 #include "shell/common/gin_converters/image_converter.h"
 #include "shell/common/gin_helper/dictionary.h"
 #include "shell/common/options_switches.h"
+#include "third_party/yoga/Yoga.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/image/image.h"
@@ -353,6 +354,12 @@ NativeWindowViews::NativeWindowViews(const gin_helper::Dictionary& options,
   // Default content view.
   SetContentView(new views::View());
 
+#if defined(OS_WIN)
+  YGConfigSetPointScaleFactor(yoga_config_,
+                              display::win::ScreenWin::GetScaleFactorForHWND(
+                                  GetAcceleratedWidget()));
+#endif
+
   gfx::Size size = bounds.size();
   if (has_frame() &&
       options.Get(options::kUseContentSize, &use_content_size_) &&
@@ -426,6 +433,9 @@ void NativeWindowViews::SetContentView(views::View* view) {
   focused_view_ = view;
   root_view_->AddChildView(content_view());
   root_view_->Layout();
+}
+
+void NativeWindowViews::PlatformSetContentView(NativeView* container) {
 }
 
 void NativeWindowViews::Close() {

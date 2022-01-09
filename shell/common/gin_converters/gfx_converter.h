@@ -12,7 +12,6 @@ class Display;
 }
 
 namespace gfx {
-class Insets;
 class Point;
 class PointF;
 class Size;
@@ -21,14 +20,6 @@ enum class ResizeEdge;
 }  // namespace gfx
 
 namespace gin {
-
-template <>
-struct Converter<gfx::Insets> {
-  static v8::Local<v8::Value> ToV8(v8::Isolate* isolate, const gfx::Insets& val);
-  static bool FromV8(v8::Isolate* isolate,
-                     v8::Local<v8::Value> val,
-                     gfx::Insets* out);
-};
 
 template <>
 struct Converter<gfx::Point> {

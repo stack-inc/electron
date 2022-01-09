@@ -37,9 +37,7 @@ class NativeWindowMac : public NativeWindow,
 
   // NativeWindow:
   void SetContentView(views::View* view) override;
-  void SetContentView(scoped_refptr<NativeView> view) override;
-  NativeView* GetContentView() const override;
-  YGConfigRef GetYogaConfig() const override;
+  void PlatformSetContentView(NativeView* container) override;
   void Close() override;
   void CloseImmediately() override;
   void Focus(bool focus) override;
@@ -229,8 +227,6 @@ class NativeWindowMac : public NativeWindow,
   void InternalSetParentWindow(NativeWindow* parent, bool attach);
   void SetForwardMouseMessages(bool forward);
 
-  void PlatformSetContentView(NativeView* container);
-
   ElectronNSWindow* window_;  // Weak ref, managed by widget_.
 
   base::scoped_nsobject<ElectronNSWindowDelegate> window_delegate_;
@@ -247,11 +243,6 @@ class NativeWindowMac : public NativeWindow,
 
   // The views::View that fills the client area.
   std::unique_ptr<RootViewMac> root_view_;
-
-  scoped_refptr<NativeView> native_content_view_;
-
-  // The yoga config for window's children.
-  YGConfigRef yoga_config_;
 
   bool is_kiosk_ = false;
   bool zoom_to_page_width_ = false;

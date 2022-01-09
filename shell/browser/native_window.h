@@ -66,12 +66,13 @@ class NativeWindow : public base::SupportsUserData,
 
   void InitFromOptions(const gin_helper::Dictionary& options);
 
+  void SetContentView(scoped_refptr<NativeView> view);
+  NativeView* GetContentView() const;
+
+  YGConfigRef GetYogaConfig() const;
+
   virtual void SetContentView(views::View* view) = 0;
-
-  virtual void SetContentView(scoped_refptr<NativeView> view) = 0;
-  virtual NativeView* GetContentView() const = 0;
-
-  virtual YGConfigRef GetYogaConfig() const = 0;
+  virtual void PlatformSetContentView(NativeView* container) = 0;
 
   virtual void Close() = 0;
   virtual void CloseImmediately() = 0;
@@ -383,6 +384,9 @@ class NativeWindow : public base::SupportsUserData,
   // The "titleBarStyle" option.
   TitleBarStyle title_bar_style_ = TitleBarStyle::kNormal;
 
+  // The yoga config for window's children.
+  YGConfigRef yoga_config_;
+
  private:
   std::unique_ptr<views::Widget> widget_;
 
@@ -390,6 +394,8 @@ class NativeWindow : public base::SupportsUserData,
 
   // The content view, weak ref.
   views::View* content_view_ = nullptr;
+
+  scoped_refptr<NativeView> native_content_view_;
 
   // Whether window has standard frame.
   bool has_frame_ = true;

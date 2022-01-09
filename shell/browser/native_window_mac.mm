@@ -241,9 +241,7 @@ void ViewDidMoveToSuperview(NSView* self, SEL _cmd) {
 
 NativeWindowMac::NativeWindowMac(const gin_helper::Dictionary& options,
                                  NativeWindow* parent)
-    : NativeWindow(options, parent),
-      root_view_(new RootViewMac(this)),
-      yoga_config_(YGConfigNew()) {
+    : NativeWindow(options, parent), root_view_(new RootViewMac(this)) {
   ui::NativeTheme::GetInstanceForNativeUi()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
 
@@ -403,9 +401,6 @@ NativeWindowMac::NativeWindowMac(const gin_helper::Dictionary& options,
     }
   }
 
-  YGConfigSetPointScaleFactor(yoga_config_,
-                              [window_ screen].backingScaleFactor);
-
   // Resize to content bounds.
   bool use_content_size = false;
   options.Get(options::kUseContentSize, &use_content_size);
@@ -456,15 +451,14 @@ NativeWindowMac::NativeWindowMac(const gin_helper::Dictionary& options,
   SetContentView(new views::View());
   AddContentViewLayers();
 
+  YGConfigSetPointScaleFactor(yoga_config_,
+                              [window_ screen].backingScaleFactor);
+
   original_frame_ = [window_ frame];
   original_level_ = [window_ level];
 }
 
-NativeWindowMac::~NativeWindowMac() {
-  YGConfigFree(yoga_config_);
-  if (native_content_view_.get())
-    native_content_view_->BecomeContentView(nullptr);
-}
+NativeWindowMac::~NativeWindowMac() = default;
 
 void NativeWindowMac::SetContentView(views::View* view) {
   views::View* root_view = GetContentsView();
@@ -475,24 +469,6 @@ void NativeWindowMac::SetContentView(views::View* view) {
   root_view->AddChildView(content_view());
 
   root_view->Layout();
-}
-
-void NativeWindowMac::SetContentView(scoped_refptr<NativeView> view) {
-  if (!view)
-    return;
-  if (native_content_view_)
-    native_content_view_->BecomeContentView(nullptr);
-  PlatformSetContentView(view.get());
-  native_content_view_ = std::move(view);
-  native_content_view_->BecomeContentView(this);
-}
-
-NativeView* NativeWindowMac::GetContentView() const {
-  return native_content_view_.get();
-}
-
-YGConfigRef NativeWindowMac::GetYogaConfig() const {
-  return yoga_config_;
 }
 
 void NativeWindowMac::PlatformSetContentView(NativeView* view) {
@@ -519,6 +495,8 @@ void NativeWindowMac::PlatformSetContentView(NativeView* view) {
     // Make sure top corners are rounded:
     [content_view setWantsLayer:!transparent()];
   }
+
+  //AddContentViewLayers();
 }
 
 void NativeWindowMac::Close() {
