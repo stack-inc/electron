@@ -110,6 +110,7 @@ class NativeWindowMac : public NativeWindow,
   void AddBrowserView(NativeBrowserView* browser_view) override;
   void RemoveBrowserView(NativeBrowserView* browser_view) override;
   void SetTopBrowserView(NativeBrowserView* browser_view) override;
+  void RearrangeBrowserViews() override;
   void AddContainerView(NativeContainerView* container_view) override;
   void RemoveContainerView(NativeContainerView* container_view) override;
   void SetTopContainerView(NativeContainerView* container_view) override;
@@ -204,8 +205,6 @@ class NativeWindowMac : public NativeWindow,
   void set_default_frame_for_zoom(NSRect frame) {
     default_frame_for_zoom_ = frame;
   }
-
-  void RearrangeBrowserViews() override;
 
  protected:
   // views::WidgetDelegate:

@@ -122,6 +122,7 @@ void PlatformSetContentView(NativeView* container) override;
   void AddBrowserView(NativeBrowserView* browser_view) override;
   void RemoveBrowserView(NativeBrowserView* browser_view) override;
   void SetTopBrowserView(NativeBrowserView* browser_view) override;
+  void RearrangeBrowserViews() override;
   void AddContainerView(NativeContainerView* container_view) override;
   void RemoveContainerView(NativeContainerView* container_view) override;
   void SetTopContainerView(NativeContainerView* container_view) override;

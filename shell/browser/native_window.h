@@ -180,6 +180,7 @@ class NativeWindow : public base::SupportsUserData,
   virtual void AddBrowserView(NativeBrowserView* browser_view) = 0;
   virtual void RemoveBrowserView(NativeBrowserView* browser_view) = 0;
   virtual void SetTopBrowserView(NativeBrowserView* browser_view) = 0;
+  virtual void RearrangeBrowserViews() = 0;
   virtual void AddContainerView(NativeContainerView* container_view) = 0;
   virtual void RemoveContainerView(NativeContainerView* container_view) = 0;
   virtual void SetTopContainerView(NativeContainerView* container_view) = 0;
@@ -349,8 +350,6 @@ class NativeWindow : public base::SupportsUserData,
   std::list<NativeContainerView*> container_views() const { return container_views_; }
 
   int32_t window_id() const { return next_id_; }
-
-  virtual void RearrangeBrowserViews() = 0;
 
  protected:
   NativeWindow(const gin_helper::Dictionary& options, NativeWindow* parent);
