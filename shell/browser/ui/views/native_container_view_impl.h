@@ -1,6 +1,3 @@
-// Copyright (c) 2017 GitHub, Inc.
-// Use of this source code is governed by the MIT license that can be
-// found in the LICENSE file.
 
 #ifndef SHELL_BROWSER_UI_VIEWS_NATIVE_CONTAINER_VIEW_IMPL_H_
 #define SHELL_BROWSER_UI_VIEWS_NATIVE_CONTAINER_VIEW_IMPL_H_
@@ -8,7 +5,6 @@
 #include <memory>
 #include <vector>
 
-#include "ui/views/view.h"
 
 namespace views {
 class LayoutManager;

@@ -6,7 +6,7 @@
 #define SHELL_BROWSER_API_ELECTRON_API_SCROLL_VIEW_H_
 
 #include "shell/browser/api/electron_api_container_view.h"
-#include "shell/browser/ui/native_scroll_view.h"
+#include "shell/browser/ui/native_scroll.h"
 
 namespace gfx {
 class Size;
@@ -25,7 +25,7 @@ class ScrollView : public ContainerView {
                              v8::Local<v8::FunctionTemplate> prototype);
 
  protected:
-  ScrollView(gin::Arguments* args, NativeScrollView* scroll_view);
+  ScrollView(gin::Arguments* args, NativeScroll* scroll_view);
   ~ScrollView() override;
 
  private:
@@ -46,7 +46,7 @@ class ScrollView : public ContainerView {
   void SetDrawOverflowIndicator(bool indicator);
   bool GetDrawOverflowIndicator();
 
-  NativeScrollView* scroll_view_;
+  scoped_refptr<NativeScroll> scroll_view_;
 
   int32_t content_view_id_ = 0;
   v8::Global<v8::Value> content_view_;

@@ -335,7 +335,7 @@ void BaseWindow::SetContainerView(gin::Handle<ContainerView> view) {
   // its previous owner window/container.
   view->DetachFromParent(window_.get());
   content_view_.Reset(isolate(), view.ToV8());
-  window_->SetContentView(view->view()->GetView());
+  window_->SetContentView(view->view());
   view->view()->SetOwnerWindow(window_.get());
 }
 

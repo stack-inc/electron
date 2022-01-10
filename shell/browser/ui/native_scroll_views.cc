@@ -4,85 +4,7 @@
 
 #include "shell/browser/ui/native_scroll.h"
 
-#include "shell/browser/ui/cocoa/electron_native_view.h"
 #include "ui/gfx/geometry/size.h"
-
-@interface ElectronNativeScroll : NSScrollView <ElectronNativeView> {
- @private
-  electron::NativeViewPrivate private_;
-  electron::NativeScroll* shell_;
-  BOOL subscribed_;
-  NSSize content_size_;
-}
-- (id)initWithShell:(electron::NativeScroll*)shell;
-- (void)setEventEnabled:(BOOL)enable;
-- (void)setContentSize:(NSSize)size;
-@end
-
-@implementation ElectronNativeScroll
-
-- (id)initWithShell:(electron::NativeScroll*)shell {
-  if ((self = [super init])) {
-    shell_ = shell;
-    subscribed_ = NO;
-  }
-  return self;
-}
-
-- (void)dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
-}
-
-- (void)setEventEnabled:(BOOL)enable {
-  if (subscribed_ == enable)
-    return;
-  subscribed_ = enable;
-  NSView* contentView = self.contentView;
-  if (enable) {
-    [contentView setPostsBoundsChangedNotifications:YES];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(onScroll:)
-               name:NSViewBoundsDidChangeNotification
-             object:contentView];
-  } else {
-    [contentView setPostsBoundsChangedNotifications:NO];
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-  }
-}
-
-- (void)setContentSize:(NSSize)size {
-  content_size_ = size;
-}
-
-- (void)onScroll:(NSNotification*)notification {
-#if 0
-  shell_->on_scroll.Emit(shell_);
-#endif
-}
-
-- (electron::NativeViewPrivate*)nativeViewPrivate {
-  return &private_;
-}
-
-- (void)setNativeBackgroundColor:(SkColor)color {
-}
-
-- (void)resizeSubviewsWithOldSize:(NSSize)oldBoundsSize {
-  // Automatically resize the content view when ScrollView is larger than the
-  // content size.
-  NSSize parent_size = [self frame].size;
-  NSSize content_size = content_size_;
-  if (content_size.width < parent_size.width)
-    content_size.width = parent_size.width;
-  if (content_size.height < parent_size.height)
-    content_size.height = parent_size.height;
-  [self.documentView setFrameSize:content_size];
-  [super resizeSubviewsWithOldSize:oldBoundsSize];
-}
-
-@end
 
 namespace electron {
 
@@ -145,24 +67,20 @@ bool NativeScroll::IsOverlayScrollbar() const {
   return scroll.scrollerStyle == NSScrollerStyleOverlay;
 }
 
-void NativeScroll::SetHorizontalScrollBarMode(ScrollBarMode mode) {
+void NativeScroll::SetScrollbarPolicy(Policy h_policy, Policy v_policy) {
   auto* scroll = static_cast<ElectronNativeScroll*>(GetNative());
-  scroll.hasHorizontalScroller = mode != ScrollBarMode::kDisabled;
+  scroll.hasHorizontalScroller = h_policy != Policy::Never;
+  scroll.hasVerticalScroller = v_policy != Policy::Never;
 }
 
-ScrollBarMode NativeScroll::GetHorizontalScrollBarMode() {
+std::tuple<NativeScroll::Policy, NativeScroll::Policy>
+NativeScroll::GetScrollbarPolicy() const {
   auto* scroll = static_cast<ElectronNativeScroll*>(GetNative());
-  return scroll.hasHorizontalScroller ? ScrollBarMode::kEnabled : ScrollBarMode::kDisabled;
-}
-
-void NativeScroll::SetVerticalScrollBarMode(ScrollBarMode mode) {
-  auto* scroll = static_cast<ElectronNativeScroll*>(GetNative());
-  scroll.hasVerticalScroller = mode != ScrollBarMode::kDisabled;
-}
-
-ScrollBarMode NativeScroll::GetVerticalScrollBarMode() {
-  auto* scroll = static_cast<ElectronNativeScroll*>(GetNative());
-  return scroll.hasVerticalScroller ? ScrollBarMode::kEnabled : ScrollBarMode::kDisabled;
+  Policy h_policy =
+      scroll.hasHorizontalScroller ? Policy::Automatic : Policy::Never;
+  Policy v_policy =
+      scroll.hasVerticalScroller ? Policy::Automatic : Policy::Never;
+  return std::make_tuple(h_policy, v_policy);
 }
 
 void NativeScroll::SetScrollElasticity(Elasticity h, Elasticity v) {

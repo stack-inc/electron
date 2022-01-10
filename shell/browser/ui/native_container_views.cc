@@ -6,7 +6,6 @@
 
 #include "shell/browser/ui/cocoa/electron_native_container.h"
 #include "shell/browser/ui/native_view.h"
-#include "shell/browser/ui/native_web_view_mac.h"
 
 namespace electron {
 
@@ -15,16 +14,6 @@ void NativeContainer::PlatformInit() {
 }
 
 void NativeContainer::PlatformDestroy() {}
-
-void NativeContainer::PlatformAddChildView(NativeBrowserView* child) {
-  NativeWebView* web_view = new NativeWebView(child);
-  gfx::Rect bounds = child->GetLastBounds();
-if (bounds.width() && bounds.height())
-  web_view->SetBounds(bounds);
-else
-web_view->SetStyleProperty("flex", 1);
-  AddChildView(web_view);
-}
 
 void NativeContainer::PlatformAddChildView(NativeView* child) {
   [GetNative() addSubview:child->GetNative()];
@@ -43,9 +32,6 @@ void NativeContainer::PlatformAddChildView(NativeView* child) {
         [ChildAt(i)->GetNative() setWantsLayer:YES];
     }
   }
-}
-
-void NativeContainer::PlatformRemoveChildView(NativeBrowserView* child) {
 }
 
 void NativeContainer::PlatformRemoveChildView(NativeView* child) {

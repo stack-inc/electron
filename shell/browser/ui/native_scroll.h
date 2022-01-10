@@ -1,3 +1,7 @@
+// Copyright (c) 2022 GitHub, Inc.
+// Use of this source code is governed by the MIT license that can be
+// found in the LICENSE file.
+
 #ifndef SHELL_BROWSER_UI_NATIVE_SCROLL_H_
 #define SHELL_BROWSER_UI_NATIVE_SCROLL_H_
 
@@ -7,18 +11,17 @@
 
 namespace electron {
 
+enum class ScrollBarMode { kDisabled, kHiddenButEnabled, kEnabled };
+
 class NativeScroll : public NativeView {
  public:
   NativeScroll();
 
-  // View class name.
-  static const char kClassName[];
-
   void SetContentView(scoped_refptr<NativeView> view);
   NativeView* GetContentView() const;
 
-  void SetContentSize(const gfx::SizeF& size);
-  gfx::SizeF GetContentSize() const;
+  void SetContentSize(const gfx::Size& size);
+  gfx::Size GetContentSize() const;
   void SetScrollPosition(float horizon, float vertical);
   std::tuple<float, float> GetScrollPosition() const;
   std::tuple<float, float> GetMaximumScrollPosition() const;
@@ -28,13 +31,10 @@ class NativeScroll : public NativeView {
   bool IsOverlayScrollbar() const;
 #endif
 
-  enum class Policy {
-    Always,
-    Never,
-    Automatic,
-  };
-  void SetScrollbarPolicy(Policy h_policy, Policy v_policy);
-  std::tuple<Policy, Policy> GetScrollbarPolicy() const;
+  void SetHorizontalScrollBarMode(ScrollBarMode mode);
+  ScrollBarMode GetHorizontalScrollBarMode();
+  void SetVerticalScrollBarMode(ScrollBarMode mode);
+  ScrollBarMode GetVerticalScrollBarMode();
 
 #if defined(OS_MAC)
   enum class Elasticity {
@@ -46,8 +46,16 @@ class NativeScroll : public NativeView {
   std::tuple<Elasticity, Elasticity> GetScrollElasticity() const;
 #endif
 
-  // NativeView:
-  const char* GetClassName() const override;
+#if !defined(OS_MAC)
+  int GetMinHeight();
+  int GetMaxHeight();
+  void ClipHeightTo(int min_height, int max_height);
+  gfx::Rect GetVisibleRect();
+  void SetAllowKeyboardScrolling(bool allow);
+  bool GetAllowKeyboardScrolling();
+  void SetDrawOverflowIndicator(bool indicator);
+  bool GetDrawOverflowIndicator();
+#endif
 
 #if 0
   // Events.

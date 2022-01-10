@@ -1,3 +1,7 @@
+// Copyright (c) 2022 GitHub, Inc.
+// Use of this source code is governed by the MIT license that can be
+// found in the LICENSE file.
+
 #include "shell/browser/ui/native_view.h"
 
 #include <utility>
@@ -9,15 +13,8 @@
 #include "shell/browser/ui/yoga_util.h"
 #include "shell/common/color_util.h"
 #include "third_party/yoga/Yoga.h"
-
-// This header required DEBUG to be defined.
-#if defined(DEBUG)
-#include "third_party/yoga/YGNodePrint.h"
-#else
-#define DEBUG
-#include "third_party/yoga/YGNodePrint.h"
-#undef DEBUG
-#endif
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace electron {
 
@@ -36,9 +33,6 @@ std::string ParseName(const std::string& name) {
 
 }  // namespace
 
-// static
-const char NativeView::kClassName[] = "View";
-
 NativeView::NativeView() : view_(nullptr) {
   // Create node with the default yoga config.
   yoga_config_ = YGConfigNew();
@@ -53,10 +47,6 @@ NativeView::~NativeView() {
   // Free yoga config and node.
   YGNodeFree(node_);
   YGConfigFree(yoga_config_);
-}
-
-const char* NativeView::GetClassName() const {
-  return kClassName;
 }
 
 void NativeView::SetVisible(bool visible) {
@@ -74,7 +64,7 @@ void NativeView::Layout() {
 }
 
 void NativeView::UpdateDefaultStyle() {
-  gfx::SizeF min_size = GetMinimumSize();
+  gfx::Size min_size = GetMinimumSize();
   YGNodeStyleSetMinWidth(node_, min_size.width());
   YGNodeStyleSetMinHeight(node_, min_size.height());
   Layout();
@@ -92,17 +82,8 @@ void NativeView::SetStyleProperty(const std::string& name, float value) {
   SetYogaProperty(node_, ParseName(name), value);
 }
 
-std::string NativeView::GetComputedLayout() const {
-  std::string result;
-  auto options = static_cast<YGPrintOptions>(YGPrintOptionsLayout |
-                                             YGPrintOptionsStyle |
-                                             YGPrintOptionsChildren);
-  facebook::yoga::YGNodeToString(result, node_, options, 0);
-  return result;
-}
-
-gfx::SizeF NativeView::GetMinimumSize() const {
-  return gfx::SizeF();
+gfx::Size NativeView::GetMinimumSize() const {
+  return gfx::Size();
 }
 
 void NativeView::SetParent(NativeView* parent) {

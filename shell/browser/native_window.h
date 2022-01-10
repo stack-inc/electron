@@ -46,7 +46,6 @@ namespace electron {
 
 class ElectronMenuModel;
 class NativeBrowserView;
-class NativeContainerView;
 
 #if defined(OS_MAC)
 typedef NSView* NativeWindowHandle;
@@ -181,9 +180,9 @@ class NativeWindow : public base::SupportsUserData,
   virtual void RemoveBrowserView(NativeBrowserView* browser_view) = 0;
   virtual void SetTopBrowserView(NativeBrowserView* browser_view) = 0;
   virtual void RearrangeBrowserViews() = 0;
-  virtual void AddContainerView(NativeContainerView* container_view) = 0;
-  virtual void RemoveContainerView(NativeContainerView* container_view) = 0;
-  virtual void SetTopContainerView(NativeContainerView* container_view) = 0;
+  virtual void AddContainerView(NativeContainer* container_view) = 0;
+  virtual void RemoveContainerView(NativeContainer* container_view) = 0;
+  virtual void SetTopContainerView(NativeContainer* container_view) = 0;
   virtual content::DesktopMediaID GetDesktopMediaID() const = 0;
   virtual gfx::NativeView GetNativeView() const = 0;
   virtual gfx::NativeWindow GetNativeWindow() const = 0;
@@ -347,7 +346,7 @@ class NativeWindow : public base::SupportsUserData,
 
   std::list<NativeBrowserView*> browser_views() const { return browser_views_; }
 
-  std::list<NativeContainerView*> container_views() const { return container_views_; }
+  std::list<NativeContainer*> container_views() const { return container_views_; }
 
   int32_t window_id() const { return next_id_; }
 
@@ -369,12 +368,12 @@ class NativeWindow : public base::SupportsUserData,
         [&browser_view](NativeBrowserView* n) { return (n == browser_view); });
   }
 
-  void add_container_view(NativeContainerView* container_view) {
+  void add_container_view(NativeContainer* container_view) {
     container_views_.push_back(container_view);
   }
-  void remove_container_view(NativeContainerView* container_view) {
+  void remove_container_view(NativeContainer* container_view) {
     container_views_.remove_if(
-        [&container_view](NativeContainerView* n) { return (n == container_view); });
+        [&container_view](NativeContainer* n) { return (n == container_view); });
   }
 
   // The boolean parsing of the "titleBarOverlay" option
@@ -431,7 +430,7 @@ class NativeWindow : public base::SupportsUserData,
   std::list<NativeBrowserView*> browser_views_;
 
   // The container view layer.
-  std::list<NativeContainerView*> container_views_;
+  std::list<NativeContainer*> container_views_;
 
   // Observers of this window.
   base::ObserverList<NativeWindowObserver> observers_;

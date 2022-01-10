@@ -28,18 +28,6 @@ view.setBounds({ x: 0, y: 0, width: 300, height: 300 })
 
 Objects created with `new ContainerView` have the following instance methods:
 
-#### `view.setAutoResize(options)`
-
-* `options` Object
-  * `width` Boolean (optional) - If `true`, the view's width will grow and shrink together
-    with the window. `false` by default.
-  * `height` Boolean (optional) - If `true`, the view's height will grow and shrink
-    together with the window. `false` by default.
-  * `horizontal` Boolean (optional) - If `true`, the view's x position and width will grow
-    and shrink proportionally with the window. `false` by default.
-  * `vertical` Boolean (optional) - If `true`, the view's y position and height will grow
-    and shrink proportionally with the window. `false` by default.
-
 #### `view.setBounds(bounds)`
 
 * `bounds` [Rectangle](structures/rectangle.md)

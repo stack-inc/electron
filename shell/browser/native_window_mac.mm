@@ -35,7 +35,7 @@
 #include "shell/browser/ui/cocoa/window_buttons_proxy.h"
 #include "shell/browser/ui/inspectable_web_contents.h"
 #include "shell/browser/ui/inspectable_web_contents_view.h"
-#include "shell/browser/ui/native_container_view.h"
+#include "shell/browser/ui/native_container.h"
 #include "shell/browser/window_list.h"
 #include "shell/common/gin_converters/gfx_converter.h"
 #include "shell/common/gin_helper/dictionary.h"
@@ -472,16 +472,16 @@ void NativeWindowMac::SetContentView(views::View* view) {
 }
 
 void NativeWindowMac::PlatformSetContentView(NativeView* view) {
-  if (native_content_view_) {
-    [native_content_view_->GetNative() removeFromSuperview];
-    if (IsNativeView(native_content_view_->GetNative())) {
+  if (GetContentView()) {
+    [GetContentView()->GetNative() removeFromSuperview];
+    if (IsNativeView(GetContentView()->GetNative())) {
       NativeViewPrivate* priv =
-          [native_content_view_->GetNative() nativeViewPrivate];
+          [GetContentView()->GetNative() nativeViewPrivate];
       priv->is_content_view = false;
       // Revert wantsLayer to default.
-      [native_content_view_->GetNative() setWantsLayer:priv->wants_layer];
+      [GetContentView()->GetNative() setWantsLayer:priv->wants_layer];
     } else {
-      [native_content_view_->GetNative() setWantsLayer:NO];
+      [GetContentView()->GetNative() setWantsLayer:NO];
     }
   }
 
@@ -1298,7 +1298,7 @@ void NativeWindowMac::RearrangeBrowserViews() {
   [CATransaction commit];
 }
 
-void NativeWindowMac::AddContainerView(NativeContainerView* view) {
+void NativeWindowMac::AddContainerView(NativeContainer* view) {
 #if 0
   [CATransaction begin];
   [CATransaction setDisableActions:YES];
@@ -1320,7 +1320,7 @@ void NativeWindowMac::AddContainerView(NativeContainerView* view) {
 #endif
 }
 
-void NativeWindowMac::RemoveContainerView(NativeContainerView* view) {
+void NativeWindowMac::RemoveContainerView(NativeContainer* view) {
 #if 0
   [CATransaction begin];
   [CATransaction setDisableActions:YES];
@@ -1339,7 +1339,7 @@ void NativeWindowMac::RemoveContainerView(NativeContainerView* view) {
 #endif
 }
 
-void NativeWindowMac::SetTopContainerView(NativeContainerView* view) {
+void NativeWindowMac::SetTopContainerView(NativeContainer* view) {
 #if 0
   [CATransaction begin];
   [CATransaction setDisableActions:YES];

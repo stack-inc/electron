@@ -39,7 +39,7 @@ std::string ConvertFromScrollBarMode(ScrollBarMode mode) {
 
 }  // namespace
 
-ScrollView::ScrollView(gin::Arguments* args, NativeScrollView* scroll_view)
+ScrollView::ScrollView(gin::Arguments* args, NativeScroll* scroll_view)
     : ContainerView(args, scroll_view), scroll_view_(scroll_view) {}
 
 ScrollView::~ScrollView() = default;
@@ -57,7 +57,7 @@ void ScrollView::SetContentView(v8::Local<v8::Value> value) {
       content_view->DetachFromParent(nullptr);
 
       scroll_view_->SetContentView(content_view->view());
-      content_view->view()->set_parent_view(view());
+      content_view->view()->SetParent(view());
       content_view_id_ = content_view->ID();
       content_view_.Reset(isolate, value);
     }
@@ -76,81 +76,97 @@ v8::Local<v8::Value> ScrollView::GetContentView() const {
 }
 
 void ScrollView::SetContentSize(gfx::Size size) {
-  if (scroll_view_)
+  if (scroll_view_.get())
     scroll_view_->SetContentSize(size);
 }
 
 gfx::Size ScrollView::GetContentSize() {
-  if (scroll_view_)
+  if (scroll_view_.get())
     return scroll_view_->GetContentSize();
   return gfx::Size();
 }
 
 int ScrollView::GetMinHeight() {
-  if (scroll_view_)
+#if !defined(OS_MAC)
+  if (scroll_view_.get())
     return scroll_view_->GetMinHeight();
+#endif
   return -1;
 }
 
 int ScrollView::GetMaxHeight() {
-  if (scroll_view_)
+#if !defined(OS_MAC)
+  if (scroll_view_.get())
     return scroll_view_->GetMaxHeight();
+#endif
   return -1;
 }
 
 void ScrollView::ClipHeightTo(int min_height, int max_height) {
-  if (scroll_view_)
+#if !defined(OS_MAC)
+  if (scroll_view_.get())
     scroll_view_->ClipHeightTo(min_height, max_height);
+#endif
 }
 
 gfx::Rect ScrollView::GetVisibleRect() {
-  if (scroll_view_)
+#if !defined(OS_MAC)
+  if (scroll_view_.get())
     return scroll_view_->GetVisibleRect();
+#endif
   return gfx::Rect();
 }
 
 void ScrollView::SetHorizontalScrollBarMode(std::string mode) {
-  if (scroll_view_)
+  if (scroll_view_.get())
     scroll_view_->SetHorizontalScrollBarMode(ConvertToScrollBarMode(mode));
 }
 
 std::string ScrollView::GetHorizontalScrollBarMode() {
-  if (scroll_view_)
+  if (scroll_view_.get())
     return ConvertFromScrollBarMode(scroll_view_->GetHorizontalScrollBarMode());
   return "enabled";
 }
 
 void ScrollView::SetVerticalScrollBarMode(std::string mode) {
-  if (scroll_view_)
+  if (scroll_view_.get())
     scroll_view_->SetVerticalScrollBarMode(ConvertToScrollBarMode(mode));
 }
 
 std::string ScrollView::GetVerticalScrollBarMode() {
-  if (scroll_view_)
+  if (scroll_view_.get())
     return ConvertFromScrollBarMode(scroll_view_->GetVerticalScrollBarMode());
   return "enabled";
 }
 
 void ScrollView::SetAllowKeyboardScrolling(bool allow) {
-  if (scroll_view_)
+#if !defined(OS_MAC)
+  if (scroll_view_.get())
     scroll_view_->SetAllowKeyboardScrolling(allow);
+#endif
 }
 
 bool ScrollView::GetAllowKeyboardScrolling() {
-  if (scroll_view_)
+#if !defined(OS_MAC)
+  if (scroll_view_.get())
     return scroll_view_->GetAllowKeyboardScrolling();
-  return true;
+#endif
+  return false;
 }
 
 void ScrollView::SetDrawOverflowIndicator(bool indicator) {
-  if (scroll_view_)
+#if !defined(OS_MAC)
+  if (scroll_view_.get())
     scroll_view_->SetDrawOverflowIndicator(indicator);
+#endif
 }
 
 bool ScrollView::GetDrawOverflowIndicator() {
-  if (scroll_view_)
+#if !defined(OS_MAC)
+  if (scroll_view_.get())
     return scroll_view_->GetDrawOverflowIndicator();
-  return true;
+#endif
+  return false;
 }
 
 // static
@@ -161,7 +177,7 @@ gin_helper::WrappableBase* ScrollView::New(gin_helper::ErrorThrower thrower,
     return nullptr;
   }
 
-  auto* view = new ScrollView(args, NativeScrollView::Create());
+  auto* view = new ScrollView(args, new NativeScroll());
   view->Pin(args->isolate());
   view->InitWithArgs(args);
   return view;

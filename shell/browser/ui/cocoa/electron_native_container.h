@@ -1,3 +1,7 @@
+// Copyright (c) 2022 GitHub, Inc.
+// Use of this source code is governed by the MIT license that can be
+// found in the LICENSE file.
+
 #ifndef SHELL_BROWSER_UI_COCOA_ELECTRON_NATIVE_CONTAINER_H_
 #define SHELL_BROWSER_UI_COCOA_ELECTRON_NATIVE_CONTAINER_H_
 

@@ -17,43 +17,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"
 
-namespace gin {
-
-template <>
-struct Converter<electron::AutoResizeFlags> {
-  static bool FromV8(v8::Isolate* isolate,
-                     v8::Local<v8::Value> val,
-                     electron::AutoResizeFlags* auto_resize_flags) {
-    gin_helper::Dictionary params;
-    if (!ConvertFromV8(isolate, val, &params)) {
-      return false;
-    }
-
-    uint8_t flags = 0;
-    bool width = false;
-    if (params.Get("width", &width) && width) {
-      flags |= electron::kAutoResizeWidth;
-    }
-    bool height = false;
-    if (params.Get("height", &height) && height) {
-      flags |= electron::kAutoResizeHeight;
-    }
-    bool horizontal = false;
-    if (params.Get("horizontal", &horizontal) && horizontal) {
-      flags |= electron::kAutoResizeHorizontal;
-    }
-    bool vertical = false;
-    if (params.Get("vertical", &vertical) && vertical) {
-      flags |= electron::kAutoResizeVertical;
-    }
-
-    *auto_resize_flags = static_cast<electron::AutoResizeFlags>(flags);
-    return true;
-  }
-};
-
-}  // namespace gin
-
 namespace {
 
 int32_t GetNextId() {
@@ -68,14 +31,21 @@ namespace electron {
 namespace api {
 
 ContainerView::ContainerView(gin::Arguments* args,
-                             NativeContainerView* container_view)
-    : id_(GetNextId()) {
-  view_.reset(container_view);
+                             NativeContainer* view)
+    : id_(GetNextId()),
+      native_view_(view),
+      view_(view) {
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
-  auto* view = view_->GetView();
+  auto* view = view_->GetNative();
   if (view)
     view->AddObserver(this);
 #endif
+}
+
+ContainerView::ContainerView(gin::Arguments* args,
+                             NativeView* view)
+    : id_(GetNextId()),
+      native_view_(view) {
 }
 
 ContainerView::~ContainerView() = default;
@@ -88,11 +58,11 @@ void ContainerView::OnViewIsDeleting(views::View* view) {
 #endif
 
 void ContainerView::DetachFromParent(NativeWindow* window) {
-  if (!view_.get())
+  if (!view_)
     return;
 
-  auto* parent_view = view_->parent_view();
-  if (parent_view) {
+  auto* parent = view_->GetParent();
+  if (parent) {
     //@parent_view_api->RemoveContainerView(this);
   } else {
     auto* owner_window = view()->GetOwnerWindow();
@@ -102,29 +72,24 @@ void ContainerView::DetachFromParent(NativeWindow* window) {
   }
 }
 
-void ContainerView::SetAutoResize(AutoResizeFlags flags) {
-  if (view_.get())
-    view_->SetAutoResizeFlags(flags);
-}
-
 void ContainerView::SetBounds(const gfx::Rect& bounds) {
-  if (view_.get())
-    view_->SetBounds(bounds);
+  if (native_view_)
+    native_view_->SetBounds(bounds);
 }
 
 gfx::Rect ContainerView::GetBounds() {
-  if (view_.get())
-    return view_->GetBounds();
+  if (native_view_)
+    return native_view_->GetBounds();
   return gfx::Rect();
 }
 
 void ContainerView::SetBackgroundColor(const std::string& color_name) {
-  if (view_.get())
-    view_->SetBackgroundColor(ParseHexColor(color_name));
+  if (native_view_)
+    native_view_->SetBackgroundColor(ParseHexColor(color_name));
 }
 
 void ContainerView::AddBrowserView(v8::Local<v8::Value> value) {
-  if (!view_.get())
+  if (!view_)
     return;
 
   v8::Isolate* isolate = JavascriptEnvironment::GetIsolate();
@@ -136,7 +101,7 @@ void ContainerView::AddBrowserView(v8::Local<v8::Value> value) {
     auto get_that_view = browser_views_.find(browser_view->ID());
     if (get_that_view == browser_views_.end()) {
       if (browser_view->web_contents()) {
-        view_->AddBrowserView(browser_view->view());
+        view_->AddChildView(browser_view->view());
         browser_view->web_contents()->SetOwnerWindow(view_->GetOwnerWindow());
       }
       browser_views_[browser_view->ID()].Reset(isolate, value);
@@ -145,7 +110,7 @@ void ContainerView::AddBrowserView(v8::Local<v8::Value> value) {
 }
 
 void ContainerView::RemoveBrowserView(v8::Local<v8::Value> value) {
-  if (!view_.get())
+  if (!view_)
     return;
 
   v8::Isolate* isolate = JavascriptEnvironment::GetIsolate();
@@ -157,7 +122,7 @@ void ContainerView::RemoveBrowserView(v8::Local<v8::Value> value) {
     auto get_that_view = browser_views_.find(browser_view->ID());
     if (get_that_view != browser_views_.end()) {
       if (browser_view->web_contents()) {
-        view_->RemoveBrowserView(browser_view->view());
+        view_->RemoveChildView(browser_view->view());
         browser_view->web_contents()->SetOwnerWindow(nullptr);
       }
       (*get_that_view).second.Reset(isolate, value);
@@ -168,7 +133,7 @@ void ContainerView::RemoveBrowserView(v8::Local<v8::Value> value) {
 
 void ContainerView::SetTopBrowserView(v8::Local<v8::Value> value,
                                       gin_helper::ErrorThrower thrower) {
-  if (!view_.get())
+  if (!view_)
     return;
 
   v8::Isolate* isolate = JavascriptEnvironment::GetIsolate();
@@ -187,7 +152,7 @@ void ContainerView::SetTopBrowserView(v8::Local<v8::Value> value,
       return;
     }
 
-    view_->SetTopBrowserView(browser_view->view());
+    view_->SetTopChildView(browser_view->view());
   }
 }
 
@@ -206,7 +171,7 @@ std::vector<v8::Local<v8::Value>> ContainerView::GetBrowserViews() const {
 }
 
 void ContainerView::AddContainerView(v8::Local<v8::Value> value) {
-  if (!view_.get())
+  if (!view_)
     return;
 
   v8::Isolate* isolate = JavascriptEnvironment::GetIsolate();
@@ -222,15 +187,15 @@ void ContainerView::AddContainerView(v8::Local<v8::Value> value) {
       // its previous owner window/container.
       container_view->DetachFromParent(nullptr);
 
-      view_->AddContainerView(container_view->view());
-      container_view->view()->set_parent_view(view());
+      view_->AddChildView(container_view->view());
+      container_view->view()->SetParent(view());
       container_views_[container_view->ID()].Reset(isolate, value);
     }
   }
 }
 
 void ContainerView::RemoveContainerView(v8::Local<v8::Value> value) {
-  if (!view_.get())
+  if (!view_)
     return;
 
   v8::Isolate* isolate = JavascriptEnvironment::GetIsolate();
@@ -242,7 +207,7 @@ void ContainerView::RemoveContainerView(v8::Local<v8::Value> value) {
       gin::ConvertFromV8(isolate, value, &container_view)) {
     auto get_that_view = container_views_.find(container_view->ID());
     if (get_that_view != container_views_.end()) {
-      view_->RemoveContainerView(container_view->view());
+      view_->RemoveChildView(container_view->view());
       container_view->view()->SetOwnerWindow(nullptr);
       (*get_that_view).second.Reset(isolate, value);
       container_views_.erase(get_that_view);
@@ -252,7 +217,7 @@ void ContainerView::RemoveContainerView(v8::Local<v8::Value> value) {
 
 void ContainerView::SetTopContainerView(v8::Local<v8::Value> value,
                                         gin_helper::ErrorThrower thrower) {
-  if (!view_.get())
+  if (!view_)
     return;
 
   v8::Isolate* isolate = JavascriptEnvironment::GetIsolate();
@@ -262,15 +227,15 @@ void ContainerView::SetTopContainerView(v8::Local<v8::Value> value,
   gin::Handle<ContainerView> container_view;
   if (value->IsObject() &&
       gin::ConvertFromV8(isolate, value, &container_view)) {
-    auto* parent_view = container_view->view()->parent_view();
+    auto* parent_view = container_view->view()->GetParent();
     auto get_that_view = container_views_.find(container_view->ID());
     if (get_that_view == container_views_.end() ||
-        (parent_view && parent_view != view_->parent_view())) {
+        (parent_view && parent_view != view_->GetParent())) {
       thrower.ThrowError("Given ContainerView is not attached to the view");
       return;
     }
 
-    view_->SetTopContainerView(container_view->view());
+    view_->SetTopChildView(container_view->view());
   }
 }
 
@@ -289,15 +254,21 @@ std::vector<v8::Local<v8::Value>> ContainerView::GetContainerViews() const {
 }
 
 void ContainerView::SetStringProperty(const std::string& name, const std::string& value) {
-  view_->SetStyleProperty(name, value);
+  if (!native_view_)
+    return;
+  native_view_->SetStyleProperty(name, value);
 }
 
 void ContainerView::SetNumericProperty(const std::string& name, float value) {
-  view_->SetStyleProperty(name, value);
+  if (!native_view_)
+    return;
+  native_view_->SetStyleProperty(name, value);
 }
 
 void ContainerView::Layout() {
-  view_->Layout();
+  if (!native_view_)
+    return;
+  native_view_->Layout();
 }
 
 // static
@@ -308,7 +279,7 @@ gin_helper::WrappableBase* ContainerView::New(gin_helper::ErrorThrower thrower,
     return nullptr;
   }
 
-  auto* view = new ContainerView(args, NativeContainerView::Create());
+  auto* view = new ContainerView(args, new NativeContainer());
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
   view->Pin(args->isolate());
 #endif
@@ -321,7 +292,6 @@ void ContainerView::BuildPrototype(v8::Isolate* isolate,
                                    v8::Local<v8::FunctionTemplate> prototype) {
   prototype->SetClassName(gin::StringToV8(isolate, "ContainerView"));
   gin_helper::ObjectTemplateBuilder(isolate, prototype->PrototypeTemplate())
-      .SetMethod("setAutoResize", &ContainerView::SetAutoResize)
       .SetMethod("setBounds", &ContainerView::SetBounds)
       .SetMethod("getBounds", &ContainerView::GetBounds)
       .SetMethod("setBackgroundColor", &ContainerView::SetBackgroundColor)

@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "shell/browser/ui/native_container_view.h"
+#include "shell/browser/ui/native_container.h"
 #include "shell/common/gin_helper/error_thrower.h"
 #include "shell/common/gin_helper/pinnable.h"
 #include "shell/common/gin_helper/wrappable.h"
@@ -47,14 +47,15 @@ class ContainerView : public gin_helper::Wrappable<ContainerView>,
   static void BuildPrototype(v8::Isolate* isolate,
                              v8::Local<v8::FunctionTemplate> prototype);
 
-  NativeContainerView* view() const { return view_.get(); }
+  NativeContainer* view() const { return view_; }
 
   int32_t ID() const { return id_; }
 
   void DetachFromParent(NativeWindow* window);
 
  protected:
-  ContainerView(gin::Arguments* args, NativeContainerView* container_view);
+  ContainerView(gin::Arguments* args, NativeContainer* view);
+  ContainerView(gin::Arguments* args, NativeView* view);
   ~ContainerView() override;
 
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
@@ -65,7 +66,6 @@ class ContainerView : public gin_helper::Wrappable<ContainerView>,
  private:
   friend class ScrollView;
 
-  void SetAutoResize(AutoResizeFlags flags);
   void SetBounds(const gfx::Rect& bounds);
   gfx::Rect GetBounds();
   void SetBackgroundColor(const std::string& color_name);
@@ -84,9 +84,10 @@ class ContainerView : public gin_helper::Wrappable<ContainerView>,
   void SetNumericProperty(const std::string& name, float value);
   void Layout();
 
-  std::unique_ptr<NativeContainerView> view_;
-
   int32_t id_;
+
+  scoped_refptr<NativeView> native_view_;
+  NativeContainer* view_;
 
   std::map<int32_t, v8::Global<v8::Value>> browser_views_;
   std::map<int32_t, v8::Global<v8::Value>> container_views_;

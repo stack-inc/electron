@@ -4,13 +4,8 @@
 
 #include "shell/browser/ui/native_view.h"
 
-#include "base/mac/foundation_util.h"
-#include "base/mac/scoped_cftyperef.h"
-#include "shell/browser/ui/cocoa/electron_native_view.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/geometry/vector2d.h"
+#include "ui/views/view.h"
 
 namespace electron {
 

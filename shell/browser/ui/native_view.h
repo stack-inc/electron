@@ -1,14 +1,14 @@
+// Copyright (c) 2022 GitHub, Inc.
+// Use of this source code is governed by the MIT license that can be
+// found in the LICENSE file.
+
 #ifndef SHELL_BROWSER_UI_NATIVE_VIEW_H_
 #define SHELL_BROWSER_UI_NATIVE_VIEW_H_
 
-#include <set>
 #include <string>
-#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/geometry/size_f.h"
 
 typedef struct YGNode *YGNodeRef;
 typedef struct YGConfig *YGConfigRef;
@@ -25,6 +25,12 @@ class View;
 }
 #endif
 
+namespace gfx {
+class Rect;
+class Size;
+class Vector2d;
+}
+
 namespace electron {
 
 #if defined(OS_MAC)
@@ -38,28 +44,22 @@ class NativeWindow;
 // The base class for all kinds of views.
 class NativeView : public base::RefCounted<NativeView> {
  public:
-  // The view class name.
-  static const char kClassName[];
-
-  // Return the receiving view's class name. A view class is a string which
-  // uniquely identifies the view class. It is intended to be used as a way to
-  // find out during run time if a view can be safely casted to a specific view
-  // subclass.
-  virtual const char* GetClassName() const;
-
-  // Coordiante convertions.
-  gfx::Vector2dF OffsetFromView(const NativeView* from) const;
-  gfx::Vector2dF OffsetFromWindow() const;
-
-  // Internal: Change position and size.
-  virtual void SetBounds(const gfx::RectF& bounds);
+  // Change position and size.
+  virtual void SetBounds(const gfx::Rect& bounds);
 
   // Get position and size.
-  gfx::RectF GetBounds() const;
+  gfx::Rect GetBounds() const;
 
-  // Internal: The real pixel bounds that depends on the scale factor.
-  void SetPixelBounds(const gfx::Rect& bounds);
-  gfx::Rect GetPixelBounds() const;
+  // Coordiante convertions.
+  gfx::Vector2d OffsetFromView(const NativeView* from) const;
+  gfx::Vector2d OffsetFromWindow() const;
+
+  // Show/Hide the view.
+  void SetVisible(bool visible);
+  bool IsVisible() const;
+
+  // Whether the view and its parent are visible.
+  bool IsTreeVisible() const;
 
   // Update layout.
   virtual void Layout();
@@ -68,14 +68,7 @@ class NativeView : public base::RefCounted<NativeView> {
   void SchedulePaint();
 
   // Repaint the rect
-  void SchedulePaintRect(const gfx::RectF& rect);
-
-  // Show/Hide the view.
-  void SetVisible(bool visible);
-  bool IsVisible() const;
-
-  // Whether the view and its parent are visible.
-  bool IsTreeVisible() const;
+  void SchedulePaintRect(const gfx::Rect& rect);
 
   // Move the keyboard focus to the view.
   void Focus();
@@ -110,11 +103,8 @@ class NativeView : public base::RefCounted<NativeView> {
   void SetStyle() {
   }
 
-  // Return the string representation of yoga style.
-  std::string GetComputedLayout() const;
-
   // Return the minimum size of view.
-  virtual gfx::SizeF GetMinimumSize() const;
+  virtual gfx::Size GetMinimumSize() const;
 
 #if defined(OS_MAC)
   void SetWantsLayer(bool wants);
@@ -153,9 +143,12 @@ class NativeView : public base::RefCounted<NativeView> {
   // Called by subclasses to take the ownership of |view|.
   void TakeOverView(NATIVEVIEW view);
 
-  void PlatformInit();
   void PlatformDestroy();
   void PlatformSetVisible(bool visible);
+
+//{
+  void SetWindow(NativeWindow* window) { window_ = window; }
+//}
 
  private:
   friend class base::RefCounted<NativeView>;

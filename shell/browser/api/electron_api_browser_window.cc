@@ -13,7 +13,7 @@
 #include "shell/browser/api/electron_api_web_contents_view.h"
 #include "shell/browser/browser.h"
 #include "shell/browser/native_browser_view.h"
-#include "shell/browser/ui/native_container_view.h"
+#include "shell/browser/ui/native_container.h"
 #include "shell/browser/unresponsive_suppressor.h"
 #include "shell/browser/web_contents_preferences.h"
 #include "shell/browser/window_list.h"
@@ -279,7 +279,7 @@ void BrowserWindow::OnCloseButtonClicked(bool* prevent_default) {
     }
   }
 
-  for (NativeContainerView* view : window_->container_views())
+  for (NativeContainer* view : window_->container_views())
     view->TriggerBeforeunloadEvents();
 
   if (web_contents()->NeedToFireBeforeUnloadOrUnloadEvents()) {
@@ -326,7 +326,7 @@ void BrowserWindow::OnWindowResize() {
     for (NativeBrowserView* view : window_->browser_views()) {
       view->UpdateDraggableRegions(view->GetDraggableRegions());
     }
-    for (NativeContainerView* view : window_->container_views()) {
+    for (NativeContainer* view : window_->container_views()) {
       view->UpdateDraggableRegions();
     }
   }
