@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "shell/browser/native_browser_view.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 typedef struct YGNode *YGNodeRef;
@@ -44,6 +45,8 @@ class NativeWindow;
 // The base class for all kinds of views.
 class NativeView : public base::RefCounted<NativeView> {
  public:
+  NativeView();
+
   // Change position and size.
   virtual void SetBounds(const gfx::Rect& bounds);
 
@@ -124,17 +127,32 @@ class NativeView : public base::RefCounted<NativeView> {
   void SetParent(NativeView* parent);
   void BecomeContentView(NativeWindow* window);
 
+  void SetWindow(NativeWindow* window);
+
   // Internal: Whether this class inherits from Container.
   virtual bool IsContainer() const;
 
   // Internal: Notify that view's size has changed.
   virtual void OnSizeChanged();
 
+  virtual void DetachChildView(NativeBrowserView* view);
+  virtual void DetachChildView(NativeView* view);
+
+  virtual void TriggerBeforeunloadEvents();
+
+#if defined(OS_MAC)
+  virtual void UpdateDraggableRegions();
+#endif
+
   // Internal: Get the CSS node of the view.
   YGNodeRef node() const { return node_; }
 
+#if !defined(OS_MAC)
+  // Should delete the |view_| in destructor.
+  void set_delete_view(bool should) { delete_view_ = should; }
+#endif
+
  protected:
-  NativeView();
   virtual ~NativeView();
 
   // Update the default style.
@@ -143,12 +161,11 @@ class NativeView : public base::RefCounted<NativeView> {
   // Called by subclasses to take the ownership of |view|.
   void TakeOverView(NATIVEVIEW view);
 
+  void PlatformInit();
   void PlatformDestroy();
   void PlatformSetVisible(bool visible);
 
-//{
-  void SetWindow(NativeWindow* window) { window_ = window; }
-//}
+  virtual void SetWindowForChildren(NativeWindow* window);
 
  private:
   friend class base::RefCounted<NativeView>;
@@ -158,7 +175,19 @@ class NativeView : public base::RefCounted<NativeView> {
   NativeWindow* window_ = nullptr;
 
   // The native implementation.
-  NATIVEVIEW view_;
+#if defined(OS_MAC)
+#ifdef __OBJC__
+  NATIVEVIEW view_ = nil;
+#else
+  NATIVEVIEW view_ = nullptr;
+#endif
+#else
+  NATIVEVIEW view_ = nullptr;
+#endif
+
+#if !defined(OS_MAC)
+  bool delete_view_ = true;
+#endif
 
   // The config of its yoga node.
   YGConfigRef yoga_config_;

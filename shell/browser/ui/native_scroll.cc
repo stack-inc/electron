@@ -28,9 +28,6 @@ void NativeScroll::SetContentView(scoped_refptr<NativeView> view) {
   PlatformSetContentView(view.get());
   content_view_ = std::move(view);
   content_view_->SetParent(this);
-//{
-  //view->SetOwnerWindow(GetOwnerWindow());
-//}
 }
 
 NativeView* NativeScroll::GetContentView() const {
@@ -39,6 +36,22 @@ NativeView* NativeScroll::GetContentView() const {
 
 gfx::Size NativeScroll::GetContentSize() const {
   return GetContentView()->GetBounds().size();
+}
+
+void NativeScroll::DetachChildView(NativeBrowserView* view) {
+}
+
+void NativeScroll::DetachChildView(NativeView* view) {
+}
+
+void NativeScroll::TriggerBeforeunloadEvents() {
+  if (content_view_.get())
+    content_view_->TriggerBeforeunloadEvents();
+}
+
+void NativeScroll::SetWindowForChildren(NativeWindow* window) {
+  if (content_view_.get())
+    content_view_->SetWindow(window);
 }
 
 }  // namespace electron

@@ -37,6 +37,9 @@ void NativeView::TakeOverView(NATIVEVIEW view) {
   priv->focusable = super_impl(view, cmd);
 }
 
+void NativeView::PlatformInit() {
+}
+
 void NativeView::PlatformDestroy() {
   if (IsNativeView(view_)) {
     // The view may be referenced after this class gets destroyed.
@@ -121,5 +124,7 @@ void NativeView::SetWantsLayer(bool wants) {
 bool NativeView::WantsLayer() const {
   return [view_ wantsLayer];
 }
+
+void NativeView::UpdateDraggableRegions() {}
 
 }  // namespace electron

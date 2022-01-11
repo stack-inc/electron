@@ -5,96 +5,97 @@
 #include "shell/browser/ui/native_scroll.h"
 
 #include "ui/gfx/geometry/size.h"
+#include "ui/views/controls/scroll_view.h"
 
 namespace electron {
 
-void NativeScroll::PlatformInit() {
-  auto* scroll = [[ElectronNativeScroll alloc] initWithShell:this];
-  scroll.drawsBackground = NO;
-  if (scroll.scrollerStyle == NSScrollerStyleOverlay) {
-    scroll.hasHorizontalScroller = YES;
-    scroll.hasVerticalScroller = YES;
+namespace {
+
+ScrollBarMode GetScrollBarMode(
+    views::ScrollView::ScrollBarMode mode) {
+  switch (mode) {
+    case views::ScrollView::ScrollBarMode::kDisabled:
+      return ScrollBarMode::kDisabled;
+    case views::ScrollView::ScrollBarMode::kHiddenButEnabled:
+      return ScrollBarMode::kHiddenButEnabled;
+    case views::ScrollView::ScrollBarMode::kEnabled:
+      return ScrollBarMode::kEnabled;
   }
-  [scroll.contentView setCopiesOnScroll:NO];
-  TakeOverView(scroll);
+}
+
+}  // namespace
+
+void NativeScroll::PlatformInit() {
+  TakeOverView(new views::ScrollView());
 }
 
 void NativeScroll::PlatformSetContentView(NativeView* view) {
-  auto* scroll = static_cast<NSScrollView*>(GetNative());
-  scroll.documentView = view->GetNative();
+  if (!view)
+    return;
+  auto* scroll = static_cast<views::ScrollView*>(GetNative());
+  view->set_delete_view(false);
+  auto content_view = std::unique_ptr<views::View>(view->GetNative());
+  scroll->SetContents(std::move(content_view));
 }
 
 void NativeScroll::SetContentSize(const gfx::Size& size) {
-  auto* scroll = static_cast<ElectronNativeScroll*>(GetNative());
-  NSSize content_size = size.ToCGSize();
-  [scroll setContentSize:content_size];
-  [scroll.documentView setFrameSize:content_size];
+  content_view_->GetNative()->SetSize(size);
+  Layout();
 }
 
 void NativeScroll::SetScrollPosition(float horizon, float vertical) {
-  auto* scroll = static_cast<ElectronNativeScroll*>(GetNative());
-  if (![scroll.documentView isFlipped])
-    vertical = NSHeight(scroll.documentView.bounds) - vertical;
-  [scroll.documentView scrollPoint:NSMakePoint(horizon, vertical)];
 }
 
 std::tuple<float, float> NativeScroll::GetScrollPosition() const {
-  auto* scroll = static_cast<ElectronNativeScroll*>(GetNative());
-  NSPoint point = scroll.contentView.bounds.origin;
-  if (![scroll.documentView isFlipped]) {
-    point.y = NSHeight(scroll.documentView.bounds) -
-              NSHeight(scroll.contentView.bounds) - point.y;
-  }
-  return std::make_tuple(point.x, point.y);
+  return std::make_tuple(0, 0);
 }
 
 std::tuple<float, float> NativeScroll::GetMaximumScrollPosition() const {
-  auto* scroll = static_cast<ElectronNativeScroll*>(GetNative());
-  NSRect docBounds = scroll.documentView.bounds;
-  NSRect clipBounds = scroll.contentView.bounds;
-  return std::make_tuple(NSMaxX(docBounds) - NSWidth(clipBounds),
-                         NSMaxY(docBounds) - NSHeight(clipBounds));
+  return std::make_tuple(0, 0);
 }
 
-void NativeScroll::SetOverlayScrollbar(bool overlay) {
-  auto* scroll = static_cast<ElectronNativeScroll*>(GetNative());
-  scroll.scrollerStyle =
-      overlay ? NSScrollerStyleOverlay : NSScrollerStyleLegacy;
+void NativeScroll::SetHorizontalScrollBarMode(ScrollBarMode mode) {
+  auto* scroll = static_cast<views::ScrollView*>(GetNative());
+  views::ScrollView::ScrollBarMode scroll_bar_mode =
+      views::ScrollView::ScrollBarMode::kEnabled;
+  switch (mode) {
+    case ScrollBarMode::kDisabled:
+      scroll_bar_mode = views::ScrollView::ScrollBarMode::kDisabled;
+      break;
+    case ScrollBarMode::kHiddenButEnabled:
+      scroll_bar_mode = views::ScrollView::ScrollBarMode::kHiddenButEnabled;
+      break;
+    case ScrollBarMode::kEnabled:
+      scroll_bar_mode = views::ScrollView::ScrollBarMode::kEnabled;
+  }
+  scroll->SetHorizontalScrollBarMode(scroll_bar_mode);
 }
 
-bool NativeScroll::IsOverlayScrollbar() const {
-  auto* scroll = static_cast<ElectronNativeScroll*>(GetNative());
-  return scroll.scrollerStyle == NSScrollerStyleOverlay;
+ScrollBarMode NativeScroll::GetHorizontalScrollBarMode() {
+  auto* scroll = static_cast<views::ScrollView*>(GetNative());
+  return GetScrollBarMode(scroll->GetHorizontalScrollBarMode());
 }
 
-void NativeScroll::SetScrollbarPolicy(Policy h_policy, Policy v_policy) {
-  auto* scroll = static_cast<ElectronNativeScroll*>(GetNative());
-  scroll.hasHorizontalScroller = h_policy != Policy::Never;
-  scroll.hasVerticalScroller = v_policy != Policy::Never;
+void NativeScroll::SetVerticalScrollBarMode(ScrollBarMode mode) {
+  auto* scroll = static_cast<views::ScrollView*>(GetNative());
+  views::ScrollView::ScrollBarMode scroll_bar_mode =
+      views::ScrollView::ScrollBarMode::kEnabled;
+  switch (mode) {
+    case ScrollBarMode::kDisabled:
+      scroll_bar_mode = views::ScrollView::ScrollBarMode::kDisabled;
+      break;
+    case ScrollBarMode::kHiddenButEnabled:
+      scroll_bar_mode = views::ScrollView::ScrollBarMode::kHiddenButEnabled;
+      break;
+    case ScrollBarMode::kEnabled:
+      scroll_bar_mode = views::ScrollView::ScrollBarMode::kEnabled;
+  }
+  scroll->SetVerticalScrollBarMode(scroll_bar_mode);
 }
 
-std::tuple<NativeScroll::Policy, NativeScroll::Policy>
-NativeScroll::GetScrollbarPolicy() const {
-  auto* scroll = static_cast<ElectronNativeScroll*>(GetNative());
-  Policy h_policy =
-      scroll.hasHorizontalScroller ? Policy::Automatic : Policy::Never;
-  Policy v_policy =
-      scroll.hasVerticalScroller ? Policy::Automatic : Policy::Never;
-  return std::make_tuple(h_policy, v_policy);
-}
-
-void NativeScroll::SetScrollElasticity(Elasticity h, Elasticity v) {
-  auto* scroll = static_cast<ElectronNativeScroll*>(GetNative());
-  scroll.horizontalScrollElasticity = static_cast<NSScrollElasticity>(h);
-  scroll.verticalScrollElasticity = static_cast<NSScrollElasticity>(v);
-}
-
-std::tuple<NativeScroll::Elasticity, NativeScroll::Elasticity>
-NativeScroll::GetScrollElasticity() const {
-  auto* scroll = static_cast<ElectronNativeScroll*>(GetNative());
-  Elasticity h = static_cast<Elasticity>(scroll.horizontalScrollElasticity);
-  Elasticity v = static_cast<Elasticity>(scroll.verticalScrollElasticity);
-  return std::make_tuple(h, v);
+ScrollBarMode NativeScroll::GetVerticalScrollBarMode() {
+  auto* scroll = static_cast<views::ScrollView*>(GetNative());
+  return GetScrollBarMode(scroll->GetVerticalScrollBarMode());
 }
 
 #if 0
@@ -105,5 +106,45 @@ void NativeScroll::OnConnect(int identifier) {
   }
 }
 #endif
+
+int NativeScroll::GetMinHeight() {
+  auto* scroll = static_cast<views::ScrollView*>(GetNative());
+  return scroll->GetMinHeight();
+}
+
+int NativeScroll::GetMaxHeight() {
+  auto* scroll = static_cast<views::ScrollView*>(GetNative());
+  return scroll->GetMaxHeight();
+}
+
+void NativeScroll::ClipHeightTo(int min_height, int max_height) {
+  auto* scroll = static_cast<views::ScrollView*>(GetNative());
+  scroll->ClipHeightTo(min_height, max_height);
+}
+
+gfx::Rect NativeScroll::GetVisibleRect() {
+  auto* scroll = static_cast<views::ScrollView*>(GetNative());
+  return scroll->GetVisibleRect();
+}
+
+void NativeScroll::SetAllowKeyboardScrolling(bool allow) {
+  auto* scroll = static_cast<views::ScrollView*>(GetNative());
+  scroll->SetAllowKeyboardScrolling(allow);
+}
+
+bool NativeScroll::GetAllowKeyboardScrolling() {
+  auto* scroll = static_cast<views::ScrollView*>(GetNative());
+  return scroll->GetAllowKeyboardScrolling();
+}
+
+void NativeScroll::SetDrawOverflowIndicator(bool indicator) {
+  auto* scroll = static_cast<views::ScrollView*>(GetNative());
+  scroll->SetDrawOverflowIndicator(indicator);
+}
+
+bool NativeScroll::GetDrawOverflowIndicator() {
+  auto* scroll = static_cast<views::ScrollView*>(GetNative());
+  return scroll->GetDrawOverflowIndicator();
+}
 
 }  // namespace electron

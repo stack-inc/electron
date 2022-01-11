@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "shell/browser/native_browser_view.h"
 #include "shell/browser/ui/native_view.h"
 
 namespace electron {
@@ -20,6 +19,12 @@ class NativeContainer : public NativeView {
   void Layout() override;
   bool IsContainer() const override;
   void OnSizeChanged() override;
+  void DetachChildView(NativeBrowserView* view) override;
+  void DetachChildView(NativeView* view) override;
+  void TriggerBeforeunloadEvents() override;
+#if defined(OS_MAC)
+  void UpdateDraggableRegions() override;
+#endif
 
   // Gets preferred size of view.
   gfx::Size GetPreferredSize() const;
@@ -55,17 +60,6 @@ class NativeContainer : public NativeView {
   // Internal: Used by certain implementations to refresh layout.
   void SetChildBoundsFromCSS();
 
-//{
-  void SetOwnerWindow(NativeWindow* window);
-  NativeWindow* GetOwnerWindow();
-//}
-
-  void TriggerBeforeunloadEvents();
-
-#if defined(OS_MAC)
-  void UpdateDraggableRegions();
-#endif
-
 #if 0
   // Events.
   Signal<void(Container*, Painter*, gfx::RectF)> on_draw;
@@ -77,16 +71,15 @@ class NativeContainer : public NativeView {
   // Empty constructor used by subclasses.
   explicit NativeContainer(const char* an_empty_constructor);
 
+  // NativeView:
+  void SetWindowForChildren(NativeWindow* window) override;
+
   void PlatformInit();
   void PlatformDestroy();
   void PlatformAddChildView(NativeBrowserView* view);
   void PlatformAddChildView(NativeView* view);
   void PlatformRemoveChildView(NativeBrowserView* view);
   void PlatformRemoveChildView(NativeView* view);
-
-//{
-  void SetOwnerWindowForChildren(NativeWindow* window);
-//}
 
  private:
   // The browser view layer.

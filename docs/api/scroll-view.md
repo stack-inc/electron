@@ -7,9 +7,9 @@ scrollbars will be optionally showed. When the content view is smaller
 then the `ScrollView`, the content view will be resized to the size of the
 `ScrollView`.
 The scrollview supports keyboard UI and mousewheel.
-It extends [`ContainerView`](container-view.md).
+It extends [`BaseView`](base-view.md).
 
-## Class: ScrollView  extends `ContainerView`
+## Class: ScrollView  extends `BaseView`
 
 > Create and control views.
 
@@ -36,13 +36,13 @@ Objects created with `new ScrollView` have the following instance methods:
 
 #### `view.setContentView(contents)`
 
-* `contents` [ContainerView](container-view.md)
+* `contents` [BaseView](base-view.md)
 
 Set the contents. The contents is the view that needs to scroll.
 
   #### `view.getContentView()`
 
-Returns [`ContainerView`](container-view.md)
+Returns [`BaseView`](base-view.md)
 
 The contents of the `view`.
 

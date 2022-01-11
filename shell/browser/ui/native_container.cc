@@ -87,6 +87,39 @@ void NativeContainer::OnSizeChanged() {
     SetChildBoundsFromCSS();
 }
 
+void NativeContainer::DetachChildView(NativeBrowserView* view) {
+  RemoveChildView(view);
+}
+
+void NativeContainer::DetachChildView(NativeView* view) {
+  RemoveChildView(view);
+}
+
+void NativeContainer::TriggerBeforeunloadEvents() {
+  for (NativeBrowserView* view : browser_children_) {
+    auto* vwc = view->web_contents();
+    auto* api_web_contents = api::WebContents::From(vwc);
+
+    // Required to make beforeunload handler work.
+    if (api_web_contents)
+      api_web_contents->NotifyUserActivation();
+
+    if (vwc && vwc->NeedToFireBeforeUnloadOrUnloadEvents())
+      vwc->DispatchBeforeUnload(false /* auto_cancel */);
+  }
+
+  for (auto view : children_)
+    view->TriggerBeforeunloadEvents();
+}
+
+void NativeContainer::SetWindowForChildren(NativeWindow* window) {
+  //for (NativeBrowserView* view : browser_children_)
+    //view->SetOwnerWindow(window);
+
+  for (auto view : children_)
+    view->SetWindow(window);
+}
+
 gfx::Size NativeContainer::GetPreferredSize() const {
   float nan = std::numeric_limits<float>::quiet_NaN();
   YGNodeCalculateLayout(node(), nan, nan, YGDirectionLTR);
@@ -126,16 +159,17 @@ void NativeContainer::AddChildViewAt(NativeBrowserView* view, int index) {
   if (index < 0 || index > ChildCount())
     return;
 
-  //YGNodeInsertChild(node(), view->node(), index);
-  //view->SetParent(this);
-//{
-  //view->SetOwnerWindow(GetOwnerWindow());
-//}
+/*
+  if (view->GetOwnerWindow() || view->GetOwnerView()) {
+    LOG(ERROR) << "The view already has a parent.";
+    return;
+  }
+
+  view->SetOwnerView(this);
+*/
 
   PlatformAddChildView(view);
   browser_children_.insert(browser_children_.begin() + index, view);
-
-  //DCHECK_EQ(static_cast<int>(YGNodeGetChildCount(node())), ChildCount());
 
   Layout();
 }
@@ -153,9 +187,6 @@ void NativeContainer::AddChildViewAt(scoped_refptr<NativeView> view, int index) 
 
   YGNodeInsertChild(node(), view->node(), index);
   view->SetParent(this);
-//{
-  //?view->SetOwnerWindow(GetOwnerWindow());
-//}
 
   PlatformAddChildView(view.get());
   children_.insert(children_.begin() + index, std::move(view));
@@ -165,7 +196,6 @@ void NativeContainer::AddChildViewAt(scoped_refptr<NativeView> view, int index) 
   Layout();
 }
 
-
 void NativeContainer::RemoveChildView(NativeBrowserView* view) {
   if (!view)
     return;
@@ -173,16 +203,12 @@ void NativeContainer::RemoveChildView(NativeBrowserView* view) {
   if (i == browser_children_.end())
     return;
 
-  //view->SetParent(nullptr);
-//{
-  //view->set_owner_window(nullptr);
-//}
-  //YGNodeRemoveChild(node(), view->node());
+/*
+  view->SetOwnerView(nullptr);
+*/
 
   PlatformRemoveChildView(view);
   browser_children_.erase(i);
-
-  //DCHECK_EQ(static_cast<int>(YGNodeGetChildCount(node())), ChildCount());
 
   Layout();
 }
@@ -195,9 +221,6 @@ void NativeContainer::RemoveChildView(NativeView* view) {
     return;
 
   view->SetParent(nullptr);
-//{
-  //?view->SetWindow(nullptr);
-//}
   YGNodeRemoveChild(node(), view->node());
 
   PlatformRemoveChildView(view);
@@ -211,32 +234,23 @@ void NativeContainer::RemoveChildView(NativeView* view) {
 void NativeContainer::SetTopChildView(NativeBrowserView* view) {
   if (!view)
     return;
-
   const auto i(std::find(browser_children_.begin(), browser_children_.end(), view));
   if (i == browser_children_.end())
     return;
 
-  //view->SetParent(nullptr);
-//{
-  //view->set_owner_window(nullptr);
-//}
-  //YGNodeRemoveChild(node(), view->node());
+/*
+  view->SetOwnerView(nullptr);
+*/
 
   PlatformRemoveChildView(view);
   auto view_it = browser_children_.erase(i);
 
-  //DCHECK_EQ(static_cast<int>(YGNodeGetChildCount(node())), ChildCount());
-
-  //YGNodeInsertChild(node(), view->node(), index);
-  //view->SetParent(this);
-//{
-  //view->SetOwnerWindow(GetOwnerWindow());
-//}
+/*
+  view->SetOwnerView(this);
+*/
 
   PlatformAddChildView(*view_it);
-  browser_children_.push_back(std::move(*view_it));
-
-  //DCHECK_EQ(static_cast<int>(YGNodeGetChildCount(node())), ChildCount());
+  browser_children_.insert(browser_children_.begin() + browser_children_.size(), std::move(*view_it));
 
   Layout();
 }
@@ -244,17 +258,11 @@ void NativeContainer::SetTopChildView(NativeBrowserView* view) {
 void NativeContainer::SetTopChildView(NativeView* view) {
   if (!view || view == this)
     return;
-  if (view->GetParent() != this)
-    return;
-
   const auto i(std::find(children_.begin(), children_.end(), view));
   if (i == children_.end())
     return;
 
   view->SetParent(nullptr);
-//{
-  //?view->SetWindow(nullptr);
-//}
   YGNodeRemoveChild(node(), view->node());
 
   PlatformRemoveChildView(view);
@@ -264,12 +272,9 @@ void NativeContainer::SetTopChildView(NativeView* view) {
 
   YGNodeInsertChild(node(), view->node(), ChildCount());
   view->SetParent(this);
-//{
-  //?view->SetOwnerWindow(GetOwnerWindow());
-//}
 
   PlatformAddChildView((*view_it).get());
-  children_.push_back(std::move(*view_it));
+  children_.insert(children_.begin() + children_.size(), std::move(*view_it));
 
   DCHECK_EQ(static_cast<int>(YGNodeGetChildCount(node())), ChildCount());
 
@@ -288,62 +293,5 @@ auto cbounds = GetYGNodeBounds(child->node());
 }
   }
 }
-
-void NativeContainer::SetOwnerWindowForChildren(NativeWindow* window) {
-  for (NativeBrowserView* view : browser_children_) {
-    auto* vwc = view->web_contents();
-    auto* api_web_contents = api::WebContents::From(vwc);
-    if (api_web_contents)
-      api_web_contents->SetOwnerWindow(window);
-  }
-
-  for (auto view : children_)
-    if (view->IsContainer())
-      static_cast<NativeContainer*>(view.get())->SetOwnerWindowForChildren(window);
-}
-
-void NativeContainer::SetOwnerWindow(NativeWindow* window) {
-  SetOwnerWindowForChildren(window);
-  SetWindow(window);
-}
-
-NativeWindow* NativeContainer::GetOwnerWindow() {
-  NativeView* view = this;
-  while (view->GetParent())
-    view = view->GetParent();
-  return view->GetWindow();
-}
-
-void NativeContainer::TriggerBeforeunloadEvents() {
-  for (NativeBrowserView* view : browser_children_) {
-    auto* vwc = view->web_contents();
-    auto* api_web_contents = api::WebContents::From(vwc);
-
-    // Required to make beforeunload handler work.
-    if (api_web_contents)
-      api_web_contents->NotifyUserActivation();
-
-    if (vwc) {
-      if (vwc->NeedToFireBeforeUnloadOrUnloadEvents()) {
-        vwc->DispatchBeforeUnload(false /* auto_cancel */);
-      }
-    }
-  }
-
-  for (auto view : children_)
-    if (view->IsContainer())
-      static_cast<NativeContainer*>(view.get())->TriggerBeforeunloadEvents();
-}
-
-#if defined(OS_MAC)
-void NativeContainer::UpdateDraggableRegions() {
-  for (NativeBrowserView* view : browser_children_)
-    view->UpdateDraggableRegions(view->GetDraggableRegions());
-
-  for (auto view : children_)
-    if (view->IsContainer())
-      static_cast<NativeContainer*>(view.get())->UpdateDraggableRegions();
-}
-#endif
 
 }  // namespace electron

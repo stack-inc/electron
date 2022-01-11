@@ -1,11 +1,11 @@
-// Copyright (c) 2017 GitHub, Inc.
+// Copyright (c) 2022 GitHub, Inc.
 // Use of this source code is governed by the MIT license that can be
 // found in the LICENSE file.
 
 #ifndef SHELL_BROWSER_API_ELECTRON_API_SCROLL_VIEW_H_
 #define SHELL_BROWSER_API_ELECTRON_API_SCROLL_VIEW_H_
 
-#include "shell/browser/api/electron_api_container_view.h"
+#include "shell/browser/api/electron_api_base_view.h"
 #include "shell/browser/ui/native_scroll.h"
 
 namespace gfx {
@@ -16,7 +16,7 @@ namespace electron {
 
 namespace api {
 
-class ScrollView : public ContainerView {
+class ScrollView : public BaseView {
  public:
   static gin_helper::WrappableBase* New(gin_helper::ErrorThrower thrower,
                                         gin::Arguments* args);
@@ -25,7 +25,7 @@ class ScrollView : public ContainerView {
                              v8::Local<v8::FunctionTemplate> prototype);
 
  protected:
-  ScrollView(gin::Arguments* args, NativeScroll* scroll_view);
+  ScrollView(gin::Arguments* args, NativeScroll* scroll);
   ~ScrollView() override;
 
  private:
@@ -46,7 +46,7 @@ class ScrollView : public ContainerView {
   void SetDrawOverflowIndicator(bool indicator);
   bool GetDrawOverflowIndicator();
 
-  scoped_refptr<NativeScroll> scroll_view_;
+  scoped_refptr<NativeScroll> scroll_;
 
   int32_t content_view_id_ = 0;
   v8::Global<v8::Value> content_view_;

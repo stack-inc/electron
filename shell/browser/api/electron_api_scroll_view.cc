@@ -1,12 +1,14 @@
-// Copyright (c) 2017 GitHub, Inc.
+// Copyright (c) 2022 GitHub, Inc.
 // Use of this source code is governed by the MIT license that can be
 // found in the LICENSE file.
 
 #include "shell/browser/api/electron_api_scroll_view.h"
 
 #include "gin/handle.h"
+#include "shell/browser/api/electron_api_base_view.h"
 #include "shell/browser/browser.h"
 #include "shell/browser/javascript_environment.h"
+#include "shell/browser/native_window.h"
 #include "shell/common/color_util.h"
 #include "shell/common/gin_converters/gfx_converter.h"
 #include "shell/common/gin_helper/constructor.h"
@@ -39,8 +41,8 @@ std::string ConvertFromScrollBarMode(ScrollBarMode mode) {
 
 }  // namespace
 
-ScrollView::ScrollView(gin::Arguments* args, NativeScroll* scroll_view)
-    : ContainerView(args, scroll_view), scroll_view_(scroll_view) {}
+ScrollView::ScrollView(gin::Arguments* args, NativeScroll* scroll)
+    : BaseView(args, scroll), scroll_(scroll) {}
 
 ScrollView::~ScrollView() = default;
 
@@ -49,15 +51,22 @@ void ScrollView::SetContentView(v8::Local<v8::Value> value) {
   v8::Locker locker(isolate);
   v8::HandleScope handle_scope(isolate);
 
-  gin::Handle<ContainerView> content_view;
+  gin::Handle<BaseView> content_view;
   if (value->IsObject() && gin::ConvertFromV8(isolate, value, &content_view)) {
     if (content_view->ID() != content_view_id_) {
-      // If we're reparenting a ContainerView, ensure that it's detached from
-      // its previous owner window/container.
-      content_view->DetachFromParent(nullptr);
+      // If we're reparenting a BaseView, ensure that it's detached from
+      // its previous owner window/view.
+      auto* owner_window = content_view->view()->GetWindow();
+      auto* owner_view = content_view->view()->GetParent();
+      if (owner_window) {
+        owner_window->RemoveChildView(content_view->view());
+        content_view->view()->SetWindow(nullptr);
+      } else if (owner_view && owner_view != scroll_.get()) {
+        owner_view->DetachChildView(content_view->view());
+        content_view->view()->SetParent(nullptr);
+      }
 
-      scroll_view_->SetContentView(content_view->view());
-      content_view->view()->SetParent(view());
+      scroll_->SetContentView(content_view->view());
       content_view_id_ = content_view->ID();
       content_view_.Reset(isolate, value);
     }
@@ -76,95 +85,95 @@ v8::Local<v8::Value> ScrollView::GetContentView() const {
 }
 
 void ScrollView::SetContentSize(gfx::Size size) {
-  if (scroll_view_.get())
-    scroll_view_->SetContentSize(size);
+  if (scroll_.get())
+    scroll_->SetContentSize(size);
 }
 
 gfx::Size ScrollView::GetContentSize() {
-  if (scroll_view_.get())
-    return scroll_view_->GetContentSize();
+  if (scroll_.get())
+    return scroll_->GetContentSize();
   return gfx::Size();
 }
 
 int ScrollView::GetMinHeight() {
 #if !defined(OS_MAC)
-  if (scroll_view_.get())
-    return scroll_view_->GetMinHeight();
+  if (scroll_.get())
+    return scroll_->GetMinHeight();
 #endif
   return -1;
 }
 
 int ScrollView::GetMaxHeight() {
 #if !defined(OS_MAC)
-  if (scroll_view_.get())
-    return scroll_view_->GetMaxHeight();
+  if (scroll_.get())
+    return scroll_->GetMaxHeight();
 #endif
   return -1;
 }
 
 void ScrollView::ClipHeightTo(int min_height, int max_height) {
 #if !defined(OS_MAC)
-  if (scroll_view_.get())
-    scroll_view_->ClipHeightTo(min_height, max_height);
+  if (scroll_.get())
+    scroll_->ClipHeightTo(min_height, max_height);
 #endif
 }
 
 gfx::Rect ScrollView::GetVisibleRect() {
 #if !defined(OS_MAC)
-  if (scroll_view_.get())
-    return scroll_view_->GetVisibleRect();
+  if (scroll_.get())
+    return scroll_->GetVisibleRect();
 #endif
   return gfx::Rect();
 }
 
 void ScrollView::SetHorizontalScrollBarMode(std::string mode) {
-  if (scroll_view_.get())
-    scroll_view_->SetHorizontalScrollBarMode(ConvertToScrollBarMode(mode));
+  if (scroll_.get())
+    scroll_->SetHorizontalScrollBarMode(ConvertToScrollBarMode(mode));
 }
 
 std::string ScrollView::GetHorizontalScrollBarMode() {
-  if (scroll_view_.get())
-    return ConvertFromScrollBarMode(scroll_view_->GetHorizontalScrollBarMode());
+  if (scroll_.get())
+    return ConvertFromScrollBarMode(scroll_->GetHorizontalScrollBarMode());
   return "enabled";
 }
 
 void ScrollView::SetVerticalScrollBarMode(std::string mode) {
-  if (scroll_view_.get())
-    scroll_view_->SetVerticalScrollBarMode(ConvertToScrollBarMode(mode));
+  if (scroll_.get())
+    scroll_->SetVerticalScrollBarMode(ConvertToScrollBarMode(mode));
 }
 
 std::string ScrollView::GetVerticalScrollBarMode() {
-  if (scroll_view_.get())
-    return ConvertFromScrollBarMode(scroll_view_->GetVerticalScrollBarMode());
+  if (scroll_.get())
+    return ConvertFromScrollBarMode(scroll_->GetVerticalScrollBarMode());
   return "enabled";
 }
 
 void ScrollView::SetAllowKeyboardScrolling(bool allow) {
 #if !defined(OS_MAC)
-  if (scroll_view_.get())
-    scroll_view_->SetAllowKeyboardScrolling(allow);
+  if (scroll_.get())
+    scroll_->SetAllowKeyboardScrolling(allow);
 #endif
 }
 
 bool ScrollView::GetAllowKeyboardScrolling() {
 #if !defined(OS_MAC)
-  if (scroll_view_.get())
-    return scroll_view_->GetAllowKeyboardScrolling();
+  if (scroll_.get())
+    return scroll_->GetAllowKeyboardScrolling();
 #endif
   return false;
 }
 
 void ScrollView::SetDrawOverflowIndicator(bool indicator) {
 #if !defined(OS_MAC)
-  if (scroll_view_.get())
-    scroll_view_->SetDrawOverflowIndicator(indicator);
+  if (scroll_.get())
+    scroll_->SetDrawOverflowIndicator(indicator);
 #endif
 }
 
 bool ScrollView::GetDrawOverflowIndicator() {
 #if !defined(OS_MAC)
-  if (scroll_view_.get())
-    return scroll_view_->GetDrawOverflowIndicator();
+  if (scroll_.get())
+    return scroll_->GetDrawOverflowIndicator();
 #endif
   return false;
 }
@@ -178,7 +187,9 @@ gin_helper::WrappableBase* ScrollView::New(gin_helper::ErrorThrower thrower,
   }
 
   auto* view = new ScrollView(args, new NativeScroll());
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
   view->Pin(args->isolate());
+#endif
   view->InitWithArgs(args);
   return view;
 }

@@ -17,6 +17,14 @@ class NativeScroll : public NativeView {
  public:
   NativeScroll();
 
+  // NativeView:
+  void DetachChildView(NativeBrowserView* view) override;
+  void DetachChildView(NativeView* view) override;
+  void TriggerBeforeunloadEvents() override;
+#if defined(OS_MAC)
+  void UpdateDraggableRegions() override;
+#endif
+
   void SetContentView(scoped_refptr<NativeView> view);
   NativeView* GetContentView() const;
 
@@ -26,7 +34,7 @@ class NativeScroll : public NativeView {
   std::tuple<float, float> GetScrollPosition() const;
   std::tuple<float, float> GetMaximumScrollPosition() const;
 
-#if !defined(OS_WIN)
+#if defined(OS_MAC)
   void SetOverlayScrollbar(bool overlay);
   bool IsOverlayScrollbar() const;
 #endif
@@ -64,6 +72,9 @@ class NativeScroll : public NativeView {
 
  protected:
   ~NativeScroll() override;
+
+  // NativeView:
+  void SetWindowForChildren(NativeWindow* window) override;
 
   // Following platform implementations should only be called by wrappers.
   void PlatformInit();

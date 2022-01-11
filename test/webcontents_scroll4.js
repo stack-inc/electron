@@ -49,7 +49,7 @@ function createWindow () {
   scroll.setHorizontalScrollBarMode("enabled");
   scroll.setVerticalScrollBarMode("disabled");
 
-  contentView.addContainerView(scroll);
+  contentView.addChildView(scroll);
 
   // Scroll content
   const scrollContent = new ContainerView();
@@ -89,7 +89,7 @@ function createWindow () {
     webContentView.setNumericProperty("marginRight", GAP);
     webContentView.layout();
     webContentView.addBrowserView(browserView);
-    scrollContent.addContainerView(webContentView);
+    scrollContent.addChildView(webContentView);
   };
 
   var i = 0;

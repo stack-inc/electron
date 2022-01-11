@@ -2,8 +2,9 @@
 
 A `ContainerView` can be used to embed additional views hierarchy into a
 [`BrowserWindow`](browser-window.md).
+It extends [`BaseView`](base-view.md).
 
-## Class: ContainerView
+## Class: ContainerView extends `BaseView`
 
 > Create and control views.
 
@@ -18,7 +19,7 @@ const { ContainerView, BrowserWindow } = require('electron')
 const win = new BrowserWindow({ width: 800, height: 600 })
 
 const view = new ContainerView()
-win.addContainerView(view)
+win.addChildView(view)
 view.setBounds({ x: 0, y: 0, width: 300, height: 300 })
 ```
 
@@ -27,23 +28,6 @@ view.setBounds({ x: 0, y: 0, width: 300, height: 300 })
 ### Instance Methods
 
 Objects created with `new ContainerView` have the following instance methods:
-
-#### `view.setBounds(bounds)`
-
-* `bounds` [Rectangle](structures/rectangle.md)
-
-Resizes and moves the view to the supplied bounds relative to the parent (window or `containerView`).
-
-#### `view.getBounds()`
-
-Returns [`Rectangle`](structures/rectangle.md)
-
-The `bounds` of this ContainerView instance as `Object`.
-
-#### `view.setBackgroundColor(color)`
-
-* `color` String - Color in `#aarrggbb` or `#argb` form. The alpha channel is
-  optional.
 
 #### `view.addBrowserView(browserView)`
 
@@ -57,7 +41,7 @@ The `bounds` of this ContainerView instance as `Object`.
 
 * `browserView` [BrowserView](browser-view.md)
 
-Raises `browserView` above other `BrowserView`s and `Container`s attached
+Raises `browserView` above other `BrowserView`s and `BaseView`s attached
 to `view`.
 Throws an error if `browserView` is not attached to `view`.
 
@@ -66,23 +50,23 @@ Throws an error if `browserView` is not attached to `view`.
 Returns `BrowserView[]` - an array of all BrowserViews that have been attached
 with `addBrowserView`.
 
-#### `view.addContainerView(containerView)`
+#### `view.addChildView(view)`
 
-* `containerView` [ContainerView](container-view.md)
+* `view` [BaseView](base-view.md)
 
-#### `view.removeContainerView(containerView)`
+#### `view.removeChildView(view)`
 
-* `containerView` [ContainerView](container-view.md)
+* `view` [BaseView](base-view.md)
 
-#### `view.setTopContainerView(containerView)`
+#### `view.setTopChildView(view)`
 
-* `containerView` [ContainerView](container-view.md)
+* `view` [BaseView](base-view.md)
 
-Raises `containerView` above other `ContainerView`s and `BrowserView`s attached
+Raises `view` above other `BaseView`s and `BrowserView`s attached
 to `view`.
 Throws an error if `containerView` is not attached to `view`.
 
-#### `view.getContainerViews()`
+#### `view.getViews()`
 
-Returns `ContainerView[]` - an array of all ContainerViews that have been attached
-with `addContainerView`.
+Returns `BaseView[]` - an array of all BaseViews that have been attached
+with `addChildView`.

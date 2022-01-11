@@ -259,6 +259,8 @@ filenames = {
     "shell/browser/api/electron_api_app.h",
     "shell/browser/api/electron_api_auto_updater.cc",
     "shell/browser/api/electron_api_auto_updater.h",
+    "shell/browser/api/electron_api_base_view.cc",
+    "shell/browser/api/electron_api_base_view.h",
     "shell/browser/api/electron_api_base_window.cc",
     "shell/browser/api/electron_api_base_window.h",
     "shell/browser/api/electron_api_browser_view.cc",

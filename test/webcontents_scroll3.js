@@ -45,7 +45,7 @@ function createWindow () {
   scroll.setHorizontalScrollBarMode("enabled");
   scroll.setVerticalScrollBarMode("disabled");
 
-  contentView.addContainerView(scroll);
+  contentView.addChildView(scroll);
 
   // Scroll content
   const scrollContent = new ContainerView();
@@ -77,7 +77,7 @@ function createWindow () {
     const webContentView = new ContainerView();
     webContentView.setBounds({x: i*(APP_WIDTH + GAP)+GAP, y: 30, width: 600, height: 540});
     webContentView.addBrowserView(browserView);
-    scrollContent.addContainerView(webContentView);
+    scrollContent.addChildView(webContentView);
 
   };
 

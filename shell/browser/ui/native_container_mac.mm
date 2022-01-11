@@ -5,7 +5,6 @@
 #include "shell/browser/ui/native_container.h"
 
 #include "shell/browser/ui/cocoa/electron_native_container.h"
-#include "shell/browser/ui/native_view.h"
 #include "shell/browser/ui/native_web_view_mac.h"
 
 namespace electron {
@@ -56,6 +55,14 @@ void NativeContainer::PlatformRemoveChildView(NativeView* child) {
     [nc setWantsLayer:[nc nativeViewPrivate]->wants_layer];
   else
     [nc setWantsLayer:NO];
+}
+
+void NativeContainer::UpdateDraggableRegions() {
+  for (NativeBrowserView* view : browser_children_)
+    view->UpdateDraggableRegions(view->GetDraggableRegions());
+
+  for (auto view : children_)
+    view->UpdateDraggableRegions();
 }
 
 }  // namespace electron

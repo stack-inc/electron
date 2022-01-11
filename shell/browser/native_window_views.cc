@@ -22,8 +22,6 @@
 #include "shell/browser/ui/drag_util.h"
 #include "shell/browser/ui/inspectable_web_contents.h"
 #include "shell/browser/ui/inspectable_web_contents_view.h"
-#include "shell/browser/ui/native_container.h"
-#include "shell/browser/ui/views/native_container_view_impl.h"
 #include "shell/browser/ui/views/root_view.h"
 #include "shell/browser/web_contents_preferences.h"
 #include "shell/browser/web_view_manager.h"
@@ -435,7 +433,8 @@ void NativeWindowViews::SetContentView(views::View* view) {
   root_view_->Layout();
 }
 
-void NativeWindowViews::PlatformSetContentView(NativeView* container) {
+void NativeWindowViews::PlatformSetContentView(NativeView* view) {
+  SetContentView(view->GetNative());
 }
 
 void NativeWindowViews::Close() {
@@ -1253,20 +1252,20 @@ void NativeWindowViews::SetTopBrowserView(NativeBrowserView* view) {
 void NativeWindowViews::RearrangeBrowserViews() {
 }
 
-void NativeWindowViews::AddContainerView(NativeContainer* view) {
+void NativeWindowViews::AddChildView(NativeView* view) {
   if (!content_view())
     return;
 
   if (!view)
     return;
 
-  add_container_view(view);
-  view->SetOwnerWindow(this);
+  add_base_view(view);
+  view->SetWindow(this);
   content_view()->AddChildView(view->GetNative());
   content_view()->Layout();
 }
 
-void NativeWindowViews::RemoveContainerView(NativeContainer* view) {
+void NativeWindowViews::RemoveChildView(NativeView* view) {
   if (!content_view())
     return;
 
@@ -1275,20 +1274,20 @@ void NativeWindowViews::RemoveContainerView(NativeContainer* view) {
 
   content_view()->RemoveChildView(view->GetNative());
   content_view()->Layout();
-  remove_container_view(view);
-  view->SetOwnerWindow(nullptr);
+  remove_base_view(view);
+  view->SetWindow(nullptr);
 }
 
-void NativeWindowViews::SetTopContainerView(NativeContainer* view) {
+void NativeWindowViews::SetTopChildView(NativeView* view) {
   if (!content_view())
     return;
 
   if (!view)
     return;
 
-  remove_container_view(view);
-  add_container_view(view);
-  view->SetOwnerWindow(this);
+  remove_base_view(view);
+  add_base_view(view);
+  view->SetWindow(this);
   content_view()->ReorderChildView(view->GetNative(), -1);
   content_view()->Layout();
 }
@@ -1546,14 +1545,6 @@ void NativeWindowViews::OnWidgetBoundsChanged(views::Widget* changed_widget,
       native_view->SetAutoResizeProportions(widget_size_);
       native_view->AutoResize(new_bounds, width_delta, height_delta);
     }
-
-/*
-    for (NativeContainer* item : container_views()) {
-      auto* native_view = item->GetViewImpl();
-      native_view->SetAutoResizeProportions(widget_size_);
-      native_view->AutoResize(new_bounds, width_delta, height_delta);
-    }
-*/
 
     NotifyWindowResize();
     widget_size_ = new_bounds.size();

@@ -35,7 +35,6 @@
 #include "shell/browser/ui/cocoa/window_buttons_proxy.h"
 #include "shell/browser/ui/inspectable_web_contents.h"
 #include "shell/browser/ui/inspectable_web_contents_view.h"
-#include "shell/browser/ui/native_container.h"
 #include "shell/browser/window_list.h"
 #include "shell/common/gin_converters/gfx_converter.h"
 #include "shell/common/gin_helper/dictionary.h"
@@ -1298,8 +1297,7 @@ void NativeWindowMac::RearrangeBrowserViews() {
   [CATransaction commit];
 }
 
-void NativeWindowMac::AddContainerView(NativeContainer* view) {
-#if 0
+void NativeWindowMac::AddChildView(NativeView* view) {
   [CATransaction begin];
   [CATransaction setDisableActions:YES];
 
@@ -1308,20 +1306,18 @@ void NativeWindowMac::AddContainerView(NativeContainer* view) {
     return;
   }
 
-  add_container_view(view);
-  view->SetOwnerWindow(this);
-  auto* native_view = view->GetNativeView().GetNativeNSView();
+  add_base_view(view);
+  view->SetWindow(this);
+  auto* native_view = view->GetNative();
   [[window_ contentView] addSubview:native_view
                          positioned:NSWindowAbove
                          relativeTo:nil];
   native_view.hidden = NO;
 
   [CATransaction commit];
-#endif
 }
 
-void NativeWindowMac::RemoveContainerView(NativeContainer* view) {
-#if 0
+void NativeWindowMac::RemoveChildView(NativeView* view) {
   [CATransaction begin];
   [CATransaction setDisableActions:YES];
 
@@ -1330,17 +1326,14 @@ void NativeWindowMac::RemoveContainerView(NativeContainer* view) {
     return;
   }
 
-  [view->GetNativeView().GetNativeNSView()
-      removeFromSuperview];
-  remove_container_view(view);
-  view->SetOwnerWindow(nullptr);
+  [view->GetNative() removeFromSuperview];
+  remove_base_view(view);
+  view->SetWindow(nullptr);
 
   [CATransaction commit];
-#endif
 }
 
-void NativeWindowMac::SetTopContainerView(NativeContainer* view) {
-#if 0
+void NativeWindowMac::SetTopChildView(NativeView* view) {
   [CATransaction begin];
   [CATransaction setDisableActions:YES];
 
@@ -1349,17 +1342,16 @@ void NativeWindowMac::SetTopContainerView(NativeContainer* view) {
     return;
   }
 
-  remove_container_view(view);
-  add_container_view(view);
-  view->SetOwnerWindow(this);
-  auto* native_view = view->GetNativeView().GetNativeNSView();
+  remove_base_view(view);
+  add_base_view(view);
+  view->SetWindow(this);
+  auto* native_view = view->GetNative();
   [[window_ contentView] addSubview:native_view
                          positioned:NSWindowAbove
                          relativeTo:nil];
   native_view.hidden = NO;
 
   [CATransaction commit];
-#endif
 }
 
 void NativeWindowMac::SetParentWindow(NativeWindow* parent) {

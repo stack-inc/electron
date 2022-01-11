@@ -39,6 +39,7 @@ NativeView::NativeView() : view_(nullptr) {
   YGConfigCopy(yoga_config_, Browser::Get()->yoga_config());
   node_ = YGNodeNewWithConfig(yoga_config_);
   YGNodeSetContext(node_, this);
+  PlatformInit();
 }
 
 NativeView::~NativeView() {
@@ -88,28 +89,38 @@ gfx::Size NativeView::GetMinimumSize() const {
 
 void NativeView::SetParent(NativeView* parent) {
   if (parent) {
-    window_ = parent->window_;
+    SetWindow(parent->window_);
     YGConfigCopy(yoga_config_, parent->yoga_config_);
   } else {
-    window_ = nullptr;
+    SetWindow(nullptr);
   }
   parent_ = parent;
 }
 
 void NativeView::BecomeContentView(NativeWindow* window) {
-  if (window) {
-    window_ = window;
+  SetWindow(window);
+  if (window)
     YGConfigCopy(yoga_config_, window->GetYogaConfig());
-  } else {
-    window_ = nullptr;
-  }
   parent_ = nullptr;
 }
+
+void NativeView::SetWindow(NativeWindow* window) {
+  window_ = window;
+  SetWindowForChildren(window);
+}
+
+void NativeView::SetWindowForChildren(NativeWindow* window) {}
 
 bool NativeView::IsContainer() const {
   return false;
 }
 
 void NativeView::OnSizeChanged() {}
+
+void NativeView::DetachChildView(NativeBrowserView* view) {}
+
+void NativeView::DetachChildView(NativeView* view) {}
+
+void NativeView::TriggerBeforeunloadEvents() {}
 
 }  // namespace electron

@@ -1799,7 +1799,7 @@ Replacement API for setBrowserView supporting work with multi browser views.
 
 * `browserView` [BrowserView](browser-view.md)
 
-Raises `browserView` above other `BrowserView`s and `ContainerView`s attached
+Raises `browserView` above other `BrowserView`s and `BaseView`s attached
 to `win`.
 Throws an error if `browserView` is not attached to `win`.
 
@@ -1815,28 +1815,28 @@ removed in future Electron releases.
 
 Rearranges browser views according to their z-indexes.
 
-#### `win.addContainerView(containerView)` _Experimental_
+#### `win.addChildView(view)` _Experimental_
 
-* `containerView` [ContainerView](container-view.md)
+* `view` [BaseView](base-view.md)
 
-Supporting work with multi container views.
+Supporting work with multi views.
 
-#### `win.removeContainerView(containerView)` _Experimental_
+#### `win.removeChildView(view)` _Experimental_
 
-* `containerView` [ContainerView](container-view.md)
+* `view` [BaseView](base-view.md)
 
-#### `win.setTopContainerView(containerView)` _Experimental_
+#### `win.setTopChildView(view)` _Experimental_
 
-* `containerView` [ContainerView](container-view.md)
+* `view` [BaseView](base-view.md)
 
-Raises `containerView` above other `ContainerView`s and `BrowserView`s attached
+Raises `view` above other `BaseView`s and `BrowserView`s attached
 to `win`.
-Throws an error if `containerView` is not attached to `win`.
+Throws an error if `view` is not attached to `win`.
 
-#### `win.getContainerViews()` _Experimental_
+#### `win.getViews()` _Experimental_
 
-Returns `ContainerView[]` - an array of all ContainerViews that have been attached
-with `addContainerView`.
+Returns `BaseView[]` - an array of all BaseViews that have been attached
+with `addChildView`.
 
 [runtime-enabled-features]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/runtime_enabled_features.json5?l=70
 [page-visibility-api]: https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API

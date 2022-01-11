@@ -5,116 +5,83 @@
 #include "shell/browser/ui/native_view.h"
 
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/vector2d.h"
+#include "ui/views/background.h"
 #include "ui/views/view.h"
 
 namespace electron {
 
 void NativeView::TakeOverView(NATIVEVIEW view) {
+  if (view_)
+    delete view_;
   view_ = view;
+}
 
-  if (!IsNativeView(view))
-    return;
-
-  // Install events handle for the view's class.
-  Class cl = [view class];
-  if (!NativeViewMethodsInstalled(cl)) {
-    InstallNativeViewMethods(cl);
-  }
-
-  // Initialize private bits of the view.
-  NativeViewPrivate* priv = [view nativeViewPrivate];
-  priv->shell = this;
-
-  // Set the |focusable| property to the parent class's default one.
-  SEL cmd = @selector(acceptsFirstResponder);
-  auto super_impl = reinterpret_cast<BOOL (*)(NSView*, SEL)>(
-      [[view superclass] instanceMethodForSelector:cmd]);
-  priv->focusable = super_impl(view, cmd);
+void NativeView::PlatformInit() {
+  TakeOverView(new views::View());
 }
 
 void NativeView::PlatformDestroy() {
-  if (IsNativeView(view_)) {
-    // The view may be referenced after this class gets destroyed.
-    NativeViewPrivate* priv = [view_ nativeViewPrivate];
-    priv->shell = nullptr;
-  }
-  [view_ release];
+  if (delete_view_)
+    delete view_;
 }
 
 void NativeView::SetBounds(const gfx::Rect& bounds) {
-  NSRect frame = bounds.ToCGRect();
-  [view_ setFrame:frame];
-  // Calling setFrame manually does not trigger resizeSubviewsWithOldSize.
-  [view_ resizeSubviewsWithOldSize:frame.size];
+  view_->SetBoundsRect(bounds);
 }
 
 gfx::Rect NativeView::GetBounds() const {
-  return ToNearestRect(gfx::RectF([view_ frame]));
+  return view_->bounds();
 }
 
 gfx::Vector2d NativeView::OffsetFromView(const NativeView* from) const {
-  NSPoint point = [view_ convertPoint:NSZeroPoint toView:from->view_];
-  return gfx::Vector2d(point.x, point.y);
+  return gfx::Vector2d();
 }
 
 gfx::Vector2d NativeView::OffsetFromWindow() const {
-  NSPoint point = [view_ convertPoint:NSZeroPoint toView:nil];
-  return gfx::Vector2d(point.x, point.y);
+  return gfx::Vector2d();
 }
 
 void NativeView::PlatformSetVisible(bool visible) {
-  [view_ setHidden:!visible];
+  view_->SetVisible(visible);
 }
 
 bool NativeView::IsVisible() const {
-  return ![view_ isHidden];
+  return view_->GetVisible();
 }
 
 bool NativeView::IsTreeVisible() const {
-  return ![view_ isHiddenOrHasHiddenAncestor];
+  return view_->GetVisible();
 }
 
 void NativeView::SchedulePaint() {
-  [view_ setNeedsDisplay:YES];
+  view_->SchedulePaint();
 }
 
 void NativeView::SchedulePaintRect(const gfx::Rect& rect) {
-  [view_ setNeedsDisplayInRect:rect.ToCGRect()];
+  view_->SchedulePaintInRect(rect);
 }
 
 void NativeView::Focus() {
-  if (view_.window && IsFocusable())
-    [view_.window makeFirstResponder:view_];
+  view_->RequestFocus();
 }
 
 bool NativeView::HasFocus() const {
-  if (view_.window)
-    return view_.window.firstResponder == view_;
-  else
-    return false;
+  return view_->HasFocus();
 }
 
 void NativeView::SetFocusable(bool focusable) {
-  NativeViewPrivate* priv = [view_ nativeViewPrivate];
-  priv->focusable = focusable;
 }
 
 bool NativeView::IsFocusable() const {
-  return [view_ acceptsFirstResponder];
+  return view_->IsFocusable();
 }
 
 void NativeView::SetBackgroundColor(SkColor color) {
-  if (IsNativeView(view_))
-    [view_ setNativeBackgroundColor:color];
-}
-
-void NativeView::SetWantsLayer(bool wants) {
-  [view_ nativeViewPrivate]->wants_layer = wants;
-  [view_ setWantsLayer:wants];
-}
-
-bool NativeView::WantsLayer() const {
-  return [view_ wantsLayer];
+  view_->SetBackground(views::CreateSolidBackground(color));
+  view_->SchedulePaint();
 }
 
 }  // namespace electron

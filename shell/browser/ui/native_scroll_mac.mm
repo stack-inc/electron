@@ -179,6 +179,11 @@ NativeScroll::GetScrollElasticity() const {
   return std::make_tuple(h, v);
 }
 
+void NativeScroll::UpdateDraggableRegions() {
+  if (content_view_.get())
+    content_view_->UpdateDraggableRegions();
+}
+
 #if 0
 void NativeScroll::OnConnect(int identifier) {
   if (identifier == kOnScroll) {
