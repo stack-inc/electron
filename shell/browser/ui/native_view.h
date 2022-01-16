@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "shell/browser/native_browser_view.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 typedef struct YGNode *YGNodeRef;
@@ -40,6 +39,7 @@ using NATIVEVIEW = NSView*;
 using NATIVEVIEW = views::View*;
 #endif
 
+class NativeBrowserView;
 class NativeWindow;
 
 // The base class for all kinds of views.
@@ -135,8 +135,8 @@ class NativeView : public base::RefCounted<NativeView> {
   // Internal: Notify that view's size has changed.
   virtual void OnSizeChanged();
 
-  virtual void DetachChildView(NativeBrowserView* view);
   virtual void DetachChildView(NativeView* view);
+  virtual void DetachChildView(NativeBrowserView* view);
 
   virtual void TriggerBeforeunloadEvents();
 
@@ -175,15 +175,7 @@ class NativeView : public base::RefCounted<NativeView> {
   NativeWindow* window_ = nullptr;
 
   // The native implementation.
-#if defined(OS_MAC)
-#ifdef __OBJC__
-  NATIVEVIEW view_ = nil;
-#else
   NATIVEVIEW view_ = nullptr;
-#endif
-#else
-  NATIVEVIEW view_ = nullptr;
-#endif
 
 #if !defined(OS_MAC)
   bool delete_view_ = true;

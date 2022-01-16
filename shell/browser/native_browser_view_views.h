@@ -29,7 +29,6 @@ class NativeBrowserViewViews : public NativeBrowserView {
   void SetAutoResizeFlags(uint8_t flags) override;
   void SetBounds(const gfx::Rect& bounds) override;
   gfx::Rect GetBounds() override;
-  gfx::Rect GetLastBounds() override;
   void SetBackgroundColor(SkColor color) override;
   void UpdateDraggableRegions(
       const std::vector<mojom::DraggableRegionPtr>& regions) override;

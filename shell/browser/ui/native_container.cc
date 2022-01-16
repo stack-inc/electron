@@ -9,8 +9,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "content/public/browser/web_contents.h"
-#include "shell/browser/api/electron_api_web_contents.h"
 #include "shell/browser/browser.h"
 #include "third_party/yoga/Yoga.h"
 #include "ui/gfx/geometry/rect.h"
@@ -87,35 +85,16 @@ void NativeContainer::OnSizeChanged() {
     SetChildBoundsFromCSS();
 }
 
-void NativeContainer::DetachChildView(NativeBrowserView* view) {
-  RemoveChildView(view);
-}
-
 void NativeContainer::DetachChildView(NativeView* view) {
   RemoveChildView(view);
 }
 
 void NativeContainer::TriggerBeforeunloadEvents() {
-  for (NativeBrowserView* view : browser_children_) {
-    auto* vwc = view->web_contents();
-    auto* api_web_contents = api::WebContents::From(vwc);
-
-    // Required to make beforeunload handler work.
-    if (api_web_contents)
-      api_web_contents->NotifyUserActivation();
-
-    if (vwc && vwc->NeedToFireBeforeUnloadOrUnloadEvents())
-      vwc->DispatchBeforeUnload(false /* auto_cancel */);
-  }
-
   for (auto view : children_)
     view->TriggerBeforeunloadEvents();
 }
 
 void NativeContainer::SetWindowForChildren(NativeWindow* window) {
-  //for (NativeBrowserView* view : browser_children_)
-    //view->SetOwnerWindow(window);
-
   for (auto view : children_)
     view->SetWindow(window);
 }
@@ -139,39 +118,12 @@ float NativeContainer::GetPreferredWidthForHeight(float height) const {
   return YGNodeLayoutGetWidth(node());
 }
 
-void NativeContainer::AddChildView(NativeBrowserView* view) {
-  if (!view)
-    return;
-  AddChildViewAt(view, BrowserChildCount());
-}
-
 void NativeContainer::AddChildView(scoped_refptr<NativeView> view) {
   if (!view)
     return;
   if (view->GetParent() == this)
     return;
   AddChildViewAt(std::move(view), ChildCount());
-}
-
-void NativeContainer::AddChildViewAt(NativeBrowserView* view, int index) {
-  if (!view)
-    return;
-  if (index < 0 || index > ChildCount())
-    return;
-
-/*
-  if (view->GetOwnerWindow() || view->GetOwnerView()) {
-    LOG(ERROR) << "The view already has a parent.";
-    return;
-  }
-
-  view->SetOwnerView(this);
-*/
-
-  PlatformAddChildView(view);
-  browser_children_.insert(browser_children_.begin() + index, view);
-
-  Layout();
 }
 
 void NativeContainer::AddChildViewAt(scoped_refptr<NativeView> view, int index) {
@@ -196,23 +148,6 @@ void NativeContainer::AddChildViewAt(scoped_refptr<NativeView> view, int index) 
   Layout();
 }
 
-void NativeContainer::RemoveChildView(NativeBrowserView* view) {
-  if (!view)
-    return;
-  const auto i(std::find(browser_children_.begin(), browser_children_.end(), view));
-  if (i == browser_children_.end())
-    return;
-
-/*
-  view->SetOwnerView(nullptr);
-*/
-
-  PlatformRemoveChildView(view);
-  browser_children_.erase(i);
-
-  Layout();
-}
-
 void NativeContainer::RemoveChildView(NativeView* view) {
   if (!view)
     return;
@@ -231,30 +166,6 @@ void NativeContainer::RemoveChildView(NativeView* view) {
   Layout();
 }
 
-void NativeContainer::SetTopChildView(NativeBrowserView* view) {
-  if (!view)
-    return;
-  const auto i(std::find(browser_children_.begin(), browser_children_.end(), view));
-  if (i == browser_children_.end())
-    return;
-
-/*
-  view->SetOwnerView(nullptr);
-*/
-
-  PlatformRemoveChildView(view);
-  auto view_it = browser_children_.erase(i);
-
-/*
-  view->SetOwnerView(this);
-*/
-
-  PlatformAddChildView(*view_it);
-  browser_children_.insert(browser_children_.begin() + browser_children_.size(), std::move(*view_it));
-
-  Layout();
-}
-
 void NativeContainer::SetTopChildView(NativeView* view) {
   if (!view || view == this)
     return;
@@ -262,18 +173,11 @@ void NativeContainer::SetTopChildView(NativeView* view) {
   if (i == children_.end())
     return;
 
-  view->SetParent(nullptr);
   YGNodeRemoveChild(node(), view->node());
-
-  PlatformRemoveChildView(view);
-  auto view_it = children_.erase(i);
-
-  DCHECK_EQ(static_cast<int>(YGNodeGetChildCount(node())), ChildCount());
-
   YGNodeInsertChild(node(), view->node(), ChildCount());
-  view->SetParent(this);
 
-  PlatformAddChildView((*view_it).get());
+  PlatformSetTopView(view);
+  auto view_it = children_.erase(i);
   children_.insert(children_.begin() + children_.size(), std::move(*view_it));
 
   DCHECK_EQ(static_cast<int>(YGNodeGetChildCount(node())), ChildCount());

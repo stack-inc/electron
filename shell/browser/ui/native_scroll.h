@@ -18,7 +18,6 @@ class NativeScroll : public NativeView {
   NativeScroll();
 
   // NativeView:
-  void DetachChildView(NativeBrowserView* view) override;
   void DetachChildView(NativeView* view) override;
   void TriggerBeforeunloadEvents() override;
 #if defined(OS_MAC)
@@ -79,6 +78,7 @@ class NativeScroll : public NativeView {
   // Following platform implementations should only be called by wrappers.
   void PlatformInit();
   void PlatformSetContentView(NativeView* container);
+  void PlatformDetachChildView();
 
   enum { kOnScroll };
 

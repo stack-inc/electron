@@ -32,11 +32,6 @@ class ContainerView : public BaseView {
   ~ContainerView() override;
 
  private:
-  void AddBrowserView(v8::Local<v8::Value> value);
-  void RemoveBrowserView(v8::Local<v8::Value> value);
-  void SetTopBrowserView(v8::Local<v8::Value> value,
-                         gin_helper::ErrorThrower thrower);
-  std::vector<v8::Local<v8::Value>> GetBrowserViews() const;
   void AddChildView(v8::Local<v8::Value> value);
   void RemoveChildView(v8::Local<v8::Value> value);
   void SetTopChildView(v8::Local<v8::Value> value,
@@ -45,7 +40,6 @@ class ContainerView : public BaseView {
 
   scoped_refptr<NativeContainer> container_;
 
-  std::map<int32_t, v8::Global<v8::Value>> browser_views_;
   std::map<int32_t, v8::Global<v8::Value>> base_views_;
 
   DISALLOW_COPY_AND_ASSIGN(ContainerView);

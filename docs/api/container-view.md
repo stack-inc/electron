@@ -23,50 +23,29 @@ win.addChildView(view)
 view.setBounds({ x: 0, y: 0, width: 300, height: 300 })
 ```
 
-### `new ContainerView()`
+### `new ContainerView()` _Experimental_
 
 ### Instance Methods
 
 Objects created with `new ContainerView` have the following instance methods:
 
-#### `view.addBrowserView(browserView)`
-
-* `browserView` [BrowserView](browser-view.md)
-
-#### `view.removeBrowserView(browserView)`
-
-* `browserView` [BrowserView](browser-view.md)
-
-#### `view.setTopBrowserView(browserView)`
-
-* `browserView` [BrowserView](browser-view.md)
-
-Raises `browserView` above other `BrowserView`s and `BaseView`s attached
-to `view`.
-Throws an error if `browserView` is not attached to `view`.
-
-#### `view.getBrowserViews()`
-
-Returns `BrowserView[]` - an array of all BrowserViews that have been attached
-with `addBrowserView`.
-
-#### `view.addChildView(view)`
+#### `view.addChildView(view)` _Experimental_
 
 * `view` [BaseView](base-view.md)
 
-#### `view.removeChildView(view)`
+#### `view.removeChildView(view)` _Experimental_
 
 * `view` [BaseView](base-view.md)
 
-#### `view.setTopChildView(view)`
+#### `view.setTopChildView(view)` _Experimental_
 
 * `view` [BaseView](base-view.md)
 
-Raises `view` above other `BaseView`s and `BrowserView`s attached
+Raises `view` above other `BaseView`s attached
 to `view`.
 Throws an error if `containerView` is not attached to `view`.
 
-#### `view.getViews()`
+#### `view.getViews()` _Experimental_
 
 Returns `BaseView[]` - an array of all BaseViews that have been attached
 with `addChildView`.

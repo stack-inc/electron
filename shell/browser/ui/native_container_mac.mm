@@ -5,7 +5,6 @@
 #include "shell/browser/ui/native_container.h"
 
 #include "shell/browser/ui/cocoa/electron_native_container.h"
-#include "shell/browser/ui/native_web_view_mac.h"
 
 namespace electron {
 
@@ -14,16 +13,6 @@ void NativeContainer::PlatformInit() {
 }
 
 void NativeContainer::PlatformDestroy() {}
-
-void NativeContainer::PlatformAddChildView(NativeBrowserView* child) {
-  NativeWebView* web_view = new NativeWebView(child);
-  gfx::Rect bounds = child->GetLastBounds();
-if (bounds.width() && bounds.height())
-  web_view->SetBounds(bounds);
-else
-web_view->SetStyleProperty("flex", 1);
-  AddChildView(web_view);
-}
 
 void NativeContainer::PlatformAddChildView(NativeView* child) {
   [GetNative() addSubview:child->GetNative()];
@@ -44,9 +33,6 @@ void NativeContainer::PlatformAddChildView(NativeView* child) {
   }
 }
 
-void NativeContainer::PlatformRemoveChildView(NativeBrowserView* child) {
-}
-
 void NativeContainer::PlatformRemoveChildView(NativeView* child) {
   [child->GetNative() removeFromSuperview];
   // Revert wantsLayer to default.
@@ -57,10 +43,15 @@ void NativeContainer::PlatformRemoveChildView(NativeView* child) {
     [nc setWantsLayer:NO];
 }
 
-void NativeContainer::UpdateDraggableRegions() {
-  for (NativeBrowserView* view : browser_children_)
-    view->UpdateDraggableRegions(view->GetDraggableRegions());
+void NativeContainer::PlatformSetTopView(NativeView* view) {
+  auto* native_view = view->GetNative();
+  [GetNative() addSubview:native_view
+                         positioned:NSWindowAbove
+                         relativeTo:nil];
+  native_view.hidden = NO;
+}
 
+void NativeContainer::UpdateDraggableRegions() {
   for (auto view : children_)
     view->UpdateDraggableRegions();
 }

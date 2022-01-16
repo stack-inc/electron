@@ -799,12 +799,12 @@ void BaseWindow::AddBrowserView(v8::Local<v8::Value> value) {
         // its previous owner window/view.
         auto* owner_window = browser_view->owner_window();
         auto* owner_view = browser_view->owner_view();
-        if (owner_window && owner_window != window_.get()) {
-          owner_window->RemoveBrowserView(browser_view->view());
-          browser_view->SetOwnerWindow(nullptr);
-        } else if (owner_view) {
+        if (owner_view) {
           owner_view->DetachChildView(browser_view->view());
           browser_view->SetOwnerView(nullptr);
+        } else if (owner_window && owner_window != window_.get()) {
+          owner_window->RemoveBrowserView(browser_view->view());
+          browser_view->SetOwnerWindow(nullptr);
         }
 
         window_->AddBrowserView(browser_view->view());
@@ -860,12 +860,12 @@ void BaseWindow::AddChildView(v8::Local<v8::Value> value) {
       // its previous owner window/view.
       auto* owner_window = base_view->view()->GetWindow();
       auto* owner_view = base_view->view()->GetParent();
-      if (owner_window && owner_window != window_.get()) {
-        owner_window->RemoveChildView(base_view->view());
-        base_view->view()->SetWindow(nullptr);
-      } else if (owner_view) {
+      if (owner_view) {
         owner_view->DetachChildView(base_view->view());
         base_view->view()->SetParent(nullptr);
+      } else if (owner_window && owner_window != window_.get()) {
+        owner_window->RemoveChildView(base_view->view());
+        base_view->view()->SetWindow(nullptr);
       }
 
       window_->AddChildView(base_view->view());

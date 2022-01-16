@@ -1,5 +1,5 @@
 const path = require("path");
-const { app, BrowserView, BaseWindow, ContainerView, ScrollView, WrapperBrowserView } = require("electron");
+const { app, BrowserView, BaseWindow, ContainerView, ScrollView } = require("electron");
 
 const APP_WIDTH = 600;
 const GAP = 30;
@@ -25,14 +25,14 @@ global.win = null;
 
 function createWindow () {
   // Create window.
-  win = new BaseWindow({ autoHideMenuBar: true, width: 1400, height: 700 });
+  win = new BaseWindow({ autoHideMenuBar: true, width: 1400, height: 800 });
   //win.setContentSize({ width: 600, height: 500 });
 
   // The content view.
   const contentView = new ContainerView();
   //contentView.setStyle({ flexDirection: "row", backgroundColor: "#1F2937" });
   contentView.setBackgroundColor("#1F2937");
-  contentView.setBounds({x: 0, y: 0, width: 1378, height: 600});
+  contentView.setBounds({x: 0, y: 0, width: 1378, height: 700});
 
   win.setContainerView(contentView);
 
@@ -41,11 +41,11 @@ function createWindow () {
   //scroll.setStyle({
     //flex: 1,
   //});
-  scroll.setBounds({x: 0, y: 0, width: 1377, height: 600});
+  scroll.setBounds({x: 0, y: 0, width: 1377, height: 650});
   scroll.setHorizontalScrollBarMode("enabled");
   scroll.setVerticalScrollBarMode("disabled");
 
-  contentView.addChildView(scroll);
+  contentView.addContainerView(scroll);
 
   // Scroll content
   const scrollContent = new ContainerView();
@@ -73,12 +73,11 @@ function createWindow () {
     const browserView = new BrowserView();
     browserView.webContents.loadURL(url);
     browserView.setBackgroundColor("#ffffff");
-    const wrapperBrowserView = new WrapperBrowserView({ 'browserView': browserView });
-    wrapperBrowserView.setBounds({x: 0, y: 0, width: 600, height: 540});
+    browserView.setBounds({x: 0, y: 0, width: 600, height: 540});
     const webContentView = new ContainerView();
     webContentView.setBounds({x: i*(APP_WIDTH + GAP)+GAP, y: 30, width: 600, height: 540});
-    webContentView.addChildView(wrapperBrowserView);
-    scrollContent.addChildView(webContentView);
+    webContentView.addBrowserView(browserView);
+    scrollContent.addContainerView(webContentView);
 
   };
 

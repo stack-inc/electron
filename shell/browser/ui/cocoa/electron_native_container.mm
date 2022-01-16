@@ -6,6 +6,7 @@
 
 #include "base/mac/scoped_cftyperef.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 typedef struct CGContext* CGContextRef;
 

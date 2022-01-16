@@ -22,25 +22,25 @@ win.addBaseView(view)
 view.setBounds({ x: 0, y: 0, width: 300, height: 300 })
 ```
 
-### `new BaseView()`
+### `new BaseView()` _Experimental_
 
 ### Instance Methods
 
 Objects created with `new BaseView` have the following instance methods:
 
-#### `view.setBounds(bounds)`
+#### `view.setBounds(bounds)` _Experimental_
 
 * `bounds` [Rectangle](structures/rectangle.md)
 
 Resizes and moves the view to the supplied bounds relative to the parent (window or `containerView`).
 
-#### `view.getBounds()`
+#### `view.getBounds()` _Experimental_
 
 Returns [`Rectangle`](structures/rectangle.md)
 
 The `bounds` of this BaseView instance as `Object`.
 
-#### `view.setBackgroundColor(color)`
+#### `view.setBackgroundColor(color)` _Experimental_
 
 * `color` String - Color in `#aarrggbb` or `#argb` form. The alpha channel is
   optional.

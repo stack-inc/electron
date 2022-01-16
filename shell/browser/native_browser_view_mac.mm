@@ -256,7 +256,6 @@ void NativeBrowserViewMac::SetAutoResizeFlags(uint8_t flags) {
 }
 
 void NativeBrowserViewMac::SetBounds(const gfx::Rect& bounds) {
-  last_bounds_ = bounds;
   auto* iwc_view = GetInspectableWebContentsView();
   if (!iwc_view)
     return;
@@ -282,10 +281,6 @@ gfx::Rect NativeBrowserViewMac::GetBounds() {
       view.frame.origin.x,
       superview_height - view.frame.origin.y - view.frame.size.height,
       view.frame.size.width, view.frame.size.height);
-}
-
-gfx::Rect NativeBrowserViewMac::GetLastBounds() {
-  return last_bounds_;
 }
 
 void NativeBrowserViewMac::SetBackgroundColor(SkColor color) {

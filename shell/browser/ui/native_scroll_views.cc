@@ -38,6 +38,12 @@ void NativeScroll::PlatformSetContentView(NativeView* view) {
   scroll->SetContents(std::move(content_view));
 }
 
+void NativeScroll::PlatformDetachChildView() {
+  auto* scroll = static_cast<views::ScrollView*>(GetNative());
+  scroll->SetContents(nullptr);
+  content_view_->set_delete_view(true);
+}
+
 void NativeScroll::SetContentSize(const gfx::Size& size) {
   content_view_->GetNative()->SetSize(size);
   Layout();

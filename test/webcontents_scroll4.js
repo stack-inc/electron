@@ -1,5 +1,5 @@
 const path = require("path");
-const { app, BrowserView, BaseWindow, ContainerView, ScrollView } = require("electron");
+const { app, BrowserView, BaseWindow, ContainerView, ScrollView, WrapperBrowserView } = require("electron");
 
 const APP_WIDTH = 600;
 const GAP = 30;
@@ -82,13 +82,15 @@ function createWindow () {
     const browserView = new BrowserView();
     browserView.webContents.loadURL(url);
     browserView.setBackgroundColor("#ffffff");
+    const wrapperBrowserView = new WrapperBrowserView({ 'browserView': browserView });
+    wrapperBrowserView.setNumericProperty("flex", 1);
     const webContentView = new ContainerView();
     webContentView.setNumericProperty("width", APP_WIDTH);
     webContentView.setStringProperty("height", "100%");
     webContentView.setStringProperty("backgroundColor", "#ffffff");
     webContentView.setNumericProperty("marginRight", GAP);
     webContentView.layout();
-    webContentView.addBrowserView(browserView);
+    webContentView.addChildView(wrapperBrowserView);
     scrollContent.addChildView(webContentView);
   };
 

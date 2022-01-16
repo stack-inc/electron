@@ -102,6 +102,11 @@ void NativeScroll::PlatformSetContentView(NativeView* view) {
   scroll.documentView = view->GetNative();
 }
 
+void NativeScroll::PlatformDetachChildView() {
+  auto* scroll = static_cast<NSScrollView*>(GetNative());
+  scroll.documentView = nil;
+}
+
 void NativeScroll::SetContentSize(const gfx::Size& size) {
   auto* scroll = static_cast<ElectronNativeScroll*>(GetNative());
   NSSize content_size = size.ToCGSize();

@@ -19,7 +19,6 @@ class NativeContainer : public NativeView {
   void Layout() override;
   bool IsContainer() const override;
   void OnSizeChanged() override;
-  void DetachChildView(NativeBrowserView* view) override;
   void DetachChildView(NativeView* view) override;
   void TriggerBeforeunloadEvents() override;
 #if defined(OS_MAC)
@@ -34,23 +33,13 @@ class NativeContainer : public NativeView {
   float GetPreferredWidthForHeight(float height) const;
 
   // Add/Remove children.
-  void AddChildView(NativeBrowserView* view);
   void AddChildView(scoped_refptr<NativeView> view);
-  void AddChildViewAt(NativeBrowserView* view, int index);
   void AddChildViewAt(scoped_refptr<NativeView> view, int index);
-  void RemoveChildView(NativeBrowserView* view);
   void RemoveChildView(NativeView* view);
-  void SetTopChildView(NativeBrowserView* view);
   void SetTopChildView(NativeView* view);
 
   // Get children.
-  int BrowserChildCount() const { return static_cast<int>(browser_children_.size()); }
   int ChildCount() const { return static_cast<int>(children_.size()); }
-  NativeBrowserView* BrowserChildAt(int index) const {
-    if (index < 0 || index >= BrowserChildCount())
-      return nullptr;
-    return browser_children_[index];
-  }
   NativeView* ChildAt(int index) const {
     if (index < 0 || index >= ChildCount())
       return nullptr;
@@ -76,14 +65,11 @@ class NativeContainer : public NativeView {
 
   void PlatformInit();
   void PlatformDestroy();
-  void PlatformAddChildView(NativeBrowserView* view);
   void PlatformAddChildView(NativeView* view);
-  void PlatformRemoveChildView(NativeBrowserView* view);
   void PlatformRemoveChildView(NativeView* view);
+  void PlatformSetTopView(NativeView* view);
 
  private:
-  // The browser view layer.
-  std::vector<NativeBrowserView*> browser_children_;
   // The view layer.
   std::vector<scoped_refptr<NativeView>> children_;
 

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "shell/browser/ui/native_container.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
@@ -38,10 +39,12 @@ gfx::Size NativeScroll::GetContentSize() const {
   return GetContentView()->GetBounds().size();
 }
 
-void NativeScroll::DetachChildView(NativeBrowserView* view) {
-}
-
 void NativeScroll::DetachChildView(NativeView* view) {
+  if (!view || content_view_.get() != view)
+    return;
+  content_view_->SetParent(nullptr);
+  PlatformDetachChildView();
+  content_view_.reset();
 }
 
 void NativeScroll::TriggerBeforeunloadEvents() {

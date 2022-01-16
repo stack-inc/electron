@@ -179,15 +179,16 @@ void BrowserView::SetOwnerWindow(NativeWindow* window) {
     web_contents()->SetOwnerWindow(window);
 
   owner_window_ = window ? window->GetWeakPtr() : nullptr;
-  owner_view_ = nullptr;
 }
 
 void BrowserView::SetOwnerView(NativeView* view) {
   owner_view_ = view;
 
+  // Ensure WebContents and BrowserView owner windows are in sync.
+  NativeWindow* window = view ? view->GetWindow() : nullptr;
   if (web_contents())
-    web_contents()->SetOwnerWindow(nullptr);
-  owner_window_ = nullptr;
+    web_contents()->SetOwnerWindow(window);
+  owner_window_ = window ? window->GetWeakPtr() : nullptr;
 }
 
 BrowserView::~BrowserView() {

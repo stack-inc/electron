@@ -34,6 +34,7 @@ namespace electron {
 namespace api {
 
 class WebContents;
+class WrapperBrowserView;
 
 class BrowserView : public gin::Wrappable<BrowserView>,
                     public gin_helper::Constructible<BrowserView>,
@@ -63,6 +64,8 @@ class BrowserView : public gin::Wrappable<BrowserView>,
   int32_t ID() const { return id_; }
 
  protected:
+friend class WrapperBrowserView;
+
   BrowserView(gin::Arguments* args, const gin_helper::Dictionary& options);
   ~BrowserView() override;
 

@@ -28,49 +28,49 @@ win.addScrollView(view)
 view.setBounds({ x: 0, y: 0, width: 300, height: 300 })
 ```
 
-### `new ScrollView()`
+### `new ScrollView()` _Experimental_
 
 ### Instance Methods
 
 Objects created with `new ScrollView` have the following instance methods:
 
-#### `view.setContentView(contents)`
+#### `view.setContentView(contents)` _Experimental_
 
 * `contents` [BaseView](base-view.md)
 
 Set the contents. The contents is the view that needs to scroll.
 
-  #### `view.getContentView()`
+  #### `view.getContentView()` _Experimental_
 
 Returns [`BaseView`](base-view.md)
 
 The contents of the `view`.
 
-#### `view.setContentSize(size)`
+#### `view.setContentSize(size)` _Experimental_
 
 * `size` [Size](structures/size.md)
 
 Set the size of the contents.
 
-#### `view.getContentSize()`
+#### `view.getContentSize()` _Experimental_
 
 Returns [`Size`](structures/size.md)
 
 The `size` of the contents.
 
-#### `view.getMinHeight()`
+#### `view.getMinHeight()` _Experimental_
 
 Returns `Integer` - The min height for the bounded scroll view.
 
 This is negative value if the view is not bounded.
 
-#### `view.getMaxHeight()`
+#### `view.getMaxHeight()` _Experimental_
 
 Returns `Integer` - The max height for the bounded scroll view.
 
 This is negative value if the view is not bounded.
 
-#### `view.clipHeightTo(minHeight, maxHeight)`
+#### `view.clipHeightTo(minHeight, maxHeight)` _Experimental_
 
 * `minHeight` Integer - The min height for the bounded scroll view.
 * `maxHeight` Integer - The max height for the bounded scroll view.
@@ -78,11 +78,11 @@ This is negative value if the view is not bounded.
 Turns this scroll view into a bounded scroll view, with a fixed height.
 By default, a ScrollView will stretch to fill its outer container.
 
-#### `view.getVisibleRect()`
+#### `view.getVisibleRect()` _Experimental_
 
 Returns [`Rectangle`](structures/rectangle.md) - The visible region of the content View.
 
-#### `view.setHorizontalScrollBarMode(mode)`
+#### `view.setHorizontalScrollBarMode(mode)` _Experimental_
 
 * `mode` String - Can be one of the following values: `disabled`, `hidden-but-enabled`, `enabled`. Default is `enabled`.
 
@@ -91,11 +91,11 @@ Controls how the horizontal scroll bar appears and functions.
 * `hidden-but-enabled` - The scrollbar is hidden whether or not the contents are larger than the viewport, but the pane will respond to scroll events.
 *`enabled` - The scrollbar will be visible if the contents are larger than the viewport and the pane will respond to scroll events.
 
-#### `view.getHorizontalScrollBarMode()`
+#### `view.getHorizontalScrollBarMode()` _Experimental_
 
 Returns `String` - horizontal scrollbar mode.
 
-#### `view.setVerticalScrollBarMode(mode)`
+#### `view.setVerticalScrollBarMode(mode)` _Experimental_
 
 * `mode` String - Can be one of the following values: `disabled`, `hidden-but-enabled`, `enabled`. Default is `enabled`.
 
@@ -104,22 +104,22 @@ Controls how the vertical scroll bar appears and functions.
 * `hidden-but-enabled` - The scrollbar is hidden whether or not the contents are larger than the viewport, but the pane will respond to scroll events.
 *`enabled` - The scrollbar will be visible if the contents are larger than the viewport and the pane will respond to scroll events.
 
-#### `view.getVerticalScrollBarMode()`
+#### `view.getVerticalScrollBarMode()` _Experimental_
 
 Returns `String` - vertical scrollbar mode.
 
-#### `view.setAllowKeyboardScrolling(allow)`
+#### `view.setAllowKeyboardScrolling(allow)` _Experimental_
 
 * `allow` Boolean - Sets whether the left/right/up/down arrow keys attempt to scroll the view.
 
-#### `view.getAllowKeyboardScrolling()`
+#### `view.getAllowKeyboardScrolling()` _Experimental_
 
 Returns `Boolean` - Gets whether the keyboard arrow keys attempt to scroll the view. Default is `true`.
 
-#### `view.SetDrawOverflowIndicator(indicator)`
+#### `view.SetDrawOverflowIndicator(indicator)` _Experimental_
 
 * `indicator` Boolean - Sets whether to draw a white separator on the four sides of the scroll view when it overflows.
 
-#### `view.GetDrawOverflowIndicator()`
+#### `view.GetDrawOverflowIndicator()` _Experimental_
 
 Returns `Boolean` - Gets whether to draw a white separator on the four sides of the scroll view when it overflows. Default is `true`.

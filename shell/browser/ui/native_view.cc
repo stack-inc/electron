@@ -117,9 +117,9 @@ bool NativeView::IsContainer() const {
 
 void NativeView::OnSizeChanged() {}
 
-void NativeView::DetachChildView(NativeBrowserView* view) {}
-
 void NativeView::DetachChildView(NativeView* view) {}
+
+void NativeView::DetachChildView(NativeBrowserView* view) {}
 
 void NativeView::TriggerBeforeunloadEvents() {}
 
