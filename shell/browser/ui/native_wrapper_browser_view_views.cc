@@ -11,8 +11,7 @@
 namespace electron {
 
 void NativeWrapperBrowserView::PlatformInit() {
-  views::View* view = new views::View();
-  TakeOverView(view);
+  TakeOverView(new views::View());
 }
 
 void NativeWrapperBrowserView::PlatformSetBrowserView() {

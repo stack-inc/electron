@@ -2,7 +2,7 @@
 // Use of this source code is governed by the MIT license that can be
 // found in the LICENSE file.
 
-#include "shell/browser/ui/native_scroll.h"
+#include "shell/browser/ui/native_scroll_view.h"
 
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/controls/scroll_view.h"
@@ -25,11 +25,11 @@ ScrollBarMode GetScrollBarMode(
 
 }  // namespace
 
-void NativeScroll::PlatformInit() {
+void NativeScrollView::PlatformInit() {
   TakeOverView(new views::ScrollView());
 }
 
-void NativeScroll::PlatformSetContentView(NativeView* view) {
+void NativeScrollView::PlatformSetContentView(NativeView* view) {
   if (!view)
     return;
   auto* scroll = static_cast<views::ScrollView*>(GetNative());
@@ -38,29 +38,31 @@ void NativeScroll::PlatformSetContentView(NativeView* view) {
   scroll->SetContents(std::move(content_view));
 }
 
-void NativeScroll::PlatformDetachChildView() {
+void NativeScrollView::PlatformDetachChildView() {
   auto* scroll = static_cast<views::ScrollView*>(GetNative());
   scroll->SetContents(nullptr);
   content_view_->set_delete_view(true);
 }
 
-void NativeScroll::SetContentSize(const gfx::Size& size) {
+void NativeScrollView::SetContentSize(const gfx::Size& size) {
+  if (!content_view_.get())
+    return;
   content_view_->GetNative()->SetSize(size);
   Layout();
 }
 
-void NativeScroll::SetScrollPosition(float horizon, float vertical) {
+void NativeScrollView::SetScrollPosition(float horizon, float vertical) {
 }
 
-std::tuple<float, float> NativeScroll::GetScrollPosition() const {
+std::tuple<float, float> NativeScrollView::GetScrollPosition() const {
   return std::make_tuple(0, 0);
 }
 
-std::tuple<float, float> NativeScroll::GetMaximumScrollPosition() const {
+std::tuple<float, float> NativeScrollView::GetMaximumScrollPosition() const {
   return std::make_tuple(0, 0);
 }
 
-void NativeScroll::SetHorizontalScrollBarMode(ScrollBarMode mode) {
+void NativeScrollView::SetHorizontalScrollBarMode(ScrollBarMode mode) {
   auto* scroll = static_cast<views::ScrollView*>(GetNative());
   views::ScrollView::ScrollBarMode scroll_bar_mode =
       views::ScrollView::ScrollBarMode::kEnabled;
@@ -77,12 +79,12 @@ void NativeScroll::SetHorizontalScrollBarMode(ScrollBarMode mode) {
   scroll->SetHorizontalScrollBarMode(scroll_bar_mode);
 }
 
-ScrollBarMode NativeScroll::GetHorizontalScrollBarMode() {
+ScrollBarMode NativeScrollView::GetHorizontalScrollBarMode() {
   auto* scroll = static_cast<views::ScrollView*>(GetNative());
   return GetScrollBarMode(scroll->GetHorizontalScrollBarMode());
 }
 
-void NativeScroll::SetVerticalScrollBarMode(ScrollBarMode mode) {
+void NativeScrollView::SetVerticalScrollBarMode(ScrollBarMode mode) {
   auto* scroll = static_cast<views::ScrollView*>(GetNative());
   views::ScrollView::ScrollBarMode scroll_bar_mode =
       views::ScrollView::ScrollBarMode::kEnabled;
@@ -99,56 +101,56 @@ void NativeScroll::SetVerticalScrollBarMode(ScrollBarMode mode) {
   scroll->SetVerticalScrollBarMode(scroll_bar_mode);
 }
 
-ScrollBarMode NativeScroll::GetVerticalScrollBarMode() {
+ScrollBarMode NativeScrollView::GetVerticalScrollBarMode() {
   auto* scroll = static_cast<views::ScrollView*>(GetNative());
   return GetScrollBarMode(scroll->GetVerticalScrollBarMode());
 }
 
 #if 0
-void NativeScroll::OnConnect(int identifier) {
+void NativeScrollView::OnConnect(int identifier) {
   if (identifier == kOnScroll) {
-    auto* scroll = static_cast<ElectronNativeScroll*>(GetNative());
+    auto* scroll = static_cast<ElectronNativeScrollView*>(GetNative());
     [scroll setEventEnabled:YES];
   }
 }
 #endif
 
-int NativeScroll::GetMinHeight() {
+int NativeScrollView::GetMinHeight() {
   auto* scroll = static_cast<views::ScrollView*>(GetNative());
   return scroll->GetMinHeight();
 }
 
-int NativeScroll::GetMaxHeight() {
+int NativeScrollView::GetMaxHeight() {
   auto* scroll = static_cast<views::ScrollView*>(GetNative());
   return scroll->GetMaxHeight();
 }
 
-void NativeScroll::ClipHeightTo(int min_height, int max_height) {
+void NativeScrollView::ClipHeightTo(int min_height, int max_height) {
   auto* scroll = static_cast<views::ScrollView*>(GetNative());
   scroll->ClipHeightTo(min_height, max_height);
 }
 
-gfx::Rect NativeScroll::GetVisibleRect() {
+gfx::Rect NativeScrollView::GetVisibleRect() {
   auto* scroll = static_cast<views::ScrollView*>(GetNative());
   return scroll->GetVisibleRect();
 }
 
-void NativeScroll::SetAllowKeyboardScrolling(bool allow) {
+void NativeScrollView::SetAllowKeyboardScrolling(bool allow) {
   auto* scroll = static_cast<views::ScrollView*>(GetNative());
   scroll->SetAllowKeyboardScrolling(allow);
 }
 
-bool NativeScroll::GetAllowKeyboardScrolling() {
+bool NativeScrollView::GetAllowKeyboardScrolling() {
   auto* scroll = static_cast<views::ScrollView*>(GetNative());
   return scroll->GetAllowKeyboardScrolling();
 }
 
-void NativeScroll::SetDrawOverflowIndicator(bool indicator) {
+void NativeScrollView::SetDrawOverflowIndicator(bool indicator) {
   auto* scroll = static_cast<views::ScrollView*>(GetNative());
   scroll->SetDrawOverflowIndicator(indicator);
 }
 
-bool NativeScroll::GetDrawOverflowIndicator() {
+bool NativeScrollView::GetDrawOverflowIndicator() {
   auto* scroll = static_cast<views::ScrollView*>(GetNative());
   return scroll->GetDrawOverflowIndicator();
 }

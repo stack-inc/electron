@@ -17,7 +17,7 @@ namespace electron {
 namespace api {
 
 ContainerView::ContainerView(gin::Arguments* args,
-                             NativeContainer* container)
+                             NativeContainerView* container)
     : BaseView(args, container), container_(container) {}
 
 ContainerView::~ContainerView() = default;
@@ -119,7 +119,7 @@ gin_helper::WrappableBase* ContainerView::New(gin_helper::ErrorThrower thrower,
     return nullptr;
   }
 
-  auto* view = new ContainerView(args, new NativeContainer());
+  auto* view = new ContainerView(args, new NativeContainerView());
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
   view->Pin(args->isolate());
 #endif

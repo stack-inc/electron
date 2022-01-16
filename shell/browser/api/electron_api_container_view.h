@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "shell/browser/api/electron_api_base_view.h"
-#include "shell/browser/ui/native_container.h"
+#include "shell/browser/ui/native_container_view.h"
 #include "shell/common/gin_helper/error_thrower.h"
 #include "shell/common/gin_helper/wrappable.h"
 
@@ -28,7 +28,7 @@ class ContainerView : public BaseView {
                              v8::Local<v8::FunctionTemplate> prototype);
 
  protected:
-  ContainerView(gin::Arguments* args, NativeContainer* container);
+  ContainerView(gin::Arguments* args, NativeContainerView* container);
   ~ContainerView() override;
 
  private:
@@ -38,7 +38,7 @@ class ContainerView : public BaseView {
                            gin_helper::ErrorThrower thrower);
   std::vector<v8::Local<v8::Value>> GetViews() const;
 
-  scoped_refptr<NativeContainer> container_;
+  scoped_refptr<NativeContainerView> container_;
 
   std::map<int32_t, v8::Global<v8::Value>> base_views_;
 

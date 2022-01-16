@@ -41,7 +41,7 @@ std::string ConvertFromScrollBarMode(ScrollBarMode mode) {
 
 }  // namespace
 
-ScrollView::ScrollView(gin::Arguments* args, NativeScroll* scroll)
+ScrollView::ScrollView(gin::Arguments* args, NativeScrollView* scroll)
     : BaseView(args, scroll), scroll_(scroll) {}
 
 ScrollView::~ScrollView() = default;
@@ -186,7 +186,7 @@ gin_helper::WrappableBase* ScrollView::New(gin_helper::ErrorThrower thrower,
     return nullptr;
   }
 
-  auto* view = new ScrollView(args, new NativeScroll());
+  auto* view = new ScrollView(args, new NativeScrollView());
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
   view->Pin(args->isolate());
 #endif

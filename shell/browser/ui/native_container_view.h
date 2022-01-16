@@ -2,8 +2,8 @@
 // Use of this source code is governed by the MIT license that can be
 // found in the LICENSE file.
 
-#ifndef SHELL_BROWSER_UI_NATIVE_CONTAINER_H_
-#define SHELL_BROWSER_UI_NATIVE_CONTAINER_H_
+#ifndef SHELL_BROWSER_UI_NATIVE_CONTAINER_VIEW_H_
+#define SHELL_BROWSER_UI_NATIVE_CONTAINER_VIEW_H_
 
 #include <vector>
 
@@ -11,9 +11,9 @@
 
 namespace electron {
 
-class NativeContainer : public NativeView {
+class NativeContainerView : public NativeView {
  public:
-  NativeContainer();
+  NativeContainerView();
 
   // NativeView:
   void Layout() override;
@@ -55,10 +55,10 @@ class NativeContainer : public NativeView {
 #endif
 
  protected:
-  ~NativeContainer() override;
+  ~NativeContainerView() override;
 
   // Empty constructor used by subclasses.
-  explicit NativeContainer(const char* an_empty_constructor);
+  explicit NativeContainerView(const char* an_empty_constructor);
 
   // NativeView:
   void SetWindowForChildren(NativeWindow* window) override;
@@ -79,4 +79,4 @@ class NativeContainer : public NativeView {
 
 }  // namespace electron
 
-#endif  // SHELL_BROWSER_UI_NATIVE_CONTAINER_H_
+#endif  // SHELL_BROWSER_UI_NATIVE_CONTAINER_VIEW_H_

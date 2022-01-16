@@ -7,8 +7,53 @@
 #include <objc/objc-runtime.h>
 
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "shell/browser/native_window_mac.h"
 #include "shell/browser/ui/cocoa/electron_ns_window.h"
+#include "skia/ext/skia_utils_mac.h"
+#include "ui/gfx/geometry/rect_f.h"
+
+typedef struct CGContext* CGContextRef;
+
+@implementation ElectronNativeView
+
+- (electron::NativeViewPrivate*)nativeViewPrivate {
+  return &private_;
+}
+
+- (void)setNativeBackgroundColor:(SkColor)color {
+  background_color_ = absl::make_optional(color);
+  [self setNeedsDisplay:YES];
+}
+
+- (BOOL)isFlipped {
+  return YES;
+}
+
+- (void)drawRect:(NSRect)dirtyRect {
+  electron::NativeView* shell =
+      static_cast<electron::NativeView*>([self shell]);
+  if (!shell)
+    return;
+  if (!background_color_.has_value())
+    return;
+
+  SkColor background_color = background_color_.value();
+  gfx::RectF dirty(dirtyRect);
+  CGContextRef context = reinterpret_cast<CGContextRef>(
+      [[NSGraphicsContext currentContext] graphicsPort]);
+  CGContextSetRGBStrokeColor(context, SkColorGetR(background_color) / 255.0f,
+                             SkColorGetG(background_color) / 255.0f,
+                             SkColorGetB(background_color) / 255.0f,
+                             SkColorGetA(background_color) / 255.0f);
+  CGContextSetRGBFillColor(context, SkColorGetR(background_color) / 255.0f,
+                           SkColorGetG(background_color) / 255.0f,
+                           SkColorGetB(background_color) / 255.0f,
+                           SkColorGetA(background_color) / 255.0f);
+  CGContextFillRect(context, dirty.ToCGRect());
+}
+
+@end
 
 namespace electron {
 
@@ -23,7 +68,7 @@ bool IsFramelessWindow(NSView* view) {
   return ![static_cast<ElectronNSWindow*>([view window]) shell]->has_frame();
 }
 
-// Following methods are overrided in ElectronNativeView.
+// Following methods are overrided in ElectronNativeViewProtocol.
 
 bool NativeViewInjected(NSView* self, SEL _cmd) {
   return true;
@@ -37,7 +82,7 @@ BOOL AcceptsFirstResponder(NSView* self, SEL _cmd) {
   return [self nativeViewPrivate]->focusable;
 }
 
-// Following methods are overrided in ElectronNativeView to make sure that
+// Following methods are overrided in ElectronNativeViewProtocol to make sure that
 // content view of frameless always takes the size of its parent view.
 
 // This method is directly called by NSWindow during a window resize on OSX

@@ -38,6 +38,7 @@ void NativeView::TakeOverView(NATIVEVIEW view) {
 }
 
 void NativeView::PlatformInit() {
+  TakeOverView([[ElectronNativeView alloc] init]);
 }
 
 void NativeView::PlatformDestroy() {

@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace electron {
@@ -31,13 +32,20 @@ struct NativeViewPrivate {
 }  // namespace electron
 
 // The methods that every View should implemented.
-@protocol ElectronNativeView
+@protocol ElectronNativeViewProtocol
 - (electron::NativeViewPrivate*)nativeViewPrivate;
 - (void)setNativeBackgroundColor:(SkColor)color;
 @end
 
-// Extended methods of ElectronNativeView.
-@interface NSView (ElectronNativeViewMethods) <ElectronNativeView>
+@interface ElectronNativeView : NSView <ElectronNativeViewProtocol> {
+ @private
+  electron::NativeViewPrivate private_;
+  absl::optional<SkColor> background_color_;
+}
+@end
+
+// Extended methods of ElectronNativeViewProtocol.
+@interface NSView (ElectronNativeViewMethods) <ElectronNativeViewProtocol>
 - (electron::NativeView*)shell;
 @end
 

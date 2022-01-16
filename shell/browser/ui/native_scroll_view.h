@@ -2,8 +2,8 @@
 // Use of this source code is governed by the MIT license that can be
 // found in the LICENSE file.
 
-#ifndef SHELL_BROWSER_UI_NATIVE_SCROLL_H_
-#define SHELL_BROWSER_UI_NATIVE_SCROLL_H_
+#ifndef SHELL_BROWSER_UI_NATIVE_SCROLL_VIEW_H_
+#define SHELL_BROWSER_UI_NATIVE_SCROLL_VIEW_H_
 
 #include <tuple>
 
@@ -13,9 +13,9 @@ namespace electron {
 
 enum class ScrollBarMode { kDisabled, kHiddenButEnabled, kEnabled };
 
-class NativeScroll : public NativeView {
+class NativeScrollView : public NativeView {
  public:
-  NativeScroll();
+  NativeScrollView();
 
   // NativeView:
   void DetachChildView(NativeView* view) override;
@@ -70,7 +70,7 @@ class NativeScroll : public NativeView {
 #endif
 
  protected:
-  ~NativeScroll() override;
+  ~NativeScrollView() override;
 
   // NativeView:
   void SetWindowForChildren(NativeWindow* window) override;
@@ -93,4 +93,4 @@ class NativeScroll : public NativeView {
 
 }  // namespace electron
 
-#endif  // SHELL_BROWSER_UI_NATIVE_SCROLL_H_
+#endif  // SHELL_BROWSER_UI_NATIVE_SCROLL_VIEW_H_

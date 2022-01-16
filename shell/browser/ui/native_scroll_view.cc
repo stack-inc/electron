@@ -2,28 +2,28 @@
 // Use of this source code is governed by the MIT license that can be
 // found in the LICENSE file.
 
-#include "shell/browser/ui/native_scroll.h"
+#include "shell/browser/ui/native_scroll_view.h"
 
 #include <utility>
 
-#include "shell/browser/ui/native_container.h"
+#include "shell/browser/ui/native_container_view.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace electron {
 
-NativeScroll::NativeScroll() {
+NativeScrollView::NativeScrollView() {
   PlatformInit();
-  SetContentView(new NativeContainer);
+  SetContentView(new NativeContainerView);
 #if 0
   on_scroll.SetDelegate(this, kOnScroll);
 #endif
 }
 
-NativeScroll::~NativeScroll() = default;
+NativeScrollView::~NativeScrollView() = default;
 
-void NativeScroll::SetContentView(scoped_refptr<NativeView> view) {
+void NativeScrollView::SetContentView(scoped_refptr<NativeView> view) {
   if (content_view_)
     content_view_->SetParent(nullptr);
   PlatformSetContentView(view.get());
@@ -31,28 +31,28 @@ void NativeScroll::SetContentView(scoped_refptr<NativeView> view) {
   content_view_->SetParent(this);
 }
 
-NativeView* NativeScroll::GetContentView() const {
+NativeView* NativeScrollView::GetContentView() const {
   return content_view_.get();
 }
 
-gfx::Size NativeScroll::GetContentSize() const {
+gfx::Size NativeScrollView::GetContentSize() const {
   return GetContentView()->GetBounds().size();
 }
 
-void NativeScroll::DetachChildView(NativeView* view) {
+void NativeScrollView::DetachChildView(NativeView* view) {
   if (!view || content_view_.get() != view)
     return;
-  content_view_->SetParent(nullptr);
   PlatformDetachChildView();
+  content_view_->SetParent(nullptr);
   content_view_.reset();
 }
 
-void NativeScroll::TriggerBeforeunloadEvents() {
+void NativeScrollView::TriggerBeforeunloadEvents() {
   if (content_view_.get())
     content_view_->TriggerBeforeunloadEvents();
 }
 
-void NativeScroll::SetWindowForChildren(NativeWindow* window) {
+void NativeScrollView::SetWindowForChildren(NativeWindow* window) {
   if (content_view_.get())
     content_view_->SetWindow(window);
 }

@@ -9,7 +9,7 @@
 #include "base/strings/string_util.h"
 #include "shell/browser/browser.h"
 #include "shell/browser/native_window.h"
-#include "shell/browser/ui/native_container.h"
+#include "shell/browser/ui/native_container_view.h"
 #include "shell/browser/ui/yoga_util.h"
 #include "shell/common/color_util.h"
 #include "third_party/yoga/Yoga.h"
@@ -61,7 +61,7 @@ void NativeView::SetVisible(bool visible) {
 void NativeView::Layout() {
   // By default just make parent do layout.
   if (GetParent() && GetParent()->IsContainer())
-    static_cast<NativeContainer*>(GetParent())->Layout();
+    static_cast<NativeContainerView*>(GetParent())->Layout();
 }
 
 void NativeView::UpdateDefaultStyle() {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by the MIT license that can be
 // found in the LICENSE file.
 
-#include "shell/browser/ui/native_container.h"
+#include "shell/browser/ui/native_container_view.h"
 
 #include <algorithm>
 #include <limits>
@@ -23,7 +23,7 @@ namespace electron {
 namespace {
 
 // Whether a Container is a root CSS node.
-inline bool IsRootYGNode(NativeContainer* view) {
+inline bool IsRootYGNode(NativeContainerView* view) {
   return !YGNodeGetParent(view->node()) || !view->IsContainer();
 }
 
@@ -37,24 +37,24 @@ inline gfx::Rect GetYGNodeBounds(YGNodeRef node) {
 
 }  // namespace
 
-NativeContainer::NativeContainer() {
+NativeContainerView::NativeContainerView() {
   PlatformInit();
 }
 
-NativeContainer::NativeContainer(const char* an_empty_constructor) {
+NativeContainerView::NativeContainerView(const char* an_empty_constructor) {
 }
 
-NativeContainer::~NativeContainer() {
+NativeContainerView::~NativeContainerView() {
   PlatformDestroy();
 }
 
-void NativeContainer::Layout() {
+void NativeContainerView::Layout() {
   if (!Browser::Get()->use_yoga())
     return;
   // For child CSS node, tell parent to do the layout.
   if (!IsRootYGNode(this)) {
     dirty_ = true;
-    static_cast<NativeContainer*>(GetParent())->Layout();
+    static_cast<NativeContainerView*>(GetParent())->Layout();
     // The parent may choose to not update this view because its size is not
     // changed, in that case we need to force updating here.
     // This usually happens after adding a child view, since the container does
@@ -71,11 +71,11 @@ void NativeContainer::Layout() {
   SetChildBoundsFromCSS();
 }
 
-bool NativeContainer::IsContainer() const {
+bool NativeContainerView::IsContainer() const {
   return true;
 }
 
-void NativeContainer::OnSizeChanged() {
+void NativeContainerView::OnSizeChanged() {
   NativeView::OnSizeChanged();
   if (!Browser::Get()->use_yoga())
     return;
@@ -85,40 +85,40 @@ void NativeContainer::OnSizeChanged() {
     SetChildBoundsFromCSS();
 }
 
-void NativeContainer::DetachChildView(NativeView* view) {
+void NativeContainerView::DetachChildView(NativeView* view) {
   RemoveChildView(view);
 }
 
-void NativeContainer::TriggerBeforeunloadEvents() {
+void NativeContainerView::TriggerBeforeunloadEvents() {
   for (auto view : children_)
     view->TriggerBeforeunloadEvents();
 }
 
-void NativeContainer::SetWindowForChildren(NativeWindow* window) {
+void NativeContainerView::SetWindowForChildren(NativeWindow* window) {
   for (auto view : children_)
     view->SetWindow(window);
 }
 
-gfx::Size NativeContainer::GetPreferredSize() const {
+gfx::Size NativeContainerView::GetPreferredSize() const {
   float nan = std::numeric_limits<float>::quiet_NaN();
   YGNodeCalculateLayout(node(), nan, nan, YGDirectionLTR);
   return ToRoundedSize(
       gfx::SizeF(YGNodeLayoutGetWidth(node()), YGNodeLayoutGetHeight(node())));
 }
 
-float NativeContainer::GetPreferredHeightForWidth(float width) const {
+float NativeContainerView::GetPreferredHeightForWidth(float width) const {
   float nan = std::numeric_limits<float>::quiet_NaN();
   YGNodeCalculateLayout(node(), width, nan, YGDirectionLTR);
   return YGNodeLayoutGetHeight(node());
 }
 
-float NativeContainer::GetPreferredWidthForHeight(float height) const {
+float NativeContainerView::GetPreferredWidthForHeight(float height) const {
   float nan = std::numeric_limits<float>::quiet_NaN();
   YGNodeCalculateLayout(node(), nan, height, YGDirectionLTR);
   return YGNodeLayoutGetWidth(node());
 }
 
-void NativeContainer::AddChildView(scoped_refptr<NativeView> view) {
+void NativeContainerView::AddChildView(scoped_refptr<NativeView> view) {
   if (!view)
     return;
   if (view->GetParent() == this)
@@ -126,7 +126,7 @@ void NativeContainer::AddChildView(scoped_refptr<NativeView> view) {
   AddChildViewAt(std::move(view), ChildCount());
 }
 
-void NativeContainer::AddChildViewAt(scoped_refptr<NativeView> view, int index) {
+void NativeContainerView::AddChildViewAt(scoped_refptr<NativeView> view, int index) {
   if (!view)
     return;
   if (view == this || index < 0 || index > ChildCount())
@@ -148,7 +148,7 @@ void NativeContainer::AddChildViewAt(scoped_refptr<NativeView> view, int index) 
   Layout();
 }
 
-void NativeContainer::RemoveChildView(NativeView* view) {
+void NativeContainerView::RemoveChildView(NativeView* view) {
   if (!view)
     return;
   const auto i(std::find(children_.begin(), children_.end(), view));
@@ -166,7 +166,7 @@ void NativeContainer::RemoveChildView(NativeView* view) {
   Layout();
 }
 
-void NativeContainer::SetTopChildView(NativeView* view) {
+void NativeContainerView::SetTopChildView(NativeView* view) {
   if (!view || view == this)
     return;
   const auto i(std::find(children_.begin(), children_.end(), view));
@@ -185,7 +185,7 @@ void NativeContainer::SetTopChildView(NativeView* view) {
   Layout();
 }
 
-void NativeContainer::SetChildBoundsFromCSS() {
+void NativeContainerView::SetChildBoundsFromCSS() {
   dirty_ = false;
   if (!IsVisible())
     return;
