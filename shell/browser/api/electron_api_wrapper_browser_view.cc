@@ -31,7 +31,7 @@ WrapperBrowserView::WrapperBrowserView(gin::Arguments* args,
     auto* owner_window = browser_view->owner_window();
     auto* owner_view = browser_view->owner_view();
     if (owner_view) {
-      owner_view->DetachChildView(browser_view->view());
+      owner_view->DetachBrowserView(browser_view->view());
       browser_view->SetOwnerView(nullptr);
     } else if (owner_window) {
       owner_window->RemoveBrowserView(browser_view->view());
@@ -56,7 +56,7 @@ WrapperBrowserView::WrapperBrowserView(gin::Arguments* args,
 
 WrapperBrowserView::~WrapperBrowserView() {
   if (api_browser_view_) {
-    view_->DetachChildView(api_browser_view_->view());
+    view_->DetachBrowserView(api_browser_view_->view());
     api_browser_view_->SetOwnerView(nullptr);
   }
   view_->SetBrowserView(nullptr);

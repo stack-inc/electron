@@ -9,6 +9,8 @@
 
 namespace electron {
 
+class NativeBrowserView;
+
 namespace api {
 class BrowserView;
 }
@@ -18,10 +20,10 @@ class NativeWrapperBrowserView : public NativeView {
   NativeWrapperBrowserView();
 
   void SetBrowserView(api::BrowserView* browser_view);
+  void DetachBrowserView(NativeBrowserView* view);
 
   // NativeView:
   void SetBounds(const gfx::Rect& bounds) override;
-  void DetachChildView(NativeBrowserView* view) override;
   void TriggerBeforeunloadEvents() override;
 #if defined(OS_MAC)
   void UpdateDraggableRegions() override;

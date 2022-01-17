@@ -5,13 +5,24 @@
 #ifndef SHELL_BROWSER_UI_NATIVE_SCROLL_VIEW_H_
 #define SHELL_BROWSER_UI_NATIVE_SCROLL_VIEW_H_
 
-#include <tuple>
-
 #include "shell/browser/ui/native_view.h"
+
+namespace gfx {
+class Point;
+class Size;
+}
 
 namespace electron {
 
 enum class ScrollBarMode { kDisabled, kHiddenButEnabled, kEnabled };
+
+#if defined(OS_MAC)
+enum class ScrollElasticity {
+  kAutomatic = 0,  // NSScrollElasticityAutomatic = 0
+  kNone = 1,       // NSScrollElasticityNone = 1
+  kAllowed = 2,    // NSScrollElasticityAllowed = 2
+};
+#endif
 
 class NativeScrollView : public NativeView {
  public:
@@ -29,39 +40,37 @@ class NativeScrollView : public NativeView {
 
   void SetContentSize(const gfx::Size& size);
   gfx::Size GetContentSize() const;
-  void SetScrollPosition(float horizon, float vertical);
-  std::tuple<float, float> GetScrollPosition() const;
-  std::tuple<float, float> GetMaximumScrollPosition() const;
 
 #if defined(OS_MAC)
+  void SetScrollPosition(gfx::Point point);
+  gfx::Point GetScrollPosition() const;
+  gfx::Point GetMaximumScrollPosition() const;
+
   void SetOverlayScrollbar(bool overlay);
   bool IsOverlayScrollbar() const;
 #endif
 
   void SetHorizontalScrollBarMode(ScrollBarMode mode);
-  ScrollBarMode GetHorizontalScrollBarMode();
+  ScrollBarMode GetHorizontalScrollBarMode() const;
   void SetVerticalScrollBarMode(ScrollBarMode mode);
-  ScrollBarMode GetVerticalScrollBarMode();
+  ScrollBarMode GetVerticalScrollBarMode() const;
 
 #if defined(OS_MAC)
-  enum class Elasticity {
-    Automatic = 0,  // NSScrollElasticityAutomatic = 0
-    None = 1,       // NSScrollElasticityNone = 1
-    Allowed = 2,    // NSScrollElasticityAllowed = 2
-  };
-  void SetScrollElasticity(Elasticity h, Elasticity v);
-  std::tuple<Elasticity, Elasticity> GetScrollElasticity() const;
+  void SetHorizontalScrollElasticity(ScrollElasticity elasticity);
+  ScrollElasticity GetHorizontalScrollElasticity() const;
+  void SetVerticalScrollElasticity(ScrollElasticity elasticity);
+  ScrollElasticity GetVerticalScrollElasticity() const;
 #endif
 
-#if !defined(OS_MAC)
-  int GetMinHeight();
-  int GetMaxHeight();
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
+  int GetMinHeight() const;
+  int GetMaxHeight() const;
   void ClipHeightTo(int min_height, int max_height);
-  gfx::Rect GetVisibleRect();
+  gfx::Rect GetVisibleRect() const;
   void SetAllowKeyboardScrolling(bool allow);
-  bool GetAllowKeyboardScrolling();
+  bool GetAllowKeyboardScrolling() const;
   void SetDrawOverflowIndicator(bool indicator);
-  bool GetDrawOverflowIndicator();
+  bool GetDrawOverflowIndicator() const;
 #endif
 
 #if 0

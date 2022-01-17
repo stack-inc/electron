@@ -15,6 +15,7 @@
 #include "shell/common/gin_helper/dictionary.h"
 #include "shell/common/gin_helper/object_template_builder.h"
 #include "shell/common/node_includes.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace electron {
@@ -39,6 +40,24 @@ std::string ConvertFromScrollBarMode(ScrollBarMode mode) {
   return "enabled";
 }
 
+#if defined(OS_MAC)
+ScrollElasticity ConvertToScrollElasticity(std::string elasticity) {
+  if (elasticity == "none")
+    return ScrollElasticity::kNone;
+  else if (elasticity == "allowed")
+    return ScrollElasticity::kAllowed;
+  return ScrollElasticity::kAutomatic;
+}
+
+std::string ConvertFromScrollElasticity(ScrollElasticity elasticity) {
+  if (elasticity == ScrollElasticity::kNone)
+    return "none";
+  else if (elasticity == ScrollElasticity::kAllowed)
+    return "allowed";
+  return "automatic";
+}
+#endif
+
 }  // namespace
 
 ScrollView::ScrollView(gin::Arguments* args, NativeScrollView* scroll)
@@ -58,12 +77,12 @@ void ScrollView::SetContentView(v8::Local<v8::Value> value) {
       // its previous owner window/view.
       auto* owner_window = content_view->view()->GetWindow();
       auto* owner_view = content_view->view()->GetParent();
-      if (owner_window) {
-        owner_window->RemoveChildView(content_view->view());
-        content_view->view()->SetWindow(nullptr);
-      } else if (owner_view && owner_view != scroll_.get()) {
+      if (owner_view && owner_view != scroll_.get()) {
         owner_view->DetachChildView(content_view->view());
         content_view->view()->SetParent(nullptr);
+      } else if (owner_window) {
+        owner_window->RemoveChildView(content_view->view());
+        content_view->view()->SetWindow(nullptr);
       }
 
       scroll_->SetContentView(content_view->view());
@@ -89,41 +108,10 @@ void ScrollView::SetContentSize(gfx::Size size) {
     scroll_->SetContentSize(size);
 }
 
-gfx::Size ScrollView::GetContentSize() {
+gfx::Size ScrollView::GetContentSize() const {
   if (scroll_.get())
     return scroll_->GetContentSize();
   return gfx::Size();
-}
-
-int ScrollView::GetMinHeight() {
-#if !defined(OS_MAC)
-  if (scroll_.get())
-    return scroll_->GetMinHeight();
-#endif
-  return -1;
-}
-
-int ScrollView::GetMaxHeight() {
-#if !defined(OS_MAC)
-  if (scroll_.get())
-    return scroll_->GetMaxHeight();
-#endif
-  return -1;
-}
-
-void ScrollView::ClipHeightTo(int min_height, int max_height) {
-#if !defined(OS_MAC)
-  if (scroll_.get())
-    scroll_->ClipHeightTo(min_height, max_height);
-#endif
-}
-
-gfx::Rect ScrollView::GetVisibleRect() {
-#if !defined(OS_MAC)
-  if (scroll_.get())
-    return scroll_->GetVisibleRect();
-#endif
-  return gfx::Rect();
 }
 
 void ScrollView::SetHorizontalScrollBarMode(std::string mode) {
@@ -131,7 +119,7 @@ void ScrollView::SetHorizontalScrollBarMode(std::string mode) {
     scroll_->SetHorizontalScrollBarMode(ConvertToScrollBarMode(mode));
 }
 
-std::string ScrollView::GetHorizontalScrollBarMode() {
+std::string ScrollView::GetHorizontalScrollBarMode() const {
   if (scroll_.get())
     return ConvertFromScrollBarMode(scroll_->GetHorizontalScrollBarMode());
   return "enabled";
@@ -142,41 +130,110 @@ void ScrollView::SetVerticalScrollBarMode(std::string mode) {
     scroll_->SetVerticalScrollBarMode(ConvertToScrollBarMode(mode));
 }
 
-std::string ScrollView::GetVerticalScrollBarMode() {
+std::string ScrollView::GetVerticalScrollBarMode() const {
   if (scroll_.get())
     return ConvertFromScrollBarMode(scroll_->GetVerticalScrollBarMode());
   return "enabled";
 }
 
-void ScrollView::SetAllowKeyboardScrolling(bool allow) {
-#if !defined(OS_MAC)
+#if defined(OS_MAC)
+void ScrollView::SetHorizontalScrollElasticity(std::string elasticity) {
   if (scroll_.get())
-    scroll_->SetAllowKeyboardScrolling(allow);
-#endif
+    scroll_->SetHorizontalScrollElasticity(ConvertToScrollElasticity(elasticity));
 }
 
-bool ScrollView::GetAllowKeyboardScrolling() {
-#if !defined(OS_MAC)
+std::string ScrollView::GetHorizontalScrollElasticity() const {
+  if (scroll_.get())
+    return ConvertFromScrollElasticity(scroll_->GetHorizontalScrollElasticity());
+  return "automatic";
+}
+
+void ScrollView::SetVerticalScrollElasticity(std::string elasticity) {
+  if (scroll_.get())
+    scroll_->SetVerticalScrollElasticity(ConvertToScrollElasticity(elasticity));
+}
+
+std::string ScrollView::GetVerticalScrollElasticity() const {
+  if (scroll_.get())
+    return ConvertFromScrollElasticity(scroll_->GetVerticalScrollElasticity());
+  return "automatic";
+}
+
+void ScrollView::SetScrollPosition(gfx::Point point) {
+  if (scroll_.get())
+    scroll_->SetScrollPosition(point);
+}
+
+gfx::Point ScrollView::GetScrollPosition() const {
+  if (scroll_.get())
+    return scroll_->GetScrollPosition();
+  return gfx::Point();
+}
+
+gfx::Point ScrollView::GetMaximumScrollPosition() const {
+  if (scroll_.get())
+    return scroll_->GetMaximumScrollPosition();
+  return gfx::Point();
+}
+
+void ScrollView::SetOverlayScrollbar(bool overlay) {
+  if (scroll_.get())
+    scroll_->SetOverlayScrollbar(overlay);
+}
+
+bool ScrollView::IsOverlayScrollbar() const {
+  if (scroll_.get())
+    return scroll_->IsOverlayScrollbar();
+  return false;
+}
+#endif
+
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
+int ScrollView::GetMinHeight() const {
+  if (scroll_.get())
+    return scroll_->GetMinHeight();
+  return -1;
+}
+
+int ScrollView::GetMaxHeight() const {
+  if (scroll_.get())
+    return scroll_->GetMaxHeight();
+  return -1;
+}
+
+void ScrollView::ClipHeightTo(int min_height, int max_height) {
+  if (scroll_.get())
+    scroll_->ClipHeightTo(min_height, max_height);
+}
+
+gfx::Rect ScrollView::GetVisibleRect() const {
+  if (scroll_.get())
+    return scroll_->GetVisibleRect();
+  return gfx::Rect();
+}
+
+void ScrollView::SetAllowKeyboardScrolling(bool allow) {
+  if (scroll_.get())
+    scroll_->SetAllowKeyboardScrolling(allow);
+}
+
+bool ScrollView::GetAllowKeyboardScrolling() const {
   if (scroll_.get())
     return scroll_->GetAllowKeyboardScrolling();
-#endif
   return false;
 }
 
 void ScrollView::SetDrawOverflowIndicator(bool indicator) {
-#if !defined(OS_MAC)
   if (scroll_.get())
     scroll_->SetDrawOverflowIndicator(indicator);
-#endif
 }
 
-bool ScrollView::GetDrawOverflowIndicator() {
-#if !defined(OS_MAC)
+bool ScrollView::GetDrawOverflowIndicator() const {
   if (scroll_.get())
     return scroll_->GetDrawOverflowIndicator();
-#endif
   return false;
 }
+#endif
 
 // static
 gin_helper::WrappableBase* ScrollView::New(gin_helper::ErrorThrower thrower,
@@ -203,10 +260,6 @@ void ScrollView::BuildPrototype(v8::Isolate* isolate,
       .SetMethod("getContentView", &ScrollView::GetContentView)
       .SetMethod("setContentSize", &ScrollView::SetContentSize)
       .SetMethod("getContentSize", &ScrollView::GetContentSize)
-      .SetMethod("getMinHeight", &ScrollView::GetMinHeight)
-      .SetMethod("getMaxHeight", &ScrollView::GetMaxHeight)
-      .SetMethod("clipHeightTo", &ScrollView::ClipHeightTo)
-      .SetMethod("getVisibleRect", &ScrollView::GetVisibleRect)
       .SetMethod("setHorizontalScrollBarMode",
                  &ScrollView::SetHorizontalScrollBarMode)
       .SetMethod("getHorizontalScrollBarMode",
@@ -215,10 +268,31 @@ void ScrollView::BuildPrototype(v8::Isolate* isolate,
                  &ScrollView::SetVerticalScrollBarMode)
       .SetMethod("getVerticalScrollBarMode",
                  &ScrollView::GetVerticalScrollBarMode)
+#if defined(OS_MAC)
+      .SetMethod("setHorizontalScrollElasticity",
+                 &ScrollView::SetHorizontalScrollElasticity)
+      .SetMethod("getHorizontalScrollElasticity",
+                 &ScrollView::GetHorizontalScrollElasticity)
+      .SetMethod("setVerticalScrollElasticity",
+                 &ScrollView::SetVerticalScrollElasticity)
+      .SetMethod("getVerticalScrollElasticity",
+                 &ScrollView::GetVerticalScrollElasticity)
+      .SetMethod("setScrollPosition", &ScrollView::SetScrollPosition)
+      .SetMethod("getScrollPosition", &ScrollView::GetScrollPosition)
+      .SetMethod("getMaximumScrollPosition", &ScrollView::GetMaximumScrollPosition)
+      .SetMethod("setOverlayScrollbar", &ScrollView::SetOverlayScrollbar)
+      .SetMethod("isOverlayScrollbar", &ScrollView::IsOverlayScrollbar)
+#endif
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
+      .SetMethod("getMinHeight", &ScrollView::GetMinHeight)
+      .SetMethod("getMaxHeight", &ScrollView::GetMaxHeight)
+      .SetMethod("clipHeightTo", &ScrollView::ClipHeightTo)
+      .SetMethod("getVisibleRect", &ScrollView::GetVisibleRect)
       .SetMethod("setAllowKeyboardScrolling", &ScrollView::SetAllowKeyboardScrolling)
       .SetMethod("getAllowKeyboardScrolling", &ScrollView::GetAllowKeyboardScrolling)
       .SetMethod("setDrawOverflowIndicator", &ScrollView::SetDrawOverflowIndicator)
       .SetMethod("getDrawOverflowIndicator", &ScrollView::GetDrawOverflowIndicator)
+#endif
       .Build();
 }
 

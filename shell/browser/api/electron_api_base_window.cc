@@ -800,7 +800,7 @@ void BaseWindow::AddBrowserView(v8::Local<v8::Value> value) {
         auto* owner_window = browser_view->owner_window();
         auto* owner_view = browser_view->owner_view();
         if (owner_view) {
-          owner_view->DetachChildView(browser_view->view());
+          owner_view->DetachBrowserView(browser_view->view());
           browser_view->SetOwnerView(nullptr);
         } else if (owner_window && owner_window != window_.get()) {
           owner_window->RemoveBrowserView(browser_view->view());

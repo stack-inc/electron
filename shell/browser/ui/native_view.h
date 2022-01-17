@@ -26,9 +26,8 @@ class View;
 #endif
 
 namespace gfx {
+class Point;
 class Rect;
-class Size;
-class Vector2d;
 }
 
 namespace electron {
@@ -39,7 +38,6 @@ using NATIVEVIEW = NSView*;
 using NATIVEVIEW = views::View*;
 #endif
 
-class NativeBrowserView;
 class NativeWindow;
 
 // The base class for all kinds of views.
@@ -53,9 +51,11 @@ class NativeView : public base::RefCounted<NativeView> {
   // Get position and size.
   gfx::Rect GetBounds() const;
 
-  // Coordiante convertions.
-  gfx::Vector2d OffsetFromView(const NativeView* from) const;
-  gfx::Vector2d OffsetFromWindow() const;
+#if defined(OS_MAC)
+  // Coordinate convertions.
+  gfx::Point OffsetFromView(const NativeView* from) const;
+  gfx::Point OffsetFromWindow() const;
+#endif
 
   // Show/Hide the view.
   void SetVisible(bool visible);
@@ -106,9 +106,6 @@ class NativeView : public base::RefCounted<NativeView> {
   void SetStyle() {
   }
 
-  // Return the minimum size of view.
-  virtual gfx::Size GetMinimumSize() const;
-
 #if defined(OS_MAC)
   void SetWantsLayer(bool wants);
   bool WantsLayer() const;
@@ -136,7 +133,6 @@ class NativeView : public base::RefCounted<NativeView> {
   virtual void OnSizeChanged();
 
   virtual void DetachChildView(NativeView* view);
-  virtual void DetachChildView(NativeBrowserView* view);
 
   virtual void TriggerBeforeunloadEvents();
 
@@ -154,9 +150,6 @@ class NativeView : public base::RefCounted<NativeView> {
 
  protected:
   virtual ~NativeView();
-
-  // Update the default style.
-  void UpdateDefaultStyle();
 
   // Called by subclasses to take the ownership of |view|.
   void TakeOverView(NATIVEVIEW view);

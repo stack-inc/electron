@@ -24,9 +24,9 @@ void NativeWrapperBrowserView::PlatformSetBrowserView() {
 
 void NativeWrapperBrowserView::PlatformDetachBrowserView() {
   if (api_browser_view_ && api_browser_view_->view()->GetInspectableWebContentsView()) {
-    auto* page = api_browser_view_->view()->GetInspectableWebContentsView()
+    auto* view = api_browser_view_->view()->GetInspectableWebContentsView()
                      ->GetNativeView().GetNativeNSView();
-    [page removeFromSuperview];
+    [view removeFromSuperview];
   }
 }
 

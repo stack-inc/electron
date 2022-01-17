@@ -6,8 +6,6 @@
 
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/background.h"
 #include "ui/views/view.h"
 
@@ -34,14 +32,6 @@ void NativeView::SetBounds(const gfx::Rect& bounds) {
 
 gfx::Rect NativeView::GetBounds() const {
   return view_->bounds();
-}
-
-gfx::Vector2d NativeView::OffsetFromView(const NativeView* from) const {
-  return gfx::Vector2d();
-}
-
-gfx::Vector2d NativeView::OffsetFromWindow() const {
-  return gfx::Vector2d();
 }
 
 void NativeView::PlatformSetVisible(bool visible) {

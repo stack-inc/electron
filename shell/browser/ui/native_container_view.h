@@ -9,6 +9,10 @@
 
 #include "shell/browser/ui/native_view.h"
 
+namespace gfx {
+class Size;
+}
+
 namespace electron {
 
 class NativeContainerView : public NativeView {

@@ -15,7 +15,7 @@
 #include "shell/browser/extended_web_contents_observer.h"
 #include "shell/browser/native_browser_view.h"
 #include "shell/browser/native_window.h"
-#include "shell/browser/ui/native_view.h"
+#include "shell/browser/ui/native_wrapper_browser_view.h"
 #include "shell/common/api/api.mojom.h"
 #include "shell/common/gin_helper/constructible.h"
 #include "shell/common/gin_helper/error_thrower.h"
@@ -56,10 +56,10 @@ class BrowserView : public gin::Wrappable<BrowserView>,
   NativeBrowserView* view() const { return view_.get(); }
 
   NativeWindow* owner_window() const { return owner_window_.get(); }
-  NativeView* owner_view() const { return owner_view_.get(); }
+  NativeWrapperBrowserView* owner_view() const { return owner_view_.get(); }
 
   void SetOwnerWindow(NativeWindow* window);
-  void SetOwnerView(NativeView* view);
+  void SetOwnerView(NativeWrapperBrowserView* view);
 
   int32_t ID() const { return id_; }
 
@@ -96,7 +96,7 @@ friend class WrapperBrowserView;
 
   std::unique_ptr<NativeBrowserView> view_;
   base::WeakPtr<NativeWindow> owner_window_;
-  scoped_refptr<NativeView> owner_view_;
+  scoped_refptr<NativeWrapperBrowserView> owner_view_;
 
   int32_t id_;
 

@@ -61,7 +61,18 @@ class BaseView : public gin_helper::Wrappable<BaseView>,
   friend class ScrollView;
 
   void SetBounds(const gfx::Rect& bounds);
-  gfx::Rect GetBounds();
+  gfx::Rect GetBounds() const;
+#if defined(OS_MAC)
+  gfx::Point OffsetFromView(gin::Handle<BaseView> from) const;
+  gfx::Point OffsetFromWindow() const;
+#endif
+  void SetVisible(bool visible);
+  bool IsVisible() const;
+  bool IsTreeVisible() const;
+  void Focus();
+  bool HasFocus() const;
+  void SetFocusable(bool focusable);
+  bool IsFocusable() const;
   void SetBackgroundColor(const std::string& color_name);
   void SetStringProperty(const std::string& name, const std::string& value);
   void SetNumericProperty(const std::string& name, float value);

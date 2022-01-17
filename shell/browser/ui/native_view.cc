@@ -14,7 +14,6 @@
 #include "shell/common/color_util.h"
 #include "third_party/yoga/Yoga.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace electron {
 
@@ -64,13 +63,6 @@ void NativeView::Layout() {
     static_cast<NativeContainerView*>(GetParent())->Layout();
 }
 
-void NativeView::UpdateDefaultStyle() {
-  gfx::Size min_size = GetMinimumSize();
-  YGNodeStyleSetMinWidth(node_, min_size.width());
-  YGNodeStyleSetMinHeight(node_, min_size.height());
-  Layout();
-}
-
 void NativeView::SetStyleProperty(const std::string& name, const std::string& value) {
   std::string key(ParseName(name));
   if (key == "backgroundcolor")
@@ -81,10 +73,6 @@ void NativeView::SetStyleProperty(const std::string& name, const std::string& va
 
 void NativeView::SetStyleProperty(const std::string& name, float value) {
   SetYogaProperty(node_, ParseName(name), value);
-}
-
-gfx::Size NativeView::GetMinimumSize() const {
-  return gfx::Size();
 }
 
 void NativeView::SetParent(NativeView* parent) {
@@ -118,8 +106,6 @@ bool NativeView::IsContainer() const {
 void NativeView::OnSizeChanged() {}
 
 void NativeView::DetachChildView(NativeView* view) {}
-
-void NativeView::DetachChildView(NativeBrowserView* view) {}
 
 void NativeView::TriggerBeforeunloadEvents() {}
 

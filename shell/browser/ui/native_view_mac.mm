@@ -7,10 +7,10 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "shell/browser/ui/cocoa/electron_native_view.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/geometry/vector2d.h"
 
 namespace electron {
 
@@ -61,14 +61,14 @@ gfx::Rect NativeView::GetBounds() const {
   return ToNearestRect(gfx::RectF([view_ frame]));
 }
 
-gfx::Vector2d NativeView::OffsetFromView(const NativeView* from) const {
+gfx::Point NativeView::OffsetFromView(const NativeView* from) const {
   NSPoint point = [view_ convertPoint:NSZeroPoint toView:from->view_];
-  return gfx::Vector2d(point.x, point.y);
+  return gfx::Point(point.x, point.y);
 }
 
-gfx::Vector2d NativeView::OffsetFromWindow() const {
+gfx::Point NativeView::OffsetFromWindow() const {
   NSPoint point = [view_ convertPoint:NSZeroPoint toView:nil];
-  return gfx::Vector2d(point.x, point.y);
+  return gfx::Point(point.x, point.y);
 }
 
 void NativeView::PlatformSetVisible(bool visible) {

@@ -11,8 +11,12 @@
 #include "shell/common/gin_helper/dictionary.h"
 #include "shell/common/gin_helper/object_template_builder.h"
 #include "shell/common/node_includes.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
 #include "ui/views/view.h"
+#endif
 
 namespace {
 
@@ -52,10 +56,63 @@ void BaseView::SetBounds(const gfx::Rect& bounds) {
     view_->SetBounds(bounds);
 }
 
-gfx::Rect BaseView::GetBounds() {
+gfx::Rect BaseView::GetBounds() const {
   if (view_.get())
     return view_->GetBounds();
   return gfx::Rect();
+}
+
+#if defined(OS_MAC)
+gfx::Point BaseView::OffsetFromView(gin::Handle<BaseView> from) const {
+  if (view_.get())
+    return view_->OffsetFromView(from->view());
+  return gfx::Point();
+}
+
+gfx::Point BaseView::OffsetFromWindow() const {
+  if (view_.get())
+    return view_->OffsetFromWindow();
+  return gfx::Point();
+}
+#endif
+
+void BaseView::SetVisible(bool visible) {
+  if (view_.get())
+    view_->SetVisible(visible);
+}
+
+bool BaseView::IsVisible() const {
+  if (view_.get())
+    return view_->IsVisible();
+  return false;
+}
+
+bool BaseView::IsTreeVisible() const {
+  if (view_.get())
+    return view_->IsTreeVisible();
+  return false;
+}
+
+void BaseView::Focus() {
+  if (view_.get())
+    view_->Focus();
+}
+
+bool BaseView::HasFocus() const {
+  if (view_.get())
+    return view_->HasFocus();
+  return false;
+}
+
+void BaseView::SetFocusable(bool focusable) {
+  if (view_.get())
+    view_->SetFocusable(focusable);
+}
+
+bool BaseView::IsFocusable() const {
+  if (view_.get())
+    return view_->IsFocusable();
+  return false;
 }
 
 void BaseView::SetBackgroundColor(const std::string& color_name) {
@@ -101,6 +158,17 @@ void BaseView::BuildPrototype(v8::Isolate* isolate,
   gin_helper::ObjectTemplateBuilder(isolate, prototype->PrototypeTemplate())
       .SetMethod("setBounds", &BaseView::SetBounds)
       .SetMethod("getBounds", &BaseView::GetBounds)
+#if defined(OS_MAC)
+      .SetMethod("offsetFromView", &BaseView::OffsetFromView)
+      .SetMethod("offsetFromWindow", &BaseView::OffsetFromWindow)
+#endif
+      .SetMethod("setVisible", &BaseView::SetVisible)
+      .SetMethod("isVisible", &BaseView::IsVisible)
+      .SetMethod("isTreeVisible", &BaseView::IsTreeVisible)
+      .SetMethod("focus", &BaseView::Focus)
+      .SetMethod("hasFocus", &BaseView::HasFocus)
+      .SetMethod("setFocusable", &BaseView::SetFocusable)
+      .SetMethod("isFocusable", &BaseView::IsFocusable)
       .SetMethod("setBackgroundColor", &BaseView::SetBackgroundColor)
       .SetMethod("setStringProperty", &BaseView::SetStringProperty)
       .SetMethod("setNumericProperty", &BaseView::SetNumericProperty)

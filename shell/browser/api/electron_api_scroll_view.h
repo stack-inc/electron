@@ -8,10 +8,6 @@
 #include "shell/browser/api/electron_api_base_view.h"
 #include "shell/browser/ui/native_scroll_view.h"
 
-namespace gfx {
-class Size;
-}
-
 namespace electron {
 
 namespace api {
@@ -32,19 +28,32 @@ class ScrollView : public BaseView {
   void SetContentView(v8::Local<v8::Value> value);
   v8::Local<v8::Value> GetContentView() const;
   void SetContentSize(gfx::Size size);
-  gfx::Size GetContentSize();
-  int GetMinHeight();
-  int GetMaxHeight();
-  void ClipHeightTo(int min_height, int max_height);
-  gfx::Rect GetVisibleRect();
+  gfx::Size GetContentSize() const;
   void SetHorizontalScrollBarMode(std::string mode);
-  std::string GetHorizontalScrollBarMode();
+  std::string GetHorizontalScrollBarMode() const;
   void SetVerticalScrollBarMode(std::string mode);
-  std::string GetVerticalScrollBarMode();
+  std::string GetVerticalScrollBarMode() const;
+#if defined(OS_MAC)
+  void SetHorizontalScrollElasticity(std::string elasticity);
+  std::string GetHorizontalScrollElasticity() const;
+  void SetVerticalScrollElasticity(std::string elasticity);
+  std::string GetVerticalScrollElasticity() const;
+  void SetScrollPosition(gfx::Point point);
+  gfx::Point GetScrollPosition() const;
+  gfx::Point GetMaximumScrollPosition() const;
+  void SetOverlayScrollbar(bool overlay);
+  bool IsOverlayScrollbar() const;
+#endif
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
+  int GetMinHeight() const;
+  int GetMaxHeight() const;
+  void ClipHeightTo(int min_height, int max_height);
+  gfx::Rect GetVisibleRect() const;
   void SetAllowKeyboardScrolling(bool allow);
-  bool GetAllowKeyboardScrolling();
+  bool GetAllowKeyboardScrolling() const;
   void SetDrawOverflowIndicator(bool indicator);
-  bool GetDrawOverflowIndicator();
+  bool GetDrawOverflowIndicator() const;
+#endif
 
   scoped_refptr<NativeScrollView> scroll_;
 
