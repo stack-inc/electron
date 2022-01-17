@@ -139,12 +139,14 @@ std::string ScrollView::GetVerticalScrollBarMode() const {
 #if defined(OS_MAC)
 void ScrollView::SetHorizontalScrollElasticity(std::string elasticity) {
   if (scroll_.get())
-    scroll_->SetHorizontalScrollElasticity(ConvertToScrollElasticity(elasticity));
+    scroll_->SetHorizontalScrollElasticity(
+        ConvertToScrollElasticity(elasticity));
 }
 
 std::string ScrollView::GetHorizontalScrollElasticity() const {
   if (scroll_.get())
-    return ConvertFromScrollElasticity(scroll_->GetHorizontalScrollElasticity());
+    return ConvertFromScrollElasticity(
+        scroll_->GetHorizontalScrollElasticity());
   return "automatic";
 }
 
@@ -279,7 +281,8 @@ void ScrollView::BuildPrototype(v8::Isolate* isolate,
                  &ScrollView::GetVerticalScrollElasticity)
       .SetMethod("setScrollPosition", &ScrollView::SetScrollPosition)
       .SetMethod("getScrollPosition", &ScrollView::GetScrollPosition)
-      .SetMethod("getMaximumScrollPosition", &ScrollView::GetMaximumScrollPosition)
+      .SetMethod("getMaximumScrollPosition",
+                 &ScrollView::GetMaximumScrollPosition)
       .SetMethod("setOverlayScrollbar", &ScrollView::SetOverlayScrollbar)
       .SetMethod("isOverlayScrollbar", &ScrollView::IsOverlayScrollbar)
 #endif
@@ -288,10 +291,14 @@ void ScrollView::BuildPrototype(v8::Isolate* isolate,
       .SetMethod("getMaxHeight", &ScrollView::GetMaxHeight)
       .SetMethod("clipHeightTo", &ScrollView::ClipHeightTo)
       .SetMethod("getVisibleRect", &ScrollView::GetVisibleRect)
-      .SetMethod("setAllowKeyboardScrolling", &ScrollView::SetAllowKeyboardScrolling)
-      .SetMethod("getAllowKeyboardScrolling", &ScrollView::GetAllowKeyboardScrolling)
-      .SetMethod("setDrawOverflowIndicator", &ScrollView::SetDrawOverflowIndicator)
-      .SetMethod("getDrawOverflowIndicator", &ScrollView::GetDrawOverflowIndicator)
+      .SetMethod("setAllowKeyboardScrolling",
+                 &ScrollView::SetAllowKeyboardScrolling)
+      .SetMethod("getAllowKeyboardScrolling",
+                 &ScrollView::GetAllowKeyboardScrolling)
+      .SetMethod("setDrawOverflowIndicator",
+                 &ScrollView::SetDrawOverflowIndicator)
+      .SetMethod("getDrawOverflowIndicator",
+                 &ScrollView::GetDrawOverflowIndicator)
 #endif
       .Build();
 }
@@ -311,7 +318,7 @@ void Initialize(v8::Local<v8::Object> exports,
   v8::Isolate* isolate = context->GetIsolate();
   gin_helper::Dictionary dict(isolate, exports);
   dict.Set("ScrollView", gin_helper::CreateConstructor<ScrollView>(
-                            isolate, base::BindRepeating(&ScrollView::New)));
+                             isolate, base::BindRepeating(&ScrollView::New)));
 }
 
 }  // namespace

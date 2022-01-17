@@ -15,17 +15,23 @@ void NativeWrapperBrowserView::PlatformInit() {
 }
 
 void NativeWrapperBrowserView::PlatformSetBrowserView() {
-  if (api_browser_view_ && api_browser_view_->view()->GetInspectableWebContentsView()) {
-    auto* page = api_browser_view_->view()->GetInspectableWebContentsView()
-                     ->GetNativeView().GetNativeNSView();
+  if (api_browser_view_ &&
+      api_browser_view_->view()->GetInspectableWebContentsView()) {
+    auto* page = api_browser_view_->view()
+                     ->GetInspectableWebContentsView()
+                     ->GetNativeView()
+                     .GetNativeNSView();
     [GetNative() addSubview:page];
   }
 }
 
 void NativeWrapperBrowserView::PlatformDetachBrowserView() {
-  if (api_browser_view_ && api_browser_view_->view()->GetInspectableWebContentsView()) {
-    auto* view = api_browser_view_->view()->GetInspectableWebContentsView()
-                     ->GetNativeView().GetNativeNSView();
+  if (api_browser_view_ &&
+      api_browser_view_->view()->GetInspectableWebContentsView()) {
+    auto* view = api_browser_view_->view()
+                     ->GetInspectableWebContentsView()
+                     ->GetNativeView()
+                     .GetNativeNSView();
     [view removeFromSuperview];
   }
 }

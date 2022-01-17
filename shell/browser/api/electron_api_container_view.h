@@ -35,7 +35,7 @@ class ContainerView : public BaseView {
   void AddChildView(v8::Local<v8::Value> value);
   void RemoveChildView(v8::Local<v8::Value> value);
   void SetTopChildView(v8::Local<v8::Value> value,
-                           gin_helper::ErrorThrower thrower);
+                       gin_helper::ErrorThrower thrower);
   std::vector<v8::Local<v8::Value>> GetViews() const;
 
   scoped_refptr<NativeContainerView> container_;

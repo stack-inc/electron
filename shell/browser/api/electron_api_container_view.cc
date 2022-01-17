@@ -32,8 +32,7 @@ void ContainerView::AddChildView(v8::Local<v8::Value> value) {
   v8::HandleScope handle_scope(isolate);
 
   gin::Handle<BaseView> base_view;
-  if (value->IsObject() &&
-      gin::ConvertFromV8(isolate, value, &base_view)) {
+  if (value->IsObject() && gin::ConvertFromV8(isolate, value, &base_view)) {
     auto get_that_view = base_views_.find(base_view->ID());
     if (get_that_view == base_views_.end()) {
       // If we're reparenting a BaseView, ensure that it's detached from
@@ -63,8 +62,7 @@ void ContainerView::RemoveChildView(v8::Local<v8::Value> value) {
   v8::HandleScope handle_scope(isolate);
 
   gin::Handle<BaseView> base_view;
-  if (value->IsObject() &&
-      gin::ConvertFromV8(isolate, value, &base_view)) {
+  if (value->IsObject() && gin::ConvertFromV8(isolate, value, &base_view)) {
     auto get_that_view = base_views_.find(base_view->ID());
     if (get_that_view != base_views_.end()) {
       container_->RemoveChildView(base_view->view());
@@ -75,7 +73,7 @@ void ContainerView::RemoveChildView(v8::Local<v8::Value> value) {
 }
 
 void ContainerView::SetTopChildView(v8::Local<v8::Value> value,
-                                        gin_helper::ErrorThrower thrower) {
+                                    gin_helper::ErrorThrower thrower) {
   if (!container_.get())
     return;
 
@@ -84,8 +82,7 @@ void ContainerView::SetTopChildView(v8::Local<v8::Value> value,
   v8::HandleScope handle_scope(isolate);
 
   gin::Handle<BaseView> base_view;
-  if (value->IsObject() &&
-      gin::ConvertFromV8(isolate, value, &base_view)) {
+  if (value->IsObject() && gin::ConvertFromV8(isolate, value, &base_view)) {
     auto* owner_view = base_view->view()->GetParent();
     auto get_that_view = base_views_.find(base_view->ID());
     if (get_that_view == base_views_.end() ||
@@ -154,8 +151,9 @@ void Initialize(v8::Local<v8::Object> exports,
                 void* priv) {
   v8::Isolate* isolate = context->GetIsolate();
   gin_helper::Dictionary dict(isolate, exports);
-  dict.Set("ContainerView", gin_helper::CreateConstructor<ContainerView>(
-                            isolate, base::BindRepeating(&ContainerView::New)));
+  dict.Set("ContainerView",
+           gin_helper::CreateConstructor<ContainerView>(
+               isolate, base::BindRepeating(&ContainerView::New)));
 }
 
 }  // namespace

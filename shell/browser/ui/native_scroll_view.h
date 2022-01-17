@@ -10,7 +10,7 @@
 namespace gfx {
 class Point;
 class Size;
-}
+}  // namespace gfx
 
 namespace electron {
 

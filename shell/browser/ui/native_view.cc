@@ -63,7 +63,8 @@ void NativeView::Layout() {
     static_cast<NativeContainerView*>(GetParent())->Layout();
 }
 
-void NativeView::SetStyleProperty(const std::string& name, const std::string& value) {
+void NativeView::SetStyleProperty(const std::string& name,
+                                  const std::string& value) {
   std::string key(ParseName(name));
   if (key == "backgroundcolor")
     SetBackgroundColor(ParseHexColor(value));

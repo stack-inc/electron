@@ -82,8 +82,8 @@ BOOL AcceptsFirstResponder(NSView* self, SEL _cmd) {
   return [self nativeViewPrivate]->focusable;
 }
 
-// Following methods are overrided in ElectronNativeViewProtocol to make sure that
-// content view of frameless always takes the size of its parent view.
+// Following methods are overrided in ElectronNativeViewProtocol to make sure
+// that content view of frameless always takes the size of its parent view.
 
 // This method is directly called by NSWindow during a window resize on OSX
 // 10.10.0, beta 2. We must override it to prevent the content view from

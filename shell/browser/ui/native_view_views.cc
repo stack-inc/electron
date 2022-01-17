@@ -62,8 +62,7 @@ bool NativeView::HasFocus() const {
   return view_->HasFocus();
 }
 
-void NativeView::SetFocusable(bool focusable) {
-}
+void NativeView::SetFocusable(bool focusable) {}
 
 bool NativeView::IsFocusable() const {
   return view_->IsFocusable();

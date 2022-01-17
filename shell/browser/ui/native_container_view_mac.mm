@@ -45,9 +45,7 @@ void NativeContainerView::PlatformRemoveChildView(NativeView* view) {
 
 void NativeContainerView::PlatformSetTopView(NativeView* view) {
   auto* native_view = view->GetNative();
-  [GetNative() addSubview:native_view
-                         positioned:NSWindowAbove
-                         relativeTo:nil];
+  [GetNative() addSubview:native_view positioned:NSWindowAbove relativeTo:nil];
   native_view.hidden = NO;
 }
 

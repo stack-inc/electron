@@ -32,9 +32,10 @@ namespace electron {
 namespace api {
 
 class BaseView : public gin_helper::Wrappable<BaseView>,
-                      public gin_helper::Pinnable<BaseView>
+                 public gin_helper::Pinnable<BaseView>
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
-                      , public views::ViewObserver
+    ,
+                 public views::ViewObserver
 #endif
 {
  public:

@@ -15,14 +15,16 @@ void NativeWrapperBrowserView::PlatformInit() {
 }
 
 void NativeWrapperBrowserView::PlatformSetBrowserView() {
-  if (api_browser_view_ && api_browser_view_->view()->GetInspectableWebContentsView()) {
+  if (api_browser_view_ &&
+      api_browser_view_->view()->GetInspectableWebContentsView()) {
     GetNative()->AddChildView(
         api_browser_view_->view()->GetInspectableWebContentsView()->GetView());
   }
 }
 
 void NativeWrapperBrowserView::PlatformDetachBrowserView() {
-  if (api_browser_view_ && api_browser_view_->view()->GetInspectableWebContentsView()) {
+  if (api_browser_view_ &&
+      api_browser_view_->view()->GetInspectableWebContentsView()) {
     GetNative()->RemoveChildView(
         api_browser_view_->view()->GetInspectableWebContentsView()->GetView());
   }

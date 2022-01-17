@@ -10,8 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-typedef struct YGNode *YGNodeRef;
-typedef struct YGConfig *YGConfigRef;
+typedef struct YGNode* YGNodeRef;
+typedef struct YGConfig* YGConfigRef;
 
 #if defined(OS_MAC)
 #ifdef __OBJC__
@@ -28,7 +28,7 @@ class View;
 namespace gfx {
 class Point;
 class Rect;
-}
+}  // namespace gfx
 
 namespace electron {
 
@@ -90,21 +90,21 @@ class NativeView : public base::RefCounted<NativeView> {
   void SetStyleProperty(const std::string& name, float value);
 
   // Set styles and re-compute the layout.
-  template<typename... Args>
-  void SetStyle(const std::string& name, const std::string& value,
+  template <typename... Args>
+  void SetStyle(const std::string& name,
+                const std::string& value,
                 Args... args) {
     SetStyleProperty(name, value);
     SetStyle(args...);
     Layout();
   }
-  template<typename... Args>
+  template <typename... Args>
   void SetStyle(const std::string& name, float value, Args... args) {
     SetStyleProperty(name, value);
     SetStyle(args...);
     Layout();
   }
-  void SetStyle() {
-  }
+  void SetStyle() {}
 
 #if defined(OS_MAC)
   void SetWantsLayer(bool wants);

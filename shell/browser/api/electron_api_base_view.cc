@@ -31,10 +31,8 @@ namespace electron {
 
 namespace api {
 
-BaseView::BaseView(gin::Arguments* args,
-                   NativeView* native_view)
-    : id_(GetNextId()),
-      view_(native_view) {
+BaseView::BaseView(gin::Arguments* args, NativeView* native_view)
+    : id_(GetNextId()), view_(native_view) {
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
   auto* nview = view_->GetNative();
   if (nview)
@@ -120,7 +118,8 @@ void BaseView::SetBackgroundColor(const std::string& color_name) {
     view_->SetBackgroundColor(ParseHexColor(color_name));
 }
 
-void BaseView::SetStringProperty(const std::string& name, const std::string& value) {
+void BaseView::SetStringProperty(const std::string& name,
+                                 const std::string& value) {
   if (view_.get())
     view_->SetStyleProperty(name, value);
 }

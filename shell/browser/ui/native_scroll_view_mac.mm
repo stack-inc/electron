@@ -8,7 +8,8 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 
-@interface ElectronNativeScrollView : NSScrollView <ElectronNativeViewProtocol> {
+@interface ElectronNativeScrollView
+    : NSScrollView <ElectronNativeViewProtocol> {
  @private
   electron::NativeViewPrivate private_;
   electron::NativeScrollView* shell_;
@@ -159,7 +160,8 @@ void NativeScrollView::SetHorizontalScrollBarMode(ScrollBarMode mode) {
 
 ScrollBarMode NativeScrollView::GetHorizontalScrollBarMode() const {
   auto* scroll = static_cast<ElectronNativeScrollView*>(GetNative());
-  return scroll.hasHorizontalScroller ? ScrollBarMode::kEnabled : ScrollBarMode::kDisabled;
+  return scroll.hasHorizontalScroller ? ScrollBarMode::kEnabled
+                                      : ScrollBarMode::kDisabled;
 }
 
 void NativeScrollView::SetVerticalScrollBarMode(ScrollBarMode mode) {
@@ -169,12 +171,15 @@ void NativeScrollView::SetVerticalScrollBarMode(ScrollBarMode mode) {
 
 ScrollBarMode NativeScrollView::GetVerticalScrollBarMode() const {
   auto* scroll = static_cast<ElectronNativeScrollView*>(GetNative());
-  return scroll.hasVerticalScroller ? ScrollBarMode::kEnabled : ScrollBarMode::kDisabled;
+  return scroll.hasVerticalScroller ? ScrollBarMode::kEnabled
+                                    : ScrollBarMode::kDisabled;
 }
 
-void NativeScrollView::SetHorizontalScrollElasticity(ScrollElasticity elasticity) {
+void NativeScrollView::SetHorizontalScrollElasticity(
+    ScrollElasticity elasticity) {
   auto* scroll = static_cast<ElectronNativeScrollView*>(GetNative());
-  scroll.horizontalScrollElasticity = static_cast<NSScrollElasticity>(elasticity);
+  scroll.horizontalScrollElasticity =
+      static_cast<NSScrollElasticity>(elasticity);
 }
 
 ScrollElasticity NativeScrollView::GetHorizontalScrollElasticity() const {
@@ -182,7 +187,8 @@ ScrollElasticity NativeScrollView::GetHorizontalScrollElasticity() const {
   return static_cast<ScrollElasticity>(scroll.horizontalScrollElasticity);
 }
 
-void NativeScrollView::SetVerticalScrollElasticity(ScrollElasticity elasticity) {
+void NativeScrollView::SetVerticalScrollElasticity(
+    ScrollElasticity elasticity) {
   auto* scroll = static_cast<ElectronNativeScrollView*>(GetNative());
   scroll.verticalScrollElasticity = static_cast<NSScrollElasticity>(elasticity);
 }

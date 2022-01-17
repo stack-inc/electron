@@ -29,10 +29,9 @@ inline bool IsRootYGNode(NativeContainerView* view) {
 
 // Get bounds from the CSS node.
 inline gfx::Rect GetYGNodeBounds(YGNodeRef node) {
-  return ToNearestRect(gfx::RectF(YGNodeLayoutGetLeft(node),
-                                  YGNodeLayoutGetTop(node),
-                                  YGNodeLayoutGetWidth(node),
-                                  YGNodeLayoutGetHeight(node)));
+  return ToNearestRect(
+      gfx::RectF(YGNodeLayoutGetLeft(node), YGNodeLayoutGetTop(node),
+                 YGNodeLayoutGetWidth(node), YGNodeLayoutGetHeight(node)));
 }
 
 }  // namespace
@@ -41,8 +40,7 @@ NativeContainerView::NativeContainerView() {
   PlatformInit();
 }
 
-NativeContainerView::NativeContainerView(const char* an_empty_constructor) {
-}
+NativeContainerView::NativeContainerView(const char* an_empty_constructor) {}
 
 NativeContainerView::~NativeContainerView() {
   PlatformDestroy();
@@ -126,7 +124,8 @@ void NativeContainerView::AddChildView(scoped_refptr<NativeView> view) {
   AddChildViewAt(std::move(view), ChildCount());
 }
 
-void NativeContainerView::AddChildViewAt(scoped_refptr<NativeView> view, int index) {
+void NativeContainerView::AddChildViewAt(scoped_refptr<NativeView> view,
+                                         int index) {
   if (!view)
     return;
   if (view == this || index < 0 || index > ChildCount())
@@ -192,9 +191,9 @@ void NativeContainerView::SetChildBoundsFromCSS() {
   for (int i = 0; i < ChildCount(); ++i) {
     NativeView* child = ChildAt(i);
     if (child->IsVisible()) {
-auto cbounds = GetYGNodeBounds(child->node());
+      auto cbounds = GetYGNodeBounds(child->node());
       child->SetBounds(cbounds);
-}
+    }
   }
 }
 

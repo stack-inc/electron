@@ -22,9 +22,8 @@ WrapperBrowserView::WrapperBrowserView(gin::Arguments* args,
     : BaseView(args, view), view_(view) {
   v8::Isolate* isolate = args->isolate();
   v8::Local<v8::Value> value;
-    gin::Handle<BrowserView> browser_view;
-  if (options.Get("browserView", &value) &&
-      value->IsObject() &&
+  gin::Handle<BrowserView> browser_view;
+  if (options.Get("browserView", &value) && value->IsObject() &&
       gin::ConvertFromV8(isolate, value, &browser_view)) {
     // If we're reparenting a BrowserView, ensure that it's detached from
     // its previous owner window/view.
@@ -40,8 +39,7 @@ WrapperBrowserView::WrapperBrowserView(gin::Arguments* args,
     browser_view_.Reset(isolate, value);
   } else {
     gin::Dictionary options = gin::Dictionary::CreateEmpty(isolate);
-    browser_view =
-        gin::CreateHandle(isolate, new BrowserView(args, options));
+    browser_view = gin::CreateHandle(isolate, new BrowserView(args, options));
     browser_view->Pin(isolate);
     browser_view_.Reset(isolate, browser_view.ToV8());
   }
@@ -75,8 +73,9 @@ v8::Local<v8::Value> WrapperBrowserView::GetBrowserView(v8::Isolate* isolate) {
 }
 
 // static
-gin_helper::WrappableBase* WrapperBrowserView::New(gin_helper::ErrorThrower thrower,
-                                              gin::Arguments* args) {
+gin_helper::WrappableBase* WrapperBrowserView::New(
+    gin_helper::ErrorThrower thrower,
+    gin::Arguments* args) {
   if (!Browser::Get()->is_ready()) {
     thrower.ThrowError("Cannot create WrapperBrowserView before app is ready");
     return nullptr;
@@ -95,8 +94,9 @@ gin_helper::WrappableBase* WrapperBrowserView::New(gin_helper::ErrorThrower thro
 }
 
 // static
-void WrapperBrowserView::BuildPrototype(v8::Isolate* isolate,
-                                   v8::Local<v8::FunctionTemplate> prototype) {
+void WrapperBrowserView::BuildPrototype(
+    v8::Isolate* isolate,
+    v8::Local<v8::FunctionTemplate> prototype) {
   prototype->SetClassName(gin::StringToV8(isolate, "WrapperBrowserView"));
   gin_helper::ObjectTemplateBuilder(isolate, prototype->PrototypeTemplate())
       .SetProperty("browserView", &WrapperBrowserView::GetBrowserView)
@@ -117,10 +117,12 @@ void Initialize(v8::Local<v8::Object> exports,
                 void* priv) {
   v8::Isolate* isolate = context->GetIsolate();
   gin_helper::Dictionary dict(isolate, exports);
-  dict.Set("WrapperBrowserView", gin_helper::CreateConstructor<WrapperBrowserView>(
-                            isolate, base::BindRepeating(&WrapperBrowserView::New)));
+  dict.Set("WrapperBrowserView",
+           gin_helper::CreateConstructor<WrapperBrowserView>(
+               isolate, base::BindRepeating(&WrapperBrowserView::New)));
 }
 
 }  // namespace
 
-NODE_LINKED_MODULE_CONTEXT_AWARE(electron_browser_wrapper_browser_view, Initialize)
+NODE_LINKED_MODULE_CONTEXT_AWARE(electron_browser_wrapper_browser_view,
+                                 Initialize)

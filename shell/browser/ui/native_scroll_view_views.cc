@@ -11,8 +11,7 @@ namespace electron {
 
 namespace {
 
-ScrollBarMode GetScrollBarMode(
-    views::ScrollView::ScrollBarMode mode) {
+ScrollBarMode GetScrollBarMode(views::ScrollView::ScrollBarMode mode) {
   switch (mode) {
     case views::ScrollView::ScrollBarMode::kDisabled:
       return ScrollBarMode::kDisabled;
