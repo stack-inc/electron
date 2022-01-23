@@ -25,6 +25,7 @@
 #include "content/public/browser/desktop_media_id.h"
 #include "shell/browser/javascript_environment.h"
 #include "shell/browser/native_browser_view_mac.h"
+#include "shell/browser/ui/cocoa/electron_native_view.h"
 #include "shell/browser/ui/cocoa/electron_native_widget_mac.h"
 #include "shell/browser/ui/cocoa/electron_ns_window.h"
 #include "shell/browser/ui/cocoa/electron_ns_window_delegate.h"
@@ -42,6 +43,7 @@
 #include "shell/common/process_util.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/webrtc/modules/desktop_capture/mac/window_list_utils.h"
+#include "third_party/yoga/Yoga.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gl/gpu_switching_manager.h"
@@ -448,6 +450,9 @@ NativeWindowMac::NativeWindowMac(const gin_helper::Dictionary& options,
   SetContentView(new views::View());
   AddContentViewLayers();
 
+  YGConfigSetPointScaleFactor(yoga_config_,
+                              [window_ screen].backingScaleFactor);
+
   original_frame_ = [window_ frame];
   original_level_ = [window_ level];
 }
@@ -463,6 +468,34 @@ void NativeWindowMac::SetContentView(views::View* view) {
   root_view->AddChildView(content_view());
 
   root_view->Layout();
+}
+
+void NativeWindowMac::PlatformSetContentView(NativeView* view) {
+  if (GetContentView()) {
+    [GetContentView()->GetNative() removeFromSuperview];
+    if (IsNativeView(GetContentView()->GetNative())) {
+      NativeViewPrivate* priv =
+          [GetContentView()->GetNative() nativeViewPrivate];
+      priv->is_content_view = false;
+      // Revert wantsLayer to default.
+      [GetContentView()->GetNative() setWantsLayer:priv->wants_layer];
+    } else {
+      [GetContentView()->GetNative() setWantsLayer:NO];
+    }
+  }
+
+  NSView* content_view = view->GetNative();
+  if (IsNativeView(content_view))
+    [content_view nativeViewPrivate]->is_content_view = true;
+  [window_ setContentView:content_view];
+
+  if (!has_frame()) {
+    [content_view setFrame:[[[window_ contentView] superview] bounds]];
+    // Make sure top corners are rounded:
+    [content_view setWantsLayer:!transparent()];
+  }
+
+  //AddContentViewLayers();
 }
 
 void NativeWindowMac::Close() {
@@ -1185,6 +1218,8 @@ void NativeWindowMac::AddBrowserView(NativeBrowserView* view) {
     native_view.hidden = NO;
   }
 
+  RearrangeBrowserViews();
+
   [CATransaction commit];
 }
 
@@ -1201,6 +1236,8 @@ void NativeWindowMac::RemoveBrowserView(NativeBrowserView* view) {
     [view->GetInspectableWebContentsView()->GetNativeView().GetNativeNSView()
         removeFromSuperview];
   remove_browser_view(view);
+
+  RearrangeBrowserViews();
 
   [CATransaction commit];
 }
@@ -1225,6 +1262,94 @@ void NativeWindowMac::SetTopBrowserView(NativeBrowserView* view) {
                            relativeTo:nil];
     native_view.hidden = NO;
   }
+
+  [CATransaction commit];
+}
+
+void NativeWindowMac::RearrangeBrowserViews() {
+  [CATransaction begin];
+  [CATransaction setDisableActions:YES];
+
+  auto views = browser_views();
+  views.sort([](auto* a, auto* b) { return a->GetZIndex() < b->GetZIndex(); });
+
+  auto begin = views.begin();
+  auto* first = *begin;
+  begin++;
+
+  for (auto it = begin; it != views.end(); it++) {
+    auto* second = *it;
+
+    auto* nativeFirst = first->GetInspectableWebContentsView()
+                            ->GetNativeView()
+                            .GetNativeNSView();
+    auto* nativeSecond = second->GetInspectableWebContentsView()
+                             ->GetNativeView()
+                             .GetNativeNSView();
+
+    [[window_ contentView] addSubview:nativeSecond
+                           positioned:NSWindowAbove
+                           relativeTo:nativeFirst];
+
+    first = second;
+  }
+
+  [CATransaction commit];
+}
+
+void NativeWindowMac::AddChildView(NativeView* view) {
+  [CATransaction begin];
+  [CATransaction setDisableActions:YES];
+
+  if (!view) {
+    [CATransaction commit];
+    return;
+  }
+
+  add_base_view(view);
+  view->SetWindow(this);
+  auto* native_view = view->GetNative();
+  [[window_ contentView] addSubview:native_view
+                         positioned:NSWindowAbove
+                         relativeTo:nil];
+  native_view.hidden = NO;
+
+  [CATransaction commit];
+}
+
+void NativeWindowMac::RemoveChildView(NativeView* view) {
+  [CATransaction begin];
+  [CATransaction setDisableActions:YES];
+
+  if (!view) {
+    [CATransaction commit];
+    return;
+  }
+
+  [view->GetNative() removeFromSuperview];
+  remove_base_view(view);
+  view->SetWindow(nullptr);
+
+  [CATransaction commit];
+}
+
+void NativeWindowMac::SetTopChildView(NativeView* view) {
+  [CATransaction begin];
+  [CATransaction setDisableActions:YES];
+
+  if (!view) {
+    [CATransaction commit];
+    return;
+  }
+
+  remove_base_view(view);
+  add_base_view(view);
+  view->SetWindow(this);
+  auto* native_view = view->GetNative();
+  [[window_ contentView] addSubview:native_view
+                         positioned:NSWindowAbove
+                         relativeTo:nil];
+  native_view.hidden = NO;
 
   [CATransaction commit];
 }

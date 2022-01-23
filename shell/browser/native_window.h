@@ -17,6 +17,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "extensions/browser/app_window/size_constraints.h"
 #include "shell/browser/native_window_observer.h"
+#include "shell/browser/ui/native_view.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -64,7 +65,13 @@ class NativeWindow : public base::SupportsUserData,
 
   void InitFromOptions(const gin_helper::Dictionary& options);
 
+  void SetContentView(scoped_refptr<NativeView> view);
+  NativeView* GetContentView() const;
+
+  YGConfigRef GetYogaConfig() const;
+
   virtual void SetContentView(views::View* view) = 0;
+  virtual void PlatformSetContentView(NativeView* view) = 0;
 
   virtual void Close() = 0;
   virtual void CloseImmediately() = 0;
@@ -172,6 +179,10 @@ class NativeWindow : public base::SupportsUserData,
   virtual void AddBrowserView(NativeBrowserView* browser_view) = 0;
   virtual void RemoveBrowserView(NativeBrowserView* browser_view) = 0;
   virtual void SetTopBrowserView(NativeBrowserView* browser_view) = 0;
+  virtual void RearrangeBrowserViews() = 0;
+  virtual void AddChildView(NativeView* view) = 0;
+  virtual void RemoveChildView(NativeView* view) = 0;
+  virtual void SetTopChildView(NativeView* view) = 0;
   virtual content::DesktopMediaID GetDesktopMediaID() const = 0;
   virtual gfx::NativeView GetNativeView() const = 0;
   virtual gfx::NativeWindow GetNativeWindow() const = 0;
@@ -335,6 +346,8 @@ class NativeWindow : public base::SupportsUserData,
 
   std::list<NativeBrowserView*> browser_views() const { return browser_views_; }
 
+  std::list<NativeView*> base_views() const { return base_views_; }
+
   int32_t window_id() const { return next_id_; }
 
  protected:
@@ -355,11 +368,22 @@ class NativeWindow : public base::SupportsUserData,
         [&browser_view](NativeBrowserView* n) { return (n == browser_view); });
   }
 
+  void add_base_view(NativeView* view) {
+    base_views_.push_back(view);
+  }
+  void remove_base_view(NativeView* view) {
+    base_views_.remove_if(
+        [&view](NativeView* n) { return (n == view); });
+  }
+
   // The boolean parsing of the "titleBarOverlay" option
   bool titlebar_overlay_ = false;
 
   // The "titleBarStyle" option.
   TitleBarStyle title_bar_style_ = TitleBarStyle::kNormal;
+
+  // The yoga config for window's children.
+  YGConfigRef yoga_config_;
 
  private:
   std::unique_ptr<views::Widget> widget_;
@@ -368,6 +392,8 @@ class NativeWindow : public base::SupportsUserData,
 
   // The content view, weak ref.
   views::View* content_view_ = nullptr;
+
+  scoped_refptr<NativeView> native_content_view_;
 
   // Whether window has standard frame.
   bool has_frame_ = true;
@@ -402,6 +428,9 @@ class NativeWindow : public base::SupportsUserData,
 
   // The browser view layer.
   std::list<NativeBrowserView*> browser_views_;
+
+  // The BaseView's layer.
+  std::list<NativeView*> base_views_;
 
   // Observers of this window.
   base::ObserverList<NativeWindowObserver> observers_;

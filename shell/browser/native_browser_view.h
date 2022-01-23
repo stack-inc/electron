@@ -51,6 +51,32 @@ class NativeBrowserView : public content::WebContentsObserver {
   virtual gfx::Rect GetBounds() = 0;
   virtual void SetBackgroundColor(SkColor color) = 0;
 
+  virtual void SetZIndex(int z_index) = 0;
+  virtual int GetZIndex() = 0;
+
+  struct RoundedCornersOptions {
+    float radius = 0.f;
+    bool top_left = false;
+    bool top_right = false;
+    bool bottom_left = false;
+    bool bottom_right = false;
+
+    RoundedCornersOptions();
+  };
+
+  virtual void SetRoundedCorners(const RoundedCornersOptions& options);
+
+  struct ClippingInsetOptions {
+    int top = 0;
+    int left = 0;
+    int bottom = 0;
+    int right = 0;
+
+    ClippingInsetOptions();
+  };
+
+  virtual void SetClippingInsets(const ClippingInsetOptions& options);
+
   virtual void UpdateDraggableRegions(
       const std::vector<gfx::Rect>& drag_exclude_rects) {}
 
@@ -65,6 +91,7 @@ class NativeBrowserView : public content::WebContentsObserver {
 
   InspectableWebContents* inspectable_web_contents_;
   std::vector<mojom::DraggableRegionPtr> draggable_regions_;
+  int z_index_ = 1;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeBrowserView);

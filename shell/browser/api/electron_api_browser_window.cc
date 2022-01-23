@@ -13,10 +13,12 @@
 #include "shell/browser/api/electron_api_web_contents_view.h"
 #include "shell/browser/browser.h"
 #include "shell/browser/native_browser_view.h"
+#include "shell/browser/ui/native_view.h"
 #include "shell/browser/unresponsive_suppressor.h"
 #include "shell/browser/web_contents_preferences.h"
 #include "shell/browser/window_list.h"
 #include "shell/common/color_util.h"
+#include "shell/common/gin_converters/gfx_converter.h"
 #include "shell/common/gin_helper/constructor.h"
 #include "shell/common/gin_helper/dictionary.h"
 #include "shell/common/gin_helper/object_template_builder.h"
@@ -198,6 +200,7 @@ void BrowserWindow::WebContentsDestroyed() {
 
 void BrowserWindow::OnCloseContents() {
   BaseWindow::ResetBrowserViews();
+  BaseWindow::ResetBaseViews();
   api_web_contents_->Destroy();
 }
 
@@ -276,6 +279,12 @@ void BrowserWindow::OnCloseButtonClicked(bool* prevent_default) {
     }
   }
 
+  if (window_->GetContentView())
+    window_->GetContentView()->TriggerBeforeunloadEvents();
+
+  for (NativeView* view : window_->base_views())
+    view->TriggerBeforeunloadEvents();
+
   if (web_contents()->NeedToFireBeforeUnloadOrUnloadEvents()) {
     web_contents()->DispatchBeforeUnload(false /* auto_cancel */);
   } else {
@@ -319,6 +328,11 @@ void BrowserWindow::OnWindowResize() {
   } else {
     for (NativeBrowserView* view : window_->browser_views()) {
       view->UpdateDraggableRegions(view->GetDraggableRegions());
+    }
+    if (window_->GetContentView())
+      window_->GetContentView()->UpdateDraggableRegions();
+    for (NativeView* view : window_->base_views()) {
+      view->UpdateDraggableRegions();
     }
   }
 #endif
@@ -463,6 +477,14 @@ v8::Local<v8::Value> BrowserWindow::GetWebContents(v8::Isolate* isolate) {
   return v8::Local<v8::Value>::New(isolate, web_contents_);
 }
 
+void BrowserWindow::RearrangeBrowserViews() {
+  window()->RearrangeBrowserViews();
+
+#if defined(OS_MACOSX)
+  UpdateDraggableRegions(draggable_regions_);
+#endif
+}
+
 void BrowserWindow::ScheduleUnresponsiveEvent(int ms) {
   if (!window_unresponsive_closure_.IsCancelled())
     return;
@@ -521,6 +543,7 @@ void BrowserWindow::BuildPrototype(v8::Isolate* isolate,
       .SetMethod("focusOnWebView", &BrowserWindow::FocusOnWebView)
       .SetMethod("blurWebView", &BrowserWindow::BlurWebView)
       .SetMethod("isWebViewFocused", &BrowserWindow::IsWebViewFocused)
+      .SetMethod("rearrangeBrowserViews", &BrowserWindow::RearrangeBrowserViews)
       .SetProperty("webContents", &BrowserWindow::GetWebContents);
 }
 

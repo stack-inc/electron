@@ -348,6 +348,7 @@ source_set("electron_lib") {
     "buildflags",
     "chromium_src:chrome",
     "chromium_src:chrome_spellchecker",
+    "third_party/yoga",
     "shell/common/api:mojo",
     "//base:base_static",
     "//base/allocator:buildflags",
@@ -423,6 +424,7 @@ source_set("electron_lib") {
 
   include_dirs = [
     "chromium_src",
+    "third_party",
     ".",
     "$target_gen_dir",
 

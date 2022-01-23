@@ -30,6 +30,7 @@
 #include "shell/common/gin_converters/image_converter.h"
 #include "shell/common/gin_helper/dictionary.h"
 #include "shell/common/options_switches.h"
+#include "third_party/yoga/Yoga.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/image/image.h"
@@ -351,6 +352,12 @@ NativeWindowViews::NativeWindowViews(const gin_helper::Dictionary& options,
   // Default content view.
   SetContentView(new views::View());
 
+#if defined(OS_WIN)
+  YGConfigSetPointScaleFactor(yoga_config_,
+                              display::win::ScreenWin::GetScaleFactorForHWND(
+                                  GetAcceleratedWidget()));
+#endif
+
   gfx::Size size = bounds.size();
   if (has_frame() &&
       options.Get(options::kUseContentSize, &use_content_size_) &&
@@ -424,6 +431,10 @@ void NativeWindowViews::SetContentView(views::View* view) {
   focused_view_ = view;
   root_view_->AddChildView(content_view());
   root_view_->Layout();
+}
+
+void NativeWindowViews::PlatformSetContentView(NativeView* view) {
+  SetContentView(view->GetNative());
 }
 
 void NativeWindowViews::Close() {
@@ -1236,6 +1247,49 @@ void NativeWindowViews::SetTopBrowserView(NativeBrowserView* view) {
   if (view->GetInspectableWebContentsView())
     content_view()->ReorderChildView(
         view->GetInspectableWebContentsView()->GetView(), -1);
+}
+
+void NativeWindowViews::RearrangeBrowserViews() {
+}
+
+void NativeWindowViews::AddChildView(NativeView* view) {
+  if (!content_view())
+    return;
+
+  if (!view)
+    return;
+
+  add_base_view(view);
+  view->SetWindow(this);
+  content_view()->AddChildView(view->GetNative());
+  content_view()->Layout();
+}
+
+void NativeWindowViews::RemoveChildView(NativeView* view) {
+  if (!content_view())
+    return;
+
+  if (!view)
+    return;
+
+  content_view()->RemoveChildView(view->GetNative());
+  content_view()->Layout();
+  remove_base_view(view);
+  view->SetWindow(nullptr);
+}
+
+void NativeWindowViews::SetTopChildView(NativeView* view) {
+  if (!content_view())
+    return;
+
+  if (!view)
+    return;
+
+  remove_base_view(view);
+  add_base_view(view);
+  view->SetWindow(this);
+  content_view()->ReorderChildView(view->GetNative(), -1);
+  content_view()->Layout();
 }
 
 void NativeWindowViews::SetParentWindow(NativeWindow* parent) {

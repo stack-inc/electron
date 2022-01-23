@@ -33,6 +33,9 @@ class NativeBrowserViewViews : public NativeBrowserView {
   void UpdateDraggableRegions(
       const std::vector<mojom::DraggableRegionPtr>& regions) override;
 
+  void SetZIndex(int z_index) override;
+  int GetZIndex() override;
+
   // WebContentsObserver:
   void RenderViewReady() override;
 
