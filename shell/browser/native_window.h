@@ -68,8 +68,6 @@ class NativeWindow : public base::SupportsUserData,
   void SetContentView(scoped_refptr<NativeView> view);
   NativeView* GetContentView() const;
 
-  YGConfigRef GetYogaConfig() const;
-
   virtual void SetContentView(views::View* view) = 0;
   virtual void PlatformSetContentView(NativeView* view) = 0;
 
@@ -368,12 +366,9 @@ class NativeWindow : public base::SupportsUserData,
         [&browser_view](NativeBrowserView* n) { return (n == browser_view); });
   }
 
-  void add_base_view(NativeView* view) {
-    base_views_.push_back(view);
-  }
+  void add_base_view(NativeView* view) { base_views_.push_back(view); }
   void remove_base_view(NativeView* view) {
-    base_views_.remove_if(
-        [&view](NativeView* n) { return (n == view); });
+    base_views_.remove_if([&view](NativeView* n) { return (n == view); });
   }
 
   // The boolean parsing of the "titleBarOverlay" option
@@ -381,9 +376,6 @@ class NativeWindow : public base::SupportsUserData,
 
   // The "titleBarStyle" option.
   TitleBarStyle title_bar_style_ = TitleBarStyle::kNormal;
-
-  // The yoga config for window's children.
-  YGConfigRef yoga_config_;
 
  private:
   std::unique_ptr<views::Widget> widget_;

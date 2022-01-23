@@ -30,7 +30,6 @@
 #include "shell/common/gin_converters/image_converter.h"
 #include "shell/common/gin_helper/dictionary.h"
 #include "shell/common/options_switches.h"
-#include "third_party/yoga/Yoga.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/image/image.h"
@@ -351,12 +350,6 @@ NativeWindowViews::NativeWindowViews(const gin_helper::Dictionary& options,
 
   // Default content view.
   SetContentView(new views::View());
-
-#if defined(OS_WIN)
-  YGConfigSetPointScaleFactor(yoga_config_,
-                              display::win::ScreenWin::GetScaleFactorForHWND(
-                                  GetAcceleratedWidget()));
-#endif
 
   gfx::Size size = bounds.size();
   if (has_frame() &&
@@ -1249,8 +1242,7 @@ void NativeWindowViews::SetTopBrowserView(NativeBrowserView* view) {
         view->GetInspectableWebContentsView()->GetView(), -1);
 }
 
-void NativeWindowViews::RearrangeBrowserViews() {
-}
+void NativeWindowViews::RearrangeBrowserViews() {}
 
 void NativeWindowViews::AddChildView(NativeView* view) {
   if (!content_view())

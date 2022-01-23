@@ -118,22 +118,6 @@ void BaseView::SetBackgroundColor(const std::string& color_name) {
     view_->SetBackgroundColor(ParseHexColor(color_name));
 }
 
-void BaseView::SetStringProperty(const std::string& name,
-                                 const std::string& value) {
-  if (view_.get())
-    view_->SetStyleProperty(name, value);
-}
-
-void BaseView::SetNumericProperty(const std::string& name, float value) {
-  if (view_.get())
-    view_->SetStyleProperty(name, value);
-}
-
-void BaseView::Layout() {
-  if (view_.get())
-    view_->Layout();
-}
-
 // static
 gin_helper::WrappableBase* BaseView::New(gin_helper::ErrorThrower thrower,
                                          gin::Arguments* args) {
@@ -169,9 +153,6 @@ void BaseView::BuildPrototype(v8::Isolate* isolate,
       .SetMethod("setFocusable", &BaseView::SetFocusable)
       .SetMethod("isFocusable", &BaseView::IsFocusable)
       .SetMethod("setBackgroundColor", &BaseView::SetBackgroundColor)
-      .SetMethod("setStringProperty", &BaseView::SetStringProperty)
-      .SetMethod("setNumericProperty", &BaseView::SetNumericProperty)
-      .SetMethod("layout", &BaseView::Layout)
       .Build();
 }
 

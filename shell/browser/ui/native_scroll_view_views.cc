@@ -47,7 +47,6 @@ void NativeScrollView::SetContentSize(const gfx::Size& size) {
   if (!content_view_.get())
     return;
   content_view_->GetNative()->SetSize(size);
-  Layout();
 }
 
 void NativeScrollView::SetHorizontalScrollBarMode(ScrollBarMode mode) {

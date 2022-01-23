@@ -75,9 +75,6 @@ class BaseView : public gin_helper::Wrappable<BaseView>,
   void SetFocusable(bool focusable);
   bool IsFocusable() const;
   void SetBackgroundColor(const std::string& color_name);
-  void SetStringProperty(const std::string& name, const std::string& value);
-  void SetNumericProperty(const std::string& name, float value);
-  void Layout();
 
   int32_t id_;
 

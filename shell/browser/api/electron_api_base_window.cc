@@ -346,10 +346,6 @@ void BaseWindow::SetContainerView(gin::Handle<ContainerView> view) {
   window_->SetContentView(view->view());
 }
 
-void BaseWindow::SetUseYoga(bool val) {
-  Browser::Get()->set_use_yoga(val);
-}
-
 void BaseWindow::CloseImmediately() {
   if (!window_->IsClosed())
     window_->CloseImmediately();
@@ -852,8 +848,7 @@ void BaseWindow::SetTopBrowserView(v8::Local<v8::Value> value,
 
 void BaseWindow::AddChildView(v8::Local<v8::Value> value) {
   gin::Handle<BaseView> base_view;
-  if (value->IsObject() &&
-      gin::ConvertFromV8(isolate(), value, &base_view)) {
+  if (value->IsObject() && gin::ConvertFromV8(isolate(), value, &base_view)) {
     auto get_that_view = base_views_.find(base_view->ID());
     if (get_that_view == base_views_.end()) {
       // If we're reparenting a BaseView, ensure that it's detached from
@@ -877,8 +872,7 @@ void BaseWindow::AddChildView(v8::Local<v8::Value> value) {
 
 void BaseWindow::RemoveChildView(v8::Local<v8::Value> value) {
   gin::Handle<BaseView> base_view;
-  if (value->IsObject() &&
-      gin::ConvertFromV8(isolate(), value, &base_view)) {
+  if (value->IsObject() && gin::ConvertFromV8(isolate(), value, &base_view)) {
     auto get_that_view = base_views_.find(base_view->ID());
     if (get_that_view != base_views_.end()) {
       window_->RemoveChildView(base_view->view());
@@ -890,10 +884,9 @@ void BaseWindow::RemoveChildView(v8::Local<v8::Value> value) {
 }
 
 void BaseWindow::SetTopChildView(v8::Local<v8::Value> value,
-                                     gin_helper::Arguments* args) {
+                                 gin_helper::Arguments* args) {
   gin::Handle<BaseView> base_view;
-  if (value->IsObject() &&
-      gin::ConvertFromV8(isolate(), value, &base_view)) {
+  if (value->IsObject() && gin::ConvertFromV8(isolate(), value, &base_view)) {
     auto* owner_window = base_view->view()->GetWindow();
     auto get_that_view = base_views_.find(base_view->ID());
     if (get_that_view == base_views_.end() ||
@@ -1302,7 +1295,6 @@ void BaseWindow::BuildPrototype(v8::Isolate* isolate,
   gin_helper::ObjectTemplateBuilder(isolate, prototype->PrototypeTemplate())
       .SetMethod("setContentView", &BaseWindow::SetContentView)
       .SetMethod("setContainerView", &BaseWindow::SetContainerView)
-      .SetMethod("setUseYoga", &BaseWindow::SetUseYoga)
       .SetMethod("close", &BaseWindow::Close)
       .SetMethod("focus", &BaseWindow::Focus)
       .SetMethod("blur", &BaseWindow::Blur)

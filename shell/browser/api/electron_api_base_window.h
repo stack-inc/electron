@@ -95,7 +95,6 @@ class BaseWindow : public gin_helper::TrackableObject<BaseWindow>,
   // Public APIs of NativeWindow.
   void SetContentView(gin::Handle<View> view);
   void SetContainerView(gin::Handle<ContainerView> view);
-  void SetUseYoga(bool val);
   void Close();
   virtual void CloseImmediately();
   virtual void Focus();
@@ -190,7 +189,7 @@ class BaseWindow : public gin_helper::TrackableObject<BaseWindow>,
   virtual void AddChildView(v8::Local<v8::Value> value);
   virtual void RemoveChildView(v8::Local<v8::Value> value);
   virtual void SetTopChildView(v8::Local<v8::Value> value,
-                                   gin_helper::Arguments* args);
+                               gin_helper::Arguments* args);
   virtual std::vector<v8::Local<v8::Value>> GetViews() const;
   virtual void ResetBaseViews();
   std::string GetMediaSourceId() const;

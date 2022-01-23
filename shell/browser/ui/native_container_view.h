@@ -20,7 +20,6 @@ class NativeContainerView : public NativeView {
   NativeContainerView();
 
   // NativeView:
-  void Layout() override;
   bool IsContainer() const override;
   void OnSizeChanged() override;
   void DetachChildView(NativeView* view) override;
@@ -28,13 +27,6 @@ class NativeContainerView : public NativeView {
 #if defined(OS_MAC)
   void UpdateDraggableRegions() override;
 #endif
-
-  // Gets preferred size of view.
-  gfx::Size GetPreferredSize() const;
-
-  // Returns the preferred width/height for the specified height/width.
-  float GetPreferredHeightForWidth(float width) const;
-  float GetPreferredWidthForHeight(float height) const;
 
   // Add/Remove children.
   void AddChildView(scoped_refptr<NativeView> view);
@@ -49,9 +41,6 @@ class NativeContainerView : public NativeView {
       return nullptr;
     return children_[index].get();
   }
-
-  // Internal: Used by certain implementations to refresh layout.
-  void SetChildBoundsFromCSS();
 
 #if 0
   // Events.
@@ -76,9 +65,6 @@ class NativeContainerView : public NativeView {
  private:
   // The view layer.
   std::vector<scoped_refptr<NativeView>> children_;
-
-  // Whether the container should update children's layout.
-  bool dirty_ = false;
 };
 
 }  // namespace electron

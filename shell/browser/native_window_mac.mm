@@ -43,7 +43,6 @@
 #include "shell/common/process_util.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/webrtc/modules/desktop_capture/mac/window_list_utils.h"
-#include "third_party/yoga/Yoga.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gl/gpu_switching_manager.h"
@@ -450,9 +449,6 @@ NativeWindowMac::NativeWindowMac(const gin_helper::Dictionary& options,
   SetContentView(new views::View());
   AddContentViewLayers();
 
-  YGConfigSetPointScaleFactor(yoga_config_,
-                              [window_ screen].backingScaleFactor);
-
   original_frame_ = [window_ frame];
   original_level_ = [window_ level];
 }
@@ -495,7 +491,7 @@ void NativeWindowMac::PlatformSetContentView(NativeView* view) {
     [content_view setWantsLayer:!transparent()];
   }
 
-  //AddContentViewLayers();
+  // AddContentViewLayers();
 }
 
 void NativeWindowMac::Close() {

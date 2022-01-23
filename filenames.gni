@@ -522,8 +522,6 @@ filenames = {
     "shell/browser/ui/tray_icon_observer.h",
     "shell/browser/ui/webui/accessibility_ui.cc",
     "shell/browser/ui/webui/accessibility_ui.h",
-    "shell/browser/ui/yoga_util.cc",
-    "shell/browser/ui/yoga_util.h",
     "shell/browser/unresponsive_suppressor.cc",
     "shell/browser/unresponsive_suppressor.h",
     "shell/browser/web_contents_permission_helper.cc",

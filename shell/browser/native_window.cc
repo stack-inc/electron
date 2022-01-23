@@ -17,7 +17,6 @@
 #include "shell/common/gin_helper/dictionary.h"
 #include "shell/common/gin_helper/persistent_dictionary.h"
 #include "shell/common/options_switches.h"
-#include "third_party/yoga/Yoga.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
@@ -77,9 +76,7 @@ gfx::Size GetExpandedWindowSize(const NativeWindow* window, gfx::Size size) {
 
 NativeWindow::NativeWindow(const gin_helper::Dictionary& options,
                            NativeWindow* parent)
-    : yoga_config_(YGConfigNew()),
-      widget_(std::make_unique<views::Widget>()),
-      parent_(parent) {
+    : widget_(std::make_unique<views::Widget>()), parent_(parent) {
   ++next_id_;
 
   options.Get(options::kFrame, &has_frame_);
@@ -106,7 +103,6 @@ NativeWindow::NativeWindow(const gin_helper::Dictionary& options,
 }
 
 NativeWindow::~NativeWindow() {
-  YGConfigFree(yoga_config_);
   if (native_content_view_.get())
     native_content_view_->BecomeContentView(nullptr);
   // It's possible that the windows gets destroyed before it's closed, in that
@@ -240,10 +236,6 @@ void NativeWindow::SetContentView(scoped_refptr<NativeView> view) {
 
 NativeView* NativeWindow::GetContentView() const {
   return native_content_view_.get();
-}
-
-YGConfigRef NativeWindow::GetYogaConfig() const {
-  return yoga_config_;
 }
 
 bool NativeWindow::IsClosed() const {

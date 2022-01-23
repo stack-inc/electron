@@ -10,9 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-typedef struct YGNode* YGNodeRef;
-typedef struct YGConfig* YGConfigRef;
-
 #if defined(OS_MAC)
 #ifdef __OBJC__
 @class NSView;
@@ -64,9 +61,6 @@ class NativeView : public base::RefCounted<NativeView> {
   // Whether the view and its parent are visible.
   bool IsTreeVisible() const;
 
-  // Update layout.
-  virtual void Layout();
-
   // Mark the whole view as dirty.
   void SchedulePaint();
 
@@ -83,28 +77,6 @@ class NativeView : public base::RefCounted<NativeView> {
 
   // Display related styles.
   void SetBackgroundColor(SkColor color);
-
-  // Set layout related styles without doing layout.
-  // While this is public API, it should only be used by language bindings.
-  void SetStyleProperty(const std::string& name, const std::string& value);
-  void SetStyleProperty(const std::string& name, float value);
-
-  // Set styles and re-compute the layout.
-  template <typename... Args>
-  void SetStyle(const std::string& name,
-                const std::string& value,
-                Args... args) {
-    SetStyleProperty(name, value);
-    SetStyle(args...);
-    Layout();
-  }
-  template <typename... Args>
-  void SetStyle(const std::string& name, float value, Args... args) {
-    SetStyleProperty(name, value);
-    SetStyle(args...);
-    Layout();
-  }
-  void SetStyle() {}
 
 #if defined(OS_MAC)
   void SetWantsLayer(bool wants);
@@ -140,9 +112,6 @@ class NativeView : public base::RefCounted<NativeView> {
   virtual void UpdateDraggableRegions();
 #endif
 
-  // Internal: Get the CSS node of the view.
-  YGNodeRef node() const { return node_; }
-
 #if !defined(OS_MAC)
   // Should delete the |view_| in destructor.
   void set_delete_view(bool should) { delete_view_ = should; }
@@ -173,12 +142,6 @@ class NativeView : public base::RefCounted<NativeView> {
 #if !defined(OS_MAC)
   bool delete_view_ = true;
 #endif
-
-  // The config of its yoga node.
-  YGConfigRef yoga_config_;
-
-  // The node recording CSS styles.
-  YGNodeRef node_;
 };
 
 }  // namespace electron

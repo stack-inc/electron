@@ -37,7 +37,7 @@ namespace gin_helper {
 class Arguments;
 }
 
-typedef struct YGConfig *YGConfigRef;
+typedef struct YGConfig* YGConfigRef;
 
 namespace electron {
 
@@ -312,11 +312,6 @@ class Browser : public WindowListObserver {
   bool is_ready() const { return is_ready_; }
   v8::Local<v8::Value> WhenReady(v8::Isolate* isolate);
 
-  YGConfigRef yoga_config() const { return yoga_config_; }
-
-  void set_use_yoga(bool use) { use_yoga_ = use; }
-  bool use_yoga() const { return use_yoga_; }
-
  protected:
   // Returns the version of application bundle or executable file.
   std::string GetExecutableFileVersion() const;
@@ -336,8 +331,6 @@ class Browser : public WindowListObserver {
   // WindowListObserver implementations:
   void OnWindowCloseCancelled(NativeWindow* window) override;
   void OnWindowAllClosed() override;
-
-  void SetPointScaleFactorForYogaConfig();
 
   // Observers of the browser.
   base::ObserverList<BrowserObserver> observers_;
@@ -380,9 +373,6 @@ class Browser : public WindowListObserver {
   // In charge of running taskbar related APIs.
   TaskbarHost taskbar_host_;
 #endif
-
-  YGConfigRef yoga_config_;
-  bool use_yoga_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };
