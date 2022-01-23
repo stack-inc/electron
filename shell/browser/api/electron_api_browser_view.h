@@ -14,6 +14,8 @@
 #include "gin/wrappable.h"
 #include "shell/browser/extended_web_contents_observer.h"
 #include "shell/browser/native_browser_view.h"
+#include "shell/browser/native_window.h"
+#include "shell/browser/ui/native_wrapper_browser_view.h"
 #include "shell/common/api/api.mojom.h"
 #include "shell/common/gin_helper/constructible.h"
 #include "shell/common/gin_helper/error_thrower.h"
@@ -32,6 +34,7 @@ namespace electron {
 namespace api {
 
 class WebContents;
+class WrapperBrowserView;
 
 class BrowserView : public gin::Wrappable<BrowserView>,
                     public gin_helper::Constructible<BrowserView>,
@@ -52,9 +55,17 @@ class BrowserView : public gin::Wrappable<BrowserView>,
   WebContents* web_contents() const { return api_web_contents_; }
   NativeBrowserView* view() const { return view_.get(); }
 
+  NativeWindow* owner_window() const { return owner_window_.get(); }
+  NativeWrapperBrowserView* owner_view() const { return owner_view_.get(); }
+
+  void SetOwnerWindow(NativeWindow* window);
+  void SetOwnerView(NativeWrapperBrowserView* view);
+
   int32_t ID() const { return id_; }
 
  protected:
+friend class WrapperBrowserView;
+
   BrowserView(gin::Arguments* args, const gin_helper::Dictionary& options);
   ~BrowserView() override;
 
@@ -76,6 +87,8 @@ class BrowserView : public gin::Wrappable<BrowserView>,
   class WebContents* api_web_contents_ = nullptr;
 
   std::unique_ptr<NativeBrowserView> view_;
+  base::WeakPtr<NativeWindow> owner_window_;
+  scoped_refptr<NativeWrapperBrowserView> owner_view_;
 
   int32_t id_;
 
