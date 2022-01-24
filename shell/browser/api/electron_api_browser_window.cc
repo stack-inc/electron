@@ -13,6 +13,7 @@
 #include "shell/browser/api/electron_api_web_contents_view.h"
 #include "shell/browser/browser.h"
 #include "shell/browser/native_browser_view.h"
+#include "shell/browser/ui/native_view.h"
 #include "shell/browser/unresponsive_suppressor.h"
 #include "shell/browser/web_contents_preferences.h"
 #include "shell/browser/window_list.h"
@@ -198,6 +199,7 @@ void BrowserWindow::WebContentsDestroyed() {
 
 void BrowserWindow::OnCloseContents() {
   BaseWindow::ResetBrowserViews();
+  BaseWindow::ResetBaseViews();
   api_web_contents_->Destroy();
 }
 
@@ -276,6 +278,12 @@ void BrowserWindow::OnCloseButtonClicked(bool* prevent_default) {
     }
   }
 
+  if (window_->GetContentView())
+    window_->GetContentView()->TriggerBeforeunloadEvents();
+
+  for (NativeView* view : window_->base_views())
+    view->TriggerBeforeunloadEvents();
+
   if (web_contents()->NeedToFireBeforeUnloadOrUnloadEvents()) {
     web_contents()->DispatchBeforeUnload(false /* auto_cancel */);
   } else {
@@ -319,6 +327,11 @@ void BrowserWindow::OnWindowResize() {
   } else {
     for (NativeBrowserView* view : window_->browser_views()) {
       view->UpdateDraggableRegions(view->GetDraggableRegions());
+    }
+    if (window_->GetContentView())
+      window_->GetContentView()->UpdateDraggableRegions();
+    for (NativeView* view : window_->base_views()) {
+      view->UpdateDraggableRegions();
     }
   }
 #endif
