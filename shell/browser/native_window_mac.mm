@@ -1214,8 +1214,6 @@ void NativeWindowMac::AddBrowserView(NativeBrowserView* view) {
     native_view.hidden = NO;
   }
 
-  RearrangeBrowserViews();
-
   [CATransaction commit];
 }
 
@@ -1232,8 +1230,6 @@ void NativeWindowMac::RemoveBrowserView(NativeBrowserView* view) {
     [view->GetInspectableWebContentsView()->GetNativeView().GetNativeNSView()
         removeFromSuperview];
   remove_browser_view(view);
-
-  RearrangeBrowserViews();
 
   [CATransaction commit];
 }
@@ -1257,37 +1253,6 @@ void NativeWindowMac::SetTopBrowserView(NativeBrowserView* view) {
                            positioned:NSWindowAbove
                            relativeTo:nil];
     native_view.hidden = NO;
-  }
-
-  [CATransaction commit];
-}
-
-void NativeWindowMac::RearrangeBrowserViews() {
-  [CATransaction begin];
-  [CATransaction setDisableActions:YES];
-
-  auto views = browser_views();
-  views.sort([](auto* a, auto* b) { return a->GetZIndex() < b->GetZIndex(); });
-
-  auto begin = views.begin();
-  auto* first = *begin;
-  begin++;
-
-  for (auto it = begin; it != views.end(); it++) {
-    auto* second = *it;
-
-    auto* nativeFirst = first->GetInspectableWebContentsView()
-                            ->GetNativeView()
-                            .GetNativeNSView();
-    auto* nativeSecond = second->GetInspectableWebContentsView()
-                             ->GetNativeView()
-                             .GetNativeNSView();
-
-    [[window_ contentView] addSubview:nativeSecond
-                           positioned:NSWindowAbove
-                           relativeTo:nativeFirst];
-
-    first = second;
   }
 
   [CATransaction commit];

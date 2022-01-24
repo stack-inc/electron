@@ -152,14 +152,6 @@ void NativeBrowserViewViews::SetBackgroundColor(SkColor color) {
   view->SchedulePaint();
 }
 
-void NativeBrowserViewViews::SetZIndex(int z_index) {
-  z_index_ = z_index;
-}
-
-int NativeBrowserViewViews::GetZIndex() {
-  return z_index_;
-}
-
 // static
 NativeBrowserView* NativeBrowserView::Create(
     InspectableWebContents* inspectable_web_contents) {

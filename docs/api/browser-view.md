@@ -38,15 +38,6 @@ Objects created with `new BrowserView` have the following properties:
 
 A [`WebContents`](web-contents.md) object owned by this view.
 
-#### `view.zIndex`
-
-A `Integer` representing z-index to set. Has no effect until `window.rearrangeBrowserViews()` is called.
-
-#### `view.clickThrough` _macOS_
-
-A `Boolean` representing whether this BrowserView receives any mouse input. Any BrowserView
-with `clickThrough = true` will still display but won't receive any mouse events.
-
 ### Instance Methods
 
 Objects created with `new BrowserView` have the following instance methods:
@@ -79,20 +70,3 @@ The `bounds` of this BrowserView instance as `Object`.
 
 * `color` String - Color in `#aarrggbb` or `#argb` form. The alpha channel is
   optional.
-
-#### `view.setRoundedCorners(options)` _macOS_
-
-* `options` Object
-  * `radius` Number - Radius of each corner that is rounded.
-  * `topLeft` Boolean (optional) - If `true`, top left corner will be rounded with `radius` value. `false` by default.
-  * `topRight` Boolean (optional) - If `true`, top right corner will be rounded with `radius` value. `false` by default.
-  * `bottomLeft` Boolean (optional) - If `true`, bottom left corner will be rounded with `radius` value. `false` by default.
-  * `bottomRight` Boolean (optional) - If `true`, bottom right corner will be rounded with `radius` value. `false` by default.
-
-#### `view.setClippingInsets(options)` _macOS_
-
-- `options` Object
-  - `left` Number (optional) - How many pixels to clip from the left side of the browser view.
-  - `top` Number (optional) - How many pixels to clip from the top of the browser view.
-  - `right` Number (optional) - How many pixels to clip from the right side of the browser view.
-  - `bottom` Number (optional) - How many pixels to clip from the bottom side of the browser view.

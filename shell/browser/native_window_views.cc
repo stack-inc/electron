@@ -1242,8 +1242,6 @@ void NativeWindowViews::SetTopBrowserView(NativeBrowserView* view) {
         view->GetInspectableWebContentsView()->GetView(), -1);
 }
 
-void NativeWindowViews::RearrangeBrowserViews() {}
-
 void NativeWindowViews::AddChildView(NativeView* view) {
   if (!content_view())
     return;

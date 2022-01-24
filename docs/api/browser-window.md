@@ -1811,10 +1811,6 @@ with `addBrowserView` or `setBrowserView`.
 **Note:** The BrowserView API is currently experimental and may change or be
 removed in future Electron releases.
 
-#### `win.rearrangeBrowserViews()`
-
-Rearranges browser views according to their z-indexes.
-
 #### `win.addChildView(view)` _Experimental_
 
 * `view` [BaseView](base-view.md)

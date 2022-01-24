@@ -9,10 +9,6 @@
 
 namespace electron {
 
-NativeBrowserView::RoundedCornersOptions::RoundedCornersOptions() = default;
-
-NativeBrowserView::ClippingInsetOptions::ClippingInsetOptions() = default;
-
 NativeBrowserView::NativeBrowserView(
     InspectableWebContents* inspectable_web_contents)
     : inspectable_web_contents_(inspectable_web_contents) {
@@ -20,12 +16,6 @@ NativeBrowserView::NativeBrowserView(
 }
 
 NativeBrowserView::~NativeBrowserView() = default;
-
-void NativeBrowserView::SetRoundedCorners(
-    const NativeBrowserView::RoundedCornersOptions& options) {}
-
-void NativeBrowserView::SetClippingInsets(
-    const NativeBrowserView::ClippingInsetOptions& options) {}
 
 InspectableWebContentsView* NativeBrowserView::GetInspectableWebContentsView() {
   if (!inspectable_web_contents_)

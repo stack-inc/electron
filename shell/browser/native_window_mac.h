@@ -110,7 +110,6 @@ class NativeWindowMac : public NativeWindow,
   void AddBrowserView(NativeBrowserView* browser_view) override;
   void RemoveBrowserView(NativeBrowserView* browser_view) override;
   void SetTopBrowserView(NativeBrowserView* browser_view) override;
-  void RearrangeBrowserViews() override;
   void AddChildView(NativeView* view) override;
   void RemoveChildView(NativeView* view) override;
   void SetTopChildView(NativeView* view) override;

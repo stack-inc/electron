@@ -18,7 +18,6 @@
 #include "shell/browser/web_contents_preferences.h"
 #include "shell/browser/window_list.h"
 #include "shell/common/color_util.h"
-#include "shell/common/gin_converters/gfx_converter.h"
 #include "shell/common/gin_helper/constructor.h"
 #include "shell/common/gin_helper/dictionary.h"
 #include "shell/common/gin_helper/object_template_builder.h"
@@ -477,14 +476,6 @@ v8::Local<v8::Value> BrowserWindow::GetWebContents(v8::Isolate* isolate) {
   return v8::Local<v8::Value>::New(isolate, web_contents_);
 }
 
-void BrowserWindow::RearrangeBrowserViews() {
-  window()->RearrangeBrowserViews();
-
-#if defined(OS_MACOSX)
-  UpdateDraggableRegions(draggable_regions_);
-#endif
-}
-
 void BrowserWindow::ScheduleUnresponsiveEvent(int ms) {
   if (!window_unresponsive_closure_.IsCancelled())
     return;
@@ -543,7 +534,6 @@ void BrowserWindow::BuildPrototype(v8::Isolate* isolate,
       .SetMethod("focusOnWebView", &BrowserWindow::FocusOnWebView)
       .SetMethod("blurWebView", &BrowserWindow::BlurWebView)
       .SetMethod("isWebViewFocused", &BrowserWindow::IsWebViewFocused)
-      .SetMethod("rearrangeBrowserViews", &BrowserWindow::RearrangeBrowserViews)
       .SetProperty("webContents", &BrowserWindow::GetWebContents);
 }
 

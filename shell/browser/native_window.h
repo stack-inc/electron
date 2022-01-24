@@ -177,7 +177,6 @@ class NativeWindow : public base::SupportsUserData,
   virtual void AddBrowserView(NativeBrowserView* browser_view) = 0;
   virtual void RemoveBrowserView(NativeBrowserView* browser_view) = 0;
   virtual void SetTopBrowserView(NativeBrowserView* browser_view) = 0;
-  virtual void RearrangeBrowserViews() = 0;
   virtual void AddChildView(NativeView* view) = 0;
   virtual void RemoveChildView(NativeView* view) = 0;
   virtual void SetTopChildView(NativeView* view) = 0;

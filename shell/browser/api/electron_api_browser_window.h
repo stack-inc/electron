@@ -55,8 +55,6 @@ class BrowserWindow : public BaseWindow,
       content::RenderProcessHost* render_process_host) override;
   void WebContentsDestroyed() override;
 
-  void RearrangeBrowserViews();
-
   // ExtendedWebContentsObserver:
   void OnCloseContents() override;
   void OnDraggableRegionsUpdated(

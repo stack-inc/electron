@@ -81,14 +81,6 @@ friend class WrapperBrowserView;
   void SetBounds(const gfx::Rect& bounds);
   gfx::Rect GetBounds();
   void SetBackgroundColor(const std::string& color_name);
-  bool IsClickThrough();
-  void SetClickThrough(bool clickThrough);
-  void SetZIndex(int z_index);
-  int GetZIndex();
-  void SetRoundedCorners(
-      const NativeBrowserView::RoundedCornersOptions& options);
-  void SetClippingInsets(
-      const NativeBrowserView::ClippingInsetOptions& options);
   v8::Local<v8::Value> GetWebContents(v8::Isolate*);
 
   v8::Global<v8::Value> web_contents_;
