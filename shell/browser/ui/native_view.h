@@ -5,10 +5,13 @@
 #ifndef SHELL_BROWSER_UI_NATIVE_VIEW_H_
 #define SHELL_BROWSER_UI_NATIVE_VIEW_H_
 
-#include <string>
-
 #include "base/memory/ref_counted.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/rect.h"
+
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
+#include "ui/views/view_observer.h"
+#endif
 
 #if defined(OS_MAC)
 #ifdef __OBJC__
@@ -16,7 +19,7 @@
 #else
 struct NSView;
 #endif
-#else
+#elif defined(TOOLKIT_VIEWS)
 namespace views {
 class View;
 }
@@ -24,21 +27,25 @@ class View;
 
 namespace gfx {
 class Point;
-class Rect;
 }  // namespace gfx
 
 namespace electron {
 
 #if defined(OS_MAC)
 using NATIVEVIEW = NSView*;
-#else
+#elif defined(TOOLKIT_VIEWS)
 using NATIVEVIEW = views::View*;
 #endif
 
 class NativeWindow;
 
 // The base class for all kinds of views.
-class NativeView : public base::RefCounted<NativeView> {
+class NativeView : public base::RefCounted<NativeView>
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
+    ,
+                   public views::ViewObserver
+#endif
+{
  public:
   NativeView();
 
@@ -48,11 +55,9 @@ class NativeView : public base::RefCounted<NativeView> {
   // Get position and size.
   gfx::Rect GetBounds() const;
 
-#if defined(OS_MAC)
   // Coordinate convertions.
   gfx::Point OffsetFromView(const NativeView* from) const;
   gfx::Point OffsetFromWindow() const;
-#endif
 
   // Show/Hide the view.
   void SetVisible(bool visible);
@@ -60,12 +65,6 @@ class NativeView : public base::RefCounted<NativeView> {
 
   // Whether the view and its parent are visible.
   bool IsTreeVisible() const;
-
-  // Mark the whole view as dirty.
-  void SchedulePaint();
-
-  // Repaint the rect
-  void SchedulePaintRect(const gfx::Rect& rect);
 
   // Move the keyboard focus to the view.
   void Focus();
@@ -98,7 +97,7 @@ class NativeView : public base::RefCounted<NativeView> {
 
   void SetWindow(NativeWindow* window);
 
-  // Internal: Whether this class inherits from Container.
+  // Whether this class inherits from Container.
   virtual bool IsContainer() const;
 
   // Internal: Notify that view's size has changed.
@@ -112,13 +111,13 @@ class NativeView : public base::RefCounted<NativeView> {
   virtual void UpdateDraggableRegions();
 #endif
 
-#if !defined(OS_MAC)
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
   // Should delete the |view_| in destructor.
   void set_delete_view(bool should) { delete_view_ = should; }
 #endif
 
  protected:
-  virtual ~NativeView();
+  ~NativeView() override;
 
   // Called by subclasses to take the ownership of |view|.
   void TakeOverView(NATIVEVIEW view);
@@ -126,6 +125,12 @@ class NativeView : public base::RefCounted<NativeView> {
   void PlatformInit();
   void PlatformDestroy();
   void PlatformSetVisible(bool visible);
+
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
+  // views::ViewObserver:
+  void OnViewBoundsChanged(views::View* observed_view) override;
+  void OnViewIsDeleting(views::View* observed_view) override;
+#endif
 
   virtual void SetWindowForChildren(NativeWindow* window);
 
@@ -139,8 +144,9 @@ class NativeView : public base::RefCounted<NativeView> {
   // The native implementation.
   NATIVEVIEW view_ = nullptr;
 
-#if !defined(OS_MAC)
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
   bool delete_view_ = true;
+  gfx::Rect bounds_;
 #endif
 };
 

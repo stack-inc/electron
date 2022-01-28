@@ -4,14 +4,7 @@
 
 #include "shell/browser/ui/native_view.h"
 
-#include <utility>
-
-#include "base/strings/string_util.h"
-#include "shell/browser/browser.h"
 #include "shell/browser/native_window.h"
-#include "shell/browser/ui/native_container_view.h"
-#include "shell/common/color_util.h"
-#include "ui/gfx/geometry/rect.h"
 
 namespace electron {
 

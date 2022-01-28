@@ -8,7 +8,6 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "shell/browser/ui/cocoa/electron_native_view.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -81,14 +80,6 @@ bool NativeView::IsVisible() const {
 
 bool NativeView::IsTreeVisible() const {
   return ![view_ isHiddenOrHasHiddenAncestor];
-}
-
-void NativeView::SchedulePaint() {
-  [view_ setNeedsDisplay:YES];
-}
-
-void NativeView::SchedulePaintRect(const gfx::Rect& rect) {
-  [view_ setNeedsDisplayInRect:rect.ToCGRect()];
 }
 
 void NativeView::Focus() {

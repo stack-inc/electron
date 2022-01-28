@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #include "shell/browser/browser.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
@@ -33,10 +32,6 @@ bool NativeContainerView::IsContainer() const {
   return true;
 }
 
-void NativeContainerView::OnSizeChanged() {
-  NativeView::OnSizeChanged();
-}
-
 void NativeContainerView::DetachChildView(NativeView* view) {
   RemoveChildView(view);
 }
@@ -52,7 +47,7 @@ void NativeContainerView::SetWindowForChildren(NativeWindow* window) {
 }
 
 void NativeContainerView::AddChildView(scoped_refptr<NativeView> view) {
-  if (!view)
+  if (!GetNative() || !view)
     return;
   if (view->GetParent() == this)
     return;
@@ -61,7 +56,7 @@ void NativeContainerView::AddChildView(scoped_refptr<NativeView> view) {
 
 void NativeContainerView::AddChildViewAt(scoped_refptr<NativeView> view,
                                          int index) {
-  if (!view)
+  if (!GetNative() || !view)
     return;
   if (view == this || index < 0 || index > ChildCount())
     return;
@@ -78,7 +73,7 @@ void NativeContainerView::AddChildViewAt(scoped_refptr<NativeView> view,
 }
 
 void NativeContainerView::RemoveChildView(NativeView* view) {
-  if (!view)
+  if (!GetNative() || !view)
     return;
   const auto i(std::find(children_.begin(), children_.end(), view));
   if (i == children_.end())
@@ -91,7 +86,7 @@ void NativeContainerView::RemoveChildView(NativeView* view) {
 }
 
 void NativeContainerView::SetTopChildView(NativeView* view) {
-  if (!view || view == this)
+  if (!GetNative() || !view || view == this)
     return;
   const auto i(std::find(children_.begin(), children_.end(), view));
   if (i == children_.end())

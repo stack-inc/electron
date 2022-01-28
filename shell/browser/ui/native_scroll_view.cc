@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "shell/browser/ui/native_container_view.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_conversions.h"
 

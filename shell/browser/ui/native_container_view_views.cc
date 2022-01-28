@@ -18,16 +18,22 @@ void NativeContainerView::PlatformInit() {
 void NativeContainerView::PlatformDestroy() {}
 
 void NativeContainerView::PlatformAddChildView(NativeView* view) {
+  if (!GetNative())
+    return;
   view->set_delete_view(false);
   GetNative()->AddChildView(view->GetNative());
 }
 
 void NativeContainerView::PlatformRemoveChildView(NativeView* view) {
+  if (!GetNative())
+    return;
   view->set_delete_view(true);
   GetNative()->RemoveChildView(view->GetNative());
 }
 
 void NativeContainerView::PlatformSetTopView(NativeView* view) {
+  if (!GetNative())
+    return;
   GetNative()->ReorderChildView(view->GetNative(), -1);
 }
 

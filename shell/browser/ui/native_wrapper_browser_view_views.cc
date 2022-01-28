@@ -15,6 +15,8 @@ void NativeWrapperBrowserView::PlatformInit() {
 }
 
 void NativeWrapperBrowserView::PlatformSetBrowserView() {
+  if (!GetNative())
+    return;
   if (api_browser_view_ &&
       api_browser_view_->view()->GetInspectableWebContentsView()) {
     GetNative()->AddChildView(
@@ -23,6 +25,8 @@ void NativeWrapperBrowserView::PlatformSetBrowserView() {
 }
 
 void NativeWrapperBrowserView::PlatformDetachBrowserView() {
+  if (!GetNative())
+    return;
   if (api_browser_view_ &&
       api_browser_view_->view()->GetInspectableWebContentsView()) {
     GetNative()->RemoveChildView(

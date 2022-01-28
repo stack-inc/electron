@@ -63,10 +63,8 @@ class BaseView : public gin_helper::Wrappable<BaseView>,
 
   void SetBounds(const gfx::Rect& bounds);
   gfx::Rect GetBounds() const;
-#if defined(OS_MAC)
   gfx::Point OffsetFromView(gin::Handle<BaseView> from) const;
   gfx::Point OffsetFromWindow() const;
-#endif
   void SetVisible(bool visible);
   bool IsVisible() const;
   bool IsTreeVisible() const;
@@ -75,6 +73,7 @@ class BaseView : public gin_helper::Wrappable<BaseView>,
   void SetFocusable(bool focusable);
   bool IsFocusable() const;
   void SetBackgroundColor(const std::string& color_name);
+  bool IsContainer() const;
 
   int32_t id_;
 

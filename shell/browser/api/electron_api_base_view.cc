@@ -60,7 +60,6 @@ gfx::Rect BaseView::GetBounds() const {
   return gfx::Rect();
 }
 
-#if defined(OS_MAC)
 gfx::Point BaseView::OffsetFromView(gin::Handle<BaseView> from) const {
   if (view_.get())
     return view_->OffsetFromView(from->view());
@@ -72,7 +71,6 @@ gfx::Point BaseView::OffsetFromWindow() const {
     return view_->OffsetFromWindow();
   return gfx::Point();
 }
-#endif
 
 void BaseView::SetVisible(bool visible) {
   if (view_.get())
@@ -118,6 +116,12 @@ void BaseView::SetBackgroundColor(const std::string& color_name) {
     view_->SetBackgroundColor(ParseHexColor(color_name));
 }
 
+bool BaseView::IsContainer() const {
+  if (view_.get())
+    return view_->IsContainer();
+  return false;
+}
+
 // static
 gin_helper::WrappableBase* BaseView::New(gin_helper::ErrorThrower thrower,
                                          gin::Arguments* args) {
@@ -141,10 +145,8 @@ void BaseView::BuildPrototype(v8::Isolate* isolate,
   gin_helper::ObjectTemplateBuilder(isolate, prototype->PrototypeTemplate())
       .SetMethod("setBounds", &BaseView::SetBounds)
       .SetMethod("getBounds", &BaseView::GetBounds)
-#if defined(OS_MAC)
       .SetMethod("offsetFromView", &BaseView::OffsetFromView)
       .SetMethod("offsetFromWindow", &BaseView::OffsetFromWindow)
-#endif
       .SetMethod("setVisible", &BaseView::SetVisible)
       .SetMethod("isVisible", &BaseView::IsVisible)
       .SetMethod("isTreeVisible", &BaseView::IsTreeVisible)
@@ -153,6 +155,8 @@ void BaseView::BuildPrototype(v8::Isolate* isolate,
       .SetMethod("setFocusable", &BaseView::SetFocusable)
       .SetMethod("isFocusable", &BaseView::IsFocusable)
       .SetMethod("setBackgroundColor", &BaseView::SetBackgroundColor)
+      .SetProperty("id", &BaseView::ID)
+      .SetProperty("isContainer", &BaseView::IsContainer)
       .Build();
 }
 

@@ -21,7 +21,6 @@ class NativeContainerView : public NativeView {
 
   // NativeView:
   bool IsContainer() const override;
-  void OnSizeChanged() override;
   void DetachChildView(NativeView* view) override;
   void TriggerBeforeunloadEvents() override;
 #if defined(OS_MAC)
