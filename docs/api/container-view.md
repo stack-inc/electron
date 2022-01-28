@@ -25,6 +25,22 @@ view.setBounds({ x: 0, y: 0, width: 300, height: 300 })
 
 ### `new ContainerView()` _Experimental_
 
+Creates the new container view.
+
+### Static Methods
+
+The `ContainerView` class has the following static methods:
+
+#### `ContainerView.getAllViews()`
+
+Returns `ContainerView[]` - An array of all created container views.
+
+#### `ContainerView.fromId(id)`
+
+* `id` Integer
+
+Returns `ContainerView | null` - The container view with the given `id`.
+
 ### Instance Methods
 
 Objects created with `new ContainerView` have the following instance methods:

@@ -6,6 +6,7 @@
 #define SHELL_BROWSER_UI_NATIVE_VIEW_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/supports_user_data.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -41,6 +42,7 @@ class NativeWindow;
 
 // The base class for all kinds of views.
 class NativeView : public base::RefCounted<NativeView>
+                 , public base::SupportsUserData
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
     ,
                    public views::ViewObserver

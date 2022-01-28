@@ -24,7 +24,6 @@ class ScrollView : public BaseView {
   ScrollView(gin::Arguments* args, NativeScrollView* scroll);
   ~ScrollView() override;
 
- private:
   void SetContentView(v8::Local<v8::Value> value);
   v8::Local<v8::Value> GetContentView() const;
   void SetContentSize(gfx::Size size);
@@ -55,7 +54,8 @@ class ScrollView : public BaseView {
   bool GetDrawOverflowIndicator() const;
 #endif
 
-  scoped_refptr<NativeScrollView> scroll_;
+ private:
+  NativeScrollView* scroll_;
 
   int32_t content_view_id_ = 0;
   v8::Global<v8::Value> content_view_;

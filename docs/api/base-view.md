@@ -9,9 +9,11 @@ class for [`ContainerView`](container-view.md), [`ScrollView`](scroll-view.md).
 
 Process: [Main](../glossary.md#main-process)
 
+`BaseView` is an [EventEmitter][event-emitter].
+
 ### `new BaseView()` _Experimental_
 
-Creates the new view.
+Creates the new base view.
 
 ### Instance Events
 
@@ -24,6 +26,20 @@ Returns:
 * `event` Event _Experimental_
 
 Emitted when the view's size has been changed.
+
+### Static Methods
+
+The `BaseView` class has the following static methods:
+
+#### `BaseView.getAllViews()`
+
+Returns `BaseView[]` - An array of all created views.
+
+#### `BaseView.fromId(id)`
+
+* `id` Integer
+
+Returns `BaseView | null` - The view with the given `id`.
 
 ### Instance Properties
 

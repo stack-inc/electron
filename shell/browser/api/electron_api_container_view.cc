@@ -5,13 +5,12 @@
 #include "shell/browser/api/electron_api_container_view.h"
 
 #include "gin/handle.h"
-#include "shell/browser/api/electron_api_browser_view.h"
 #include "shell/browser/browser.h"
+#include "shell/browser/javascript_environment.h"
 #include "shell/browser/native_window.h"
 #include "shell/common/gin_helper/dictionary.h"
 #include "shell/common/gin_helper/object_template_builder.h"
 #include "shell/common/node_includes.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace electron {
 
@@ -19,12 +18,14 @@ namespace api {
 
 ContainerView::ContainerView(gin::Arguments* args,
                              NativeContainerView* container)
-    : BaseView(args, container), container_(container) {}
+    : BaseView(args->isolate(), container), container_(container) {
+  InitWithArgs(args);
+}
 
 ContainerView::~ContainerView() = default;
 
 void ContainerView::AddChildView(v8::Local<v8::Value> value) {
-  if (!container_.get())
+  if (!container_)
     return;
 
   v8::Isolate* isolate = JavascriptEnvironment::GetIsolate();
@@ -33,13 +34,13 @@ void ContainerView::AddChildView(v8::Local<v8::Value> value) {
 
   gin::Handle<BaseView> base_view;
   if (value->IsObject() && gin::ConvertFromV8(isolate, value, &base_view)) {
-    auto get_that_view = base_views_.find(base_view->ID());
+    auto get_that_view = base_views_.find(base_view->GetID());
     if (get_that_view == base_views_.end()) {
       // If we're reparenting a BaseView, ensure that it's detached from
       // its previous owner window/view.
       auto* owner_window = base_view->view()->GetWindow();
       auto* owner_view = base_view->view()->GetParent();
-      if (owner_view && owner_view != container_.get()) {
+      if (owner_view && owner_view != container_) {
         owner_view->DetachChildView(base_view->view());
         base_view->view()->SetParent(nullptr);
       } else if (owner_window) {
@@ -48,13 +49,13 @@ void ContainerView::AddChildView(v8::Local<v8::Value> value) {
       }
 
       container_->AddChildView(base_view->view());
-      base_views_[base_view->ID()].Reset(isolate, value);
+      base_views_[base_view->GetID()].Reset(isolate, value);
     }
   }
 }
 
 void ContainerView::RemoveChildView(v8::Local<v8::Value> value) {
-  if (!container_.get())
+  if (!container_)
     return;
 
   v8::Isolate* isolate = JavascriptEnvironment::GetIsolate();
@@ -63,7 +64,7 @@ void ContainerView::RemoveChildView(v8::Local<v8::Value> value) {
 
   gin::Handle<BaseView> base_view;
   if (value->IsObject() && gin::ConvertFromV8(isolate, value, &base_view)) {
-    auto get_that_view = base_views_.find(base_view->ID());
+    auto get_that_view = base_views_.find(base_view->GetID());
     if (get_that_view != base_views_.end()) {
       container_->RemoveChildView(base_view->view());
       (*get_that_view).second.Reset(isolate, value);
@@ -74,7 +75,7 @@ void ContainerView::RemoveChildView(v8::Local<v8::Value> value) {
 
 void ContainerView::SetTopChildView(v8::Local<v8::Value> value,
                                     gin_helper::ErrorThrower thrower) {
-  if (!container_.get())
+  if (!container_)
     return;
 
   v8::Isolate* isolate = JavascriptEnvironment::GetIsolate();
@@ -84,9 +85,9 @@ void ContainerView::SetTopChildView(v8::Local<v8::Value> value,
   gin::Handle<BaseView> base_view;
   if (value->IsObject() && gin::ConvertFromV8(isolate, value, &base_view)) {
     auto* owner_view = base_view->view()->GetParent();
-    auto get_that_view = base_views_.find(base_view->ID());
+    auto get_that_view = base_views_.find(base_view->GetID());
     if (get_that_view == base_views_.end() ||
-        (owner_view && owner_view != container_.get())) {
+        (owner_view && owner_view != container_)) {
       thrower.ThrowError("Given BaseView is not attached to the view");
       return;
     }
@@ -117,12 +118,7 @@ gin_helper::WrappableBase* ContainerView::New(gin_helper::ErrorThrower thrower,
     return nullptr;
   }
 
-  auto* view = new ContainerView(args, new NativeContainerView());
-#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
-  view->Pin(args->isolate());
-#endif
-  view->InitWithArgs(args);
-  return view;
+  return new ContainerView(args, new NativeContainerView());
 }
 
 // static

@@ -90,6 +90,22 @@ app.whenReady().then(() => {
 
 ### `new ScrollView()` _Experimental_
 
+Creates the new scroll view.
+
+### Static Methods
+
+The `ScrollView` class has the following static methods:
+
+#### `ScrollView.getAllViews()`
+
+Returns `ScrollView[]` - An array of all created scroll views.
+
+#### `ScrollView.fromId(id)`
+
+* `id` Integer
+
+Returns `ScrollView | null` - The scroll view with the given `id`.
+
 ### Instance Methods
 
 Objects created with `new ScrollView` have the following instance methods:

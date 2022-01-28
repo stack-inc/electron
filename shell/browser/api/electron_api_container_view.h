@@ -10,12 +10,8 @@
 
 #include "shell/browser/api/electron_api_base_view.h"
 #include "shell/browser/ui/native_container_view.h"
-#include "shell/common/gin_helper/error_thrower.h"
-#include "shell/common/gin_helper/wrappable.h"
 
 namespace electron {
-
-class NativeWindow;
 
 namespace api {
 
@@ -31,14 +27,14 @@ class ContainerView : public BaseView {
   ContainerView(gin::Arguments* args, NativeContainerView* container);
   ~ContainerView() override;
 
- private:
   void AddChildView(v8::Local<v8::Value> value);
   void RemoveChildView(v8::Local<v8::Value> value);
   void SetTopChildView(v8::Local<v8::Value> value,
                        gin_helper::ErrorThrower thrower);
   std::vector<v8::Local<v8::Value>> GetViews() const;
 
-  scoped_refptr<NativeContainerView> container_;
+ private:
+  NativeContainerView* container_;
 
   std::map<int32_t, v8::Global<v8::Value>> base_views_;
 

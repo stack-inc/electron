@@ -10,8 +10,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "shell/browser/api/electron_api_base_view.h"
 #include "shell/browser/ui/native_wrapper_browser_view.h"
-#include "shell/common/gin_helper/error_thrower.h"
-#include "shell/common/gin_helper/wrappable.h"
 
 namespace gin_helper {
 class Dictionary;
@@ -41,13 +39,13 @@ class WrapperBrowserView : public BaseView,
   // content::WebContentsObserver:
   void WebContentsDestroyed() override;
 
- private:
   v8::Local<v8::Value> GetBrowserView(v8::Isolate*);
 
+ private:
   v8::Global<v8::Value> browser_view_;
   class BrowserView* api_browser_view_ = nullptr;
 
-  scoped_refptr<NativeWrapperBrowserView> view_;
+  NativeWrapperBrowserView* view_;
 
   DISALLOW_COPY_AND_ASSIGN(WrapperBrowserView);
 };

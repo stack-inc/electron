@@ -18,21 +18,12 @@
 #include "ui/views/view.h"
 #endif
 
-namespace {
-
-int32_t GetNextId() {
-  static int32_t next_id = 1;
-  return next_id++;
-}
-
-}  // namespace
-
 namespace electron {
 
 namespace api {
 
-BaseView::BaseView(gin::Arguments* args, NativeView* native_view)
-    : id_(GetNextId()), view_(native_view) {
+BaseView::BaseView(v8::Isolate* isolate, NativeView* native_view)
+    : view_(native_view) {
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
   auto* nview = view_->GetNative();
   if (nview)
@@ -40,86 +31,91 @@ BaseView::BaseView(gin::Arguments* args, NativeView* native_view)
 #endif
 }
 
-BaseView::~BaseView() = default;
+BaseView::BaseView(gin::Arguments* args, NativeView* native_view)
+    : BaseView(args->isolate(), native_view) {
+  InitWithArgs(args);
+}
+
+BaseView::~BaseView() {
+  // Remove global reference so the JS object can be garbage collected.
+  self_ref_.Reset();
+}
+
+void BaseView::InitWith(v8::Isolate* isolate, v8::Local<v8::Object> wrapper) {
+  AttachAsUserData(view_.get());
+  gin_helper::TrackableObject<BaseView>::InitWith(isolate, wrapper);
+
+  // Reference this object in case it got garbage collected.
+  self_ref_.Reset(isolate, wrapper);
+}
 
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
 void BaseView::OnViewIsDeleting(views::View* observed_view) {
-  view_.reset();
-  Unpin();
+  RemoveFromWeakMap();
+
+  // We can not call Destroy here because we need to call Emit first, but we
+  // also do not want any method to be used, so just mark as destroyed here.
+  MarkDestroyed();
+
+  // Destroy the native class when window is closed.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, GetDestroyClosure());
 }
 #endif
 
 void BaseView::SetBounds(const gfx::Rect& bounds) {
-  if (view_.get())
-    view_->SetBounds(bounds);
+  view_->SetBounds(bounds);
 }
 
 gfx::Rect BaseView::GetBounds() const {
-  if (view_.get())
-    return view_->GetBounds();
-  return gfx::Rect();
+  return view_->GetBounds();
 }
 
 gfx::Point BaseView::OffsetFromView(gin::Handle<BaseView> from) const {
-  if (view_.get())
-    return view_->OffsetFromView(from->view());
-  return gfx::Point();
+  return view_->OffsetFromView(from->view());
 }
 
 gfx::Point BaseView::OffsetFromWindow() const {
-  if (view_.get())
-    return view_->OffsetFromWindow();
-  return gfx::Point();
+  return view_->OffsetFromWindow();
 }
 
 void BaseView::SetVisible(bool visible) {
-  if (view_.get())
-    view_->SetVisible(visible);
+  view_->SetVisible(visible);
 }
 
 bool BaseView::IsVisible() const {
-  if (view_.get())
-    return view_->IsVisible();
-  return false;
+  return view_->IsVisible();
 }
 
 bool BaseView::IsTreeVisible() const {
-  if (view_.get())
-    return view_->IsTreeVisible();
-  return false;
+  return view_->IsTreeVisible();
 }
 
 void BaseView::Focus() {
-  if (view_.get())
-    view_->Focus();
+  view_->Focus();
 }
 
 bool BaseView::HasFocus() const {
-  if (view_.get())
-    return view_->HasFocus();
-  return false;
+  return view_->HasFocus();
 }
 
 void BaseView::SetFocusable(bool focusable) {
-  if (view_.get())
-    view_->SetFocusable(focusable);
+  view_->SetFocusable(focusable);
 }
 
 bool BaseView::IsFocusable() const {
-  if (view_.get())
-    return view_->IsFocusable();
-  return false;
+  return view_->IsFocusable();
 }
 
 void BaseView::SetBackgroundColor(const std::string& color_name) {
-  if (view_.get())
-    view_->SetBackgroundColor(ParseHexColor(color_name));
+  view_->SetBackgroundColor(ParseHexColor(color_name));
+}
+
+int32_t BaseView::GetID() const {
+  return weak_map_id();
 }
 
 bool BaseView::IsContainer() const {
-  if (view_.get())
-    return view_->IsContainer();
-  return false;
+  return view_->IsContainer();
 }
 
 // static
@@ -130,18 +126,14 @@ gin_helper::WrappableBase* BaseView::New(gin_helper::ErrorThrower thrower,
     return nullptr;
   }
 
-  auto* base_view = new BaseView(args, new NativeView());
-#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
-  base_view->Pin(args->isolate());
-#endif
-  base_view->InitWithArgs(args);
-  return base_view;
+  return new BaseView(args, new NativeView());
 }
 
 // static
 void BaseView::BuildPrototype(v8::Isolate* isolate,
                               v8::Local<v8::FunctionTemplate> prototype) {
   prototype->SetClassName(gin::StringToV8(isolate, "BaseView"));
+  gin_helper::Destroyable::MakeDestroyable(isolate, prototype);
   gin_helper::ObjectTemplateBuilder(isolate, prototype->PrototypeTemplate())
       .SetMethod("setBounds", &BaseView::SetBounds)
       .SetMethod("getBounds", &BaseView::GetBounds)
@@ -155,7 +147,7 @@ void BaseView::BuildPrototype(v8::Isolate* isolate,
       .SetMethod("setFocusable", &BaseView::SetFocusable)
       .SetMethod("isFocusable", &BaseView::IsFocusable)
       .SetMethod("setBackgroundColor", &BaseView::SetBackgroundColor)
-      .SetProperty("id", &BaseView::ID)
+      .SetProperty("id", &BaseView::GetID)
       .SetProperty("isContainer", &BaseView::IsContainer)
       .Build();
 }
@@ -178,6 +170,8 @@ void Initialize(v8::Local<v8::Object> exports,
   gin_helper::Dictionary constructor(
       isolate,
       BaseView::GetConstructor(isolate)->GetFunction(context).ToLocalChecked());
+  constructor.SetMethod("fromId", &BaseView::FromWeakMapID);
+  constructor.SetMethod("getAllViews", &BaseView::GetAll);
 
   gin_helper::Dictionary dict(isolate, exports);
   dict.Set("BaseView", constructor);

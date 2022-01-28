@@ -19,7 +19,9 @@ namespace api {
 WrapperBrowserView::WrapperBrowserView(gin::Arguments* args,
                                        const gin_helper::Dictionary& options,
                                        NativeWrapperBrowserView* view)
-    : BaseView(args, view), view_(view) {
+    : BaseView(args->isolate(), view), view_(view) {
+  InitWithArgs(args);
+
   v8::Isolate* isolate = args->isolate();
   v8::Local<v8::Value> value;
   gin::Handle<BrowserView> browser_view;
@@ -84,13 +86,7 @@ gin_helper::WrappableBase* WrapperBrowserView::New(
   gin::Dictionary options = gin::Dictionary::CreateEmpty(args->isolate());
   args->GetNext(&options);
 
-  auto* view =
-      new WrapperBrowserView(args, options, new NativeWrapperBrowserView());
-#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
-  view->Pin(args->isolate());
-#endif
-  view->InitWithArgs(args);
-  return view;
+  return new WrapperBrowserView(args, options, new NativeWrapperBrowserView());
 }
 
 // static

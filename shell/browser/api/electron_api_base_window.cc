@@ -849,7 +849,7 @@ void BaseWindow::SetTopBrowserView(v8::Local<v8::Value> value,
 void BaseWindow::AddChildView(v8::Local<v8::Value> value) {
   gin::Handle<BaseView> base_view;
   if (value->IsObject() && gin::ConvertFromV8(isolate(), value, &base_view)) {
-    auto get_that_view = base_views_.find(base_view->ID());
+    auto get_that_view = base_views_.find(base_view->GetID());
     if (get_that_view == base_views_.end()) {
       // If we're reparenting a BaseView, ensure that it's detached from
       // its previous owner window/view.
@@ -865,7 +865,7 @@ void BaseWindow::AddChildView(v8::Local<v8::Value> value) {
 
       window_->AddChildView(base_view->view());
       base_view->view()->SetWindow(window_.get());
-      base_views_[base_view->ID()].Reset(isolate(), value);
+      base_views_[base_view->GetID()].Reset(isolate(), value);
     }
   }
 }
@@ -873,7 +873,7 @@ void BaseWindow::AddChildView(v8::Local<v8::Value> value) {
 void BaseWindow::RemoveChildView(v8::Local<v8::Value> value) {
   gin::Handle<BaseView> base_view;
   if (value->IsObject() && gin::ConvertFromV8(isolate(), value, &base_view)) {
-    auto get_that_view = base_views_.find(base_view->ID());
+    auto get_that_view = base_views_.find(base_view->GetID());
     if (get_that_view != base_views_.end()) {
       window_->RemoveChildView(base_view->view());
       base_view->view()->SetWindow(nullptr);
@@ -888,7 +888,7 @@ void BaseWindow::SetTopChildView(v8::Local<v8::Value> value,
   gin::Handle<BaseView> base_view;
   if (value->IsObject() && gin::ConvertFromV8(isolate(), value, &base_view)) {
     auto* owner_window = base_view->view()->GetWindow();
-    auto get_that_view = base_views_.find(base_view->ID());
+    auto get_that_view = base_views_.find(base_view->GetID());
     if (get_that_view == base_views_.end() ||
         (owner_window && owner_window != window_.get())) {
       args->ThrowError("Given BaseView is not attached to the window");

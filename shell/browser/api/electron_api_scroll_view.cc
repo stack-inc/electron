@@ -7,11 +7,9 @@
 #include "gin/handle.h"
 #include "shell/browser/api/electron_api_base_view.h"
 #include "shell/browser/browser.h"
-#include "shell/browser/javascript_environment.h"
 #include "shell/browser/native_window.h"
-#include "shell/common/color_util.h"
+#include "shell/browser/javascript_environment.h"
 #include "shell/common/gin_converters/gfx_converter.h"
-#include "shell/common/gin_helper/constructor.h"
 #include "shell/common/gin_helper/dictionary.h"
 #include "shell/common/gin_helper/object_template_builder.h"
 #include "shell/common/node_includes.h"
@@ -61,7 +59,9 @@ std::string ConvertFromScrollElasticity(ScrollElasticity elasticity) {
 }  // namespace
 
 ScrollView::ScrollView(gin::Arguments* args, NativeScrollView* scroll)
-    : BaseView(args, scroll), scroll_(scroll) {}
+    : BaseView(args->isolate(), scroll), scroll_(scroll) {
+  InitWithArgs(args);
+}
 
 ScrollView::~ScrollView() = default;
 
@@ -72,12 +72,12 @@ void ScrollView::SetContentView(v8::Local<v8::Value> value) {
 
   gin::Handle<BaseView> content_view;
   if (value->IsObject() && gin::ConvertFromV8(isolate, value, &content_view)) {
-    if (content_view->ID() != content_view_id_) {
+    if (content_view->GetID() != content_view_id_) {
       // If we're reparenting a BaseView, ensure that it's detached from
       // its previous owner window/view.
       auto* owner_window = content_view->view()->GetWindow();
       auto* owner_view = content_view->view()->GetParent();
-      if (owner_view && owner_view != scroll_.get()) {
+      if (owner_view && owner_view != scroll_) {
         owner_view->DetachChildView(content_view->view());
         content_view->view()->SetParent(nullptr);
       } else if (owner_window) {
@@ -86,7 +86,7 @@ void ScrollView::SetContentView(v8::Local<v8::Value> value) {
       }
 
       scroll_->SetContentView(content_view->view());
-      content_view_id_ = content_view->ID();
+      content_view_id_ = content_view->GetID();
       content_view_.Reset(isolate, value);
     }
   }
@@ -104,136 +104,100 @@ v8::Local<v8::Value> ScrollView::GetContentView() const {
 }
 
 void ScrollView::SetContentSize(gfx::Size size) {
-  if (scroll_.get())
-    scroll_->SetContentSize(size);
+  scroll_->SetContentSize(size);
 }
 
 gfx::Size ScrollView::GetContentSize() const {
-  if (scroll_.get())
-    return scroll_->GetContentSize();
-  return gfx::Size();
+  return scroll_->GetContentSize();
 }
 
 void ScrollView::SetHorizontalScrollBarMode(std::string mode) {
-  if (scroll_.get())
-    scroll_->SetHorizontalScrollBarMode(ConvertToScrollBarMode(mode));
+  scroll_->SetHorizontalScrollBarMode(ConvertToScrollBarMode(mode));
 }
 
 std::string ScrollView::GetHorizontalScrollBarMode() const {
-  if (scroll_.get())
-    return ConvertFromScrollBarMode(scroll_->GetHorizontalScrollBarMode());
-  return "enabled";
+  return ConvertFromScrollBarMode(scroll_->GetHorizontalScrollBarMode());
 }
 
 void ScrollView::SetVerticalScrollBarMode(std::string mode) {
-  if (scroll_.get())
-    scroll_->SetVerticalScrollBarMode(ConvertToScrollBarMode(mode));
+  scroll_->SetVerticalScrollBarMode(ConvertToScrollBarMode(mode));
 }
 
 std::string ScrollView::GetVerticalScrollBarMode() const {
-  if (scroll_.get())
-    return ConvertFromScrollBarMode(scroll_->GetVerticalScrollBarMode());
-  return "enabled";
+  return ConvertFromScrollBarMode(scroll_->GetVerticalScrollBarMode());
 }
 
 #if defined(OS_MAC)
 void ScrollView::SetHorizontalScrollElasticity(std::string elasticity) {
-  if (scroll_.get())
-    scroll_->SetHorizontalScrollElasticity(
+  scroll_->SetHorizontalScrollElasticity(
         ConvertToScrollElasticity(elasticity));
 }
 
 std::string ScrollView::GetHorizontalScrollElasticity() const {
-  if (scroll_.get())
-    return ConvertFromScrollElasticity(
+  return ConvertFromScrollElasticity(
         scroll_->GetHorizontalScrollElasticity());
-  return "automatic";
 }
 
 void ScrollView::SetVerticalScrollElasticity(std::string elasticity) {
-  if (scroll_.get())
-    scroll_->SetVerticalScrollElasticity(ConvertToScrollElasticity(elasticity));
+  scroll_->SetVerticalScrollElasticity(ConvertToScrollElasticity(elasticity));
 }
 
 std::string ScrollView::GetVerticalScrollElasticity() const {
-  if (scroll_.get())
-    return ConvertFromScrollElasticity(scroll_->GetVerticalScrollElasticity());
-  return "automatic";
+  return ConvertFromScrollElasticity(scroll_->GetVerticalScrollElasticity());
 }
 
 void ScrollView::SetScrollPosition(gfx::Point point) {
-  if (scroll_.get())
-    scroll_->SetScrollPosition(point);
+  scroll_->SetScrollPosition(point);
 }
 
 gfx::Point ScrollView::GetScrollPosition() const {
-  if (scroll_.get())
-    return scroll_->GetScrollPosition();
-  return gfx::Point();
+  return scroll_->GetScrollPosition();
 }
 
 gfx::Point ScrollView::GetMaximumScrollPosition() const {
-  if (scroll_.get())
-    return scroll_->GetMaximumScrollPosition();
-  return gfx::Point();
+  return scroll_->GetMaximumScrollPosition();
 }
 
 void ScrollView::SetOverlayScrollbar(bool overlay) {
-  if (scroll_.get())
-    scroll_->SetOverlayScrollbar(overlay);
+  scroll_->SetOverlayScrollbar(overlay);
 }
 
 bool ScrollView::IsOverlayScrollbar() const {
-  if (scroll_.get())
-    return scroll_->IsOverlayScrollbar();
-  return false;
+  return scroll_->IsOverlayScrollbar();
 }
 #endif
 
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
 int ScrollView::GetMinHeight() const {
-  if (scroll_.get())
-    return scroll_->GetMinHeight();
-  return -1;
+  return scroll_->GetMinHeight();
 }
 
 int ScrollView::GetMaxHeight() const {
-  if (scroll_.get())
-    return scroll_->GetMaxHeight();
-  return -1;
+  return scroll_->GetMaxHeight();
 }
 
 void ScrollView::ClipHeightTo(int min_height, int max_height) {
-  if (scroll_.get())
-    scroll_->ClipHeightTo(min_height, max_height);
+  scroll_->ClipHeightTo(min_height, max_height);
 }
 
 gfx::Rect ScrollView::GetVisibleRect() const {
-  if (scroll_.get())
-    return scroll_->GetVisibleRect();
-  return gfx::Rect();
+  return scroll_->GetVisibleRect();
 }
 
 void ScrollView::SetAllowKeyboardScrolling(bool allow) {
-  if (scroll_.get())
-    scroll_->SetAllowKeyboardScrolling(allow);
+  scroll_->SetAllowKeyboardScrolling(allow);
 }
 
 bool ScrollView::GetAllowKeyboardScrolling() const {
-  if (scroll_.get())
-    return scroll_->GetAllowKeyboardScrolling();
-  return false;
+  return scroll_->GetAllowKeyboardScrolling();
 }
 
 void ScrollView::SetDrawOverflowIndicator(bool indicator) {
-  if (scroll_.get())
-    scroll_->SetDrawOverflowIndicator(indicator);
+  scroll_->SetDrawOverflowIndicator(indicator);
 }
 
 bool ScrollView::GetDrawOverflowIndicator() const {
-  if (scroll_.get())
-    return scroll_->GetDrawOverflowIndicator();
-  return false;
+  return scroll_->GetDrawOverflowIndicator();
 }
 #endif
 
@@ -245,12 +209,7 @@ gin_helper::WrappableBase* ScrollView::New(gin_helper::ErrorThrower thrower,
     return nullptr;
   }
 
-  auto* view = new ScrollView(args, new NativeScrollView());
-#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
-  view->Pin(args->isolate());
-#endif
-  view->InitWithArgs(args);
-  return view;
+  return new ScrollView(args, new NativeScrollView());
 }
 
 // static
