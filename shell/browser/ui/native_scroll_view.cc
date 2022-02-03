@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "shell/browser/ui/native_container_view.h"
-#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace electron {
@@ -44,6 +43,7 @@ void NativeScrollView::DetachChildView(NativeView* view) {
   PlatformDetachChildView();
   content_view_->SetParent(nullptr);
   content_view_.reset();
+  NotifyChildViewDetached(view);
 }
 
 void NativeScrollView::TriggerBeforeunloadEvents() {

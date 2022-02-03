@@ -12,10 +12,16 @@
 #include "shell/browser/ui/cocoa/electron_ns_window.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/size.h"
 
 typedef struct CGContext* CGContextRef;
 
 @implementation ElectronNativeView
+
+- (void)dealloc {
+  [self shell]->NotifyViewIsDeleting();
+  [super dealloc];
+}
 
 - (electron::NativeViewPrivate*)nativeViewPrivate {
   return &private_;
@@ -31,8 +37,7 @@ typedef struct CGContext* CGContextRef;
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
-  electron::NativeView* shell =
-      static_cast<electron::NativeView*>([self shell]);
+  electron::NativeView* shell = [self shell];
   if (!shell)
     return;
   if (!background_color_.has_value())
@@ -100,7 +105,7 @@ void SetFrameSize(NSView* self, SEL _cmd, NSSize size) {
   super_impl(self, _cmd, size);
 
   if (size.width != old_size.width || size.height != old_size.height)
-    [self shell]->OnSizeChanged();
+    [self shell]->NotifySizeChanged(gfx::Size(old_size), gfx::Size(size));
 }
 
 // The contentView gets moved around during certain full-screen operations.

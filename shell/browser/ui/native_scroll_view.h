@@ -7,11 +7,6 @@
 
 #include "shell/browser/ui/native_view.h"
 
-namespace gfx {
-class Point;
-class Size;
-}  // namespace gfx
-
 namespace electron {
 
 enum class ScrollBarMode { kDisabled, kHiddenButEnabled, kEnabled };

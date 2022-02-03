@@ -91,10 +91,11 @@ class BaseWindow : public gin_helper::TrackableObject<BaseWindow>,
 #if defined(OS_WIN)
   void OnWindowMessage(UINT message, WPARAM w_param, LPARAM l_param) override;
 #endif
+  void OnChildViewDetached(NativeView* view) override;
 
   // Public APIs of NativeWindow.
   void SetContentView(gin::Handle<View> view);
-  void SetContainerView(gin::Handle<ContainerView> view);
+  void SetContentBaseView(gin::Handle<BaseView> view);
   void Close();
   virtual void CloseImmediately();
   virtual void Focus();
@@ -279,6 +280,7 @@ class BaseWindow : public gin_helper::TrackableObject<BaseWindow>,
 #endif
 
   v8::Global<v8::Value> content_view_;
+  v8::Global<v8::Value> content_base_view_;
   std::map<int32_t, v8::Global<v8::Value>> browser_views_;
   std::map<int32_t, v8::Global<v8::Value>> base_views_;
   v8::Global<v8::Value> menu_;

@@ -8,13 +8,10 @@
 #include "shell/browser/api/electron_api_base_view.h"
 #include "shell/browser/browser.h"
 #include "shell/browser/native_window.h"
-#include "shell/browser/javascript_environment.h"
 #include "shell/common/gin_converters/gfx_converter.h"
 #include "shell/common/gin_helper/dictionary.h"
 #include "shell/common/gin_helper/object_template_builder.h"
 #include "shell/common/node_includes.h"
-#include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace electron {
 
@@ -65,42 +62,36 @@ ScrollView::ScrollView(gin::Arguments* args, NativeScrollView* scroll)
 
 ScrollView::~ScrollView() = default;
 
+void ScrollView::ResetChildView(BaseView* view) {
+  if (view->GetID() == content_view_id_) {
+    content_view_id_ = 0;
+    content_view_.Reset();
+  }
+}
+
+void ScrollView::ResetChildViews() {
+  content_view_id_ = 0;
+  content_view_.Reset();
+}
+
 void ScrollView::SetContentView(v8::Local<v8::Value> value) {
-  v8::Isolate* isolate = JavascriptEnvironment::GetIsolate();
-  v8::Locker locker(isolate);
-  v8::HandleScope handle_scope(isolate);
-
   gin::Handle<BaseView> content_view;
-  if (value->IsObject() && gin::ConvertFromV8(isolate, value, &content_view)) {
+  if (value->IsObject() && gin::ConvertFromV8(isolate(), value, &content_view)) {
     if (content_view->GetID() != content_view_id_) {
-      // If we're reparenting a BaseView, ensure that it's detached from
-      // its previous owner window/view.
-      auto* owner_window = content_view->view()->GetWindow();
-      auto* owner_view = content_view->view()->GetParent();
-      if (owner_view && owner_view != scroll_) {
-        owner_view->DetachChildView(content_view->view());
-        content_view->view()->SetParent(nullptr);
-      } else if (owner_window) {
-        owner_window->RemoveChildView(content_view->view());
-        content_view->view()->SetWindow(nullptr);
-      }
-
+      if (!content_view->EnsureDetachFromParent())
+        return;
       scroll_->SetContentView(content_view->view());
       content_view_id_ = content_view->GetID();
-      content_view_.Reset(isolate, value);
+      content_view_.Reset(isolate(), value);
     }
   }
 }
 
 v8::Local<v8::Value> ScrollView::GetContentView() const {
-  v8::Isolate* isolate = JavascriptEnvironment::GetIsolate();
-  v8::Locker locker(isolate);
-  v8::HandleScope handle_scope(isolate);
-
   if (content_view_.IsEmpty())
-    return v8::Null(isolate);
+    return v8::Null(isolate());
 
-  return v8::Local<v8::Value>::New(isolate, content_view_);
+  return v8::Local<v8::Value>::New(isolate(), content_view_);
 }
 
 void ScrollView::SetContentSize(gfx::Size size) {

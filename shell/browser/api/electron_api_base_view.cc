@@ -6,13 +6,12 @@
 
 #include "gin/handle.h"
 #include "shell/browser/browser.h"
+#include "shell/browser/native_window.h"
 #include "shell/common/color_util.h"
 #include "shell/common/gin_converters/gfx_converter.h"
 #include "shell/common/gin_helper/dictionary.h"
 #include "shell/common/gin_helper/object_template_builder.h"
 #include "shell/common/node_includes.h"
-#include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/rect.h"
 
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
 #include "ui/views/view.h"
@@ -24,11 +23,7 @@ namespace api {
 
 BaseView::BaseView(v8::Isolate* isolate, NativeView* native_view)
     : view_(native_view) {
-#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
-  auto* nview = view_->GetNative();
-  if (nview)
-    nview->AddObserver(this);
-#endif
+  view_->AddObserver(this);
 }
 
 BaseView::BaseView(gin::Arguments* args, NativeView* native_view)
@@ -49,18 +44,34 @@ void BaseView::InitWith(v8::Isolate* isolate, v8::Local<v8::Object> wrapper) {
   self_ref_.Reset(isolate, wrapper);
 }
 
-#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
-void BaseView::OnViewIsDeleting(views::View* observed_view) {
+void BaseView::OnChildViewDetached(NativeView* observed_view, NativeView* view) {
+  auto* api_view = TrackableObject::FromWrappedClass(isolate(), view);
+  if (api_view)
+    ResetChildView(api_view);
+}
+
+void BaseView::OnSizeChanged(NativeView* observed_view, gfx::Size old_size, gfx::Size new_size) {
+Emit("size-changed", old_size, new_size);
+}
+
+void BaseView::OnViewIsDeleting(NativeView* observed_view) {
   RemoveFromWeakMap();
+  view_->RemoveObserver(this);
 
   // We can not call Destroy here because we need to call Emit first, but we
   // also do not want any method to be used, so just mark as destroyed here.
   MarkDestroyed();
 
+  EnsureDetachFromParent();
+  ResetChildViews();
+
   // Destroy the native class when window is closed.
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, GetDestroyClosure());
 }
-#endif
+
+bool BaseView::IsContainer() const {
+  return view_->IsContainer();
+}
 
 void BaseView::SetBounds(const gfx::Rect& bounds) {
   view_->SetBounds(bounds);
@@ -114,9 +125,41 @@ int32_t BaseView::GetID() const {
   return weak_map_id();
 }
 
-bool BaseView::IsContainer() const {
-  return view_->IsContainer();
+v8::Local<v8::Value> BaseView::GetParentView() const {
+  NativeView* parent_view = view_->GetParent();
+  if (parent_view) {
+    auto* existing_view = TrackableObject::FromWrappedClass(isolate(), parent_view);
+    if (existing_view)
+      return existing_view->GetWrapper();
+  }
+  return v8::Null(isolate());
 }
+
+v8::Local<v8::Value> BaseView::GetParentWindow() const {
+  NativeWindow* parent_window = view_->GetWindow();
+  if (!view_->GetParent() && parent_window) {
+    auto* existing_window = TrackableObject::FromWrappedClass(isolate(), parent_window);
+    if (existing_window)
+      return existing_window->GetWrapper();
+  }
+  return v8::Null(isolate());
+}
+
+bool BaseView::EnsureDetachFromParent() {
+  auto* owner_view = view()->GetParent();
+  if (owner_view) {
+    owner_view->DetachChildView(view());
+  } else {
+    auto* owner_window = view()->GetWindow();
+    if (owner_window)
+      return owner_window->DetachChildView(view());
+  }
+  return true;
+}
+
+void BaseView::ResetChildView(BaseView* view) {}
+
+void BaseView::ResetChildViews() {}
 
 // static
 gin_helper::WrappableBase* BaseView::New(gin_helper::ErrorThrower thrower,
@@ -135,6 +178,8 @@ void BaseView::BuildPrototype(v8::Isolate* isolate,
   prototype->SetClassName(gin::StringToV8(isolate, "BaseView"));
   gin_helper::Destroyable::MakeDestroyable(isolate, prototype);
   gin_helper::ObjectTemplateBuilder(isolate, prototype->PrototypeTemplate())
+      .SetProperty("id", &BaseView::GetID)
+      .SetProperty("isContainer", &BaseView::IsContainer)
       .SetMethod("setBounds", &BaseView::SetBounds)
       .SetMethod("getBounds", &BaseView::GetBounds)
       .SetMethod("offsetFromView", &BaseView::OffsetFromView)
@@ -147,8 +192,8 @@ void BaseView::BuildPrototype(v8::Isolate* isolate,
       .SetMethod("setFocusable", &BaseView::SetFocusable)
       .SetMethod("isFocusable", &BaseView::IsFocusable)
       .SetMethod("setBackgroundColor", &BaseView::SetBackgroundColor)
-      .SetProperty("id", &BaseView::GetID)
-      .SetProperty("isContainer", &BaseView::IsContainer)
+      .SetMethod("getParentView", &BaseView::GetParentView)
+      .SetMethod("getParentWindow", &BaseView::GetParentWindow)
       .Build();
 }
 

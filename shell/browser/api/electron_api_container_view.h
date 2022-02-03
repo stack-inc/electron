@@ -27,6 +27,10 @@ class ContainerView : public BaseView {
   ContainerView(gin::Arguments* args, NativeContainerView* container);
   ~ContainerView() override;
 
+  // BaseView:
+  void ResetChildView(BaseView* view) override;
+  void ResetChildViews() override;
+
   void AddChildView(v8::Local<v8::Value> value);
   void RemoveChildView(v8::Local<v8::Value> value);
   void SetTopChildView(v8::Local<v8::Value> value,

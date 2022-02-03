@@ -24,6 +24,10 @@ class ScrollView : public BaseView {
   ScrollView(gin::Arguments* args, NativeScrollView* scroll);
   ~ScrollView() override;
 
+  // BaseView:
+  void ResetChildView(BaseView* view) override;
+  void ResetChildViews() override;
+
   void SetContentView(v8::Local<v8::Value> value);
   v8::Local<v8::Value> GetContentView() const;
   void SetContentSize(gfx::Size size);

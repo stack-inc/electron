@@ -178,7 +178,7 @@ class NativeWindow : public base::SupportsUserData,
   virtual void RemoveBrowserView(NativeBrowserView* browser_view) = 0;
   virtual void SetTopBrowserView(NativeBrowserView* browser_view) = 0;
   virtual void AddChildView(NativeView* view) = 0;
-  virtual void RemoveChildView(NativeView* view) = 0;
+  virtual bool RemoveChildView(NativeView* view) = 0;
   virtual void SetTopChildView(NativeView* view) = 0;
   virtual content::DesktopMediaID GetDesktopMediaID() const = 0;
   virtual gfx::NativeView GetNativeView() const = 0;
@@ -316,6 +316,8 @@ class NativeWindow : public base::SupportsUserData,
   void NotifyWindowMessage(UINT message, WPARAM w_param, LPARAM l_param);
 #endif
 
+  bool DetachChildView(NativeView* view);
+
   void AddObserver(NativeWindowObserver* obs) { observers_.AddObserver(obs); }
   void RemoveObserver(NativeWindowObserver* obs) {
     observers_.RemoveObserver(obs);
@@ -384,7 +386,7 @@ class NativeWindow : public base::SupportsUserData,
   // The content view, weak ref.
   views::View* content_view_ = nullptr;
 
-  scoped_refptr<NativeView> native_content_view_;
+  scoped_refptr<NativeView> content_base_view_;
 
   // Whether window has standard frame.
   bool has_frame_ = true;

@@ -47,10 +47,32 @@ bool NativeView::IsContainer() const {
   return false;
 }
 
-void NativeView::OnSizeChanged() {}
-
 void NativeView::DetachChildView(NativeView* view) {}
 
 void NativeView::TriggerBeforeunloadEvents() {}
+
+void NativeView::AddObserver(Observer* observer) {
+  CHECK(observer);
+  observers_.AddObserver(observer);
+}
+
+void NativeView::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void NativeView::NotifyChildViewDetached(NativeView* view) {
+  for (Observer& observer : observers_)
+    observer.OnChildViewDetached(this, view);
+}
+
+void NativeView::NotifySizeChanged(gfx::Size old_size, gfx::Size new_size) {
+  for (Observer& observer : observers_)
+    observer.OnSizeChanged(this, old_size, new_size);
+}
+
+void NativeView::NotifyViewIsDeleting() {
+  for (Observer& observer : observers_)
+    observer.OnViewIsDeleting(this);
+}
 
 }  // namespace electron

@@ -12,30 +12,18 @@
 #include "shell/common/gin_helper/error_thrower.h"
 #include "shell/common/gin_helper/trackable_object.h"
 
-#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
-#include "ui/views/view_observer.h"
-#endif
-
 namespace gin {
 class Arguments;
 template <typename T>
 class Handle;
 }  // namespace gin
 
-namespace gfx {
-class Rect;
-}
-
 namespace electron {
 
 namespace api {
 
-class BaseView : public gin_helper::TrackableObject<BaseView>
-#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
-    ,
-                 public views::ViewObserver
-#endif
-{
+class BaseView : public gin_helper::TrackableObject<BaseView>,
+                 public NativeView::Observer {
  public:
   static gin_helper::WrappableBase* New(gin_helper::ErrorThrower thrower,
                                         gin::Arguments* args);
@@ -46,6 +34,8 @@ class BaseView : public gin_helper::TrackableObject<BaseView>
   NativeView* view() const { return view_.get(); }
 
   int32_t GetID() const;
+
+  bool EnsureDetachFromParent();
 
  protected:
   friend class ScrollView;
@@ -59,11 +49,12 @@ class BaseView : public gin_helper::TrackableObject<BaseView>
   // TrackableObject:
   void InitWith(v8::Isolate* isolate, v8::Local<v8::Object> wrapper) override;
 
-#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
-  // views::ViewObserver:
-  void OnViewIsDeleting(views::View* observed_view) override;
-#endif
+  // NativeView::Observer:
+  void OnChildViewDetached(NativeView* observed_view, NativeView* view) override;
+  void OnSizeChanged(NativeView* observed_view, gfx::Size old_size, gfx::Size new_size) override;
+  void OnViewIsDeleting(NativeView* observed_view) override;
 
+  bool IsContainer() const;
   void SetBounds(const gfx::Rect& bounds);
   gfx::Rect GetBounds() const;
   gfx::Point OffsetFromView(gin::Handle<BaseView> from) const;
@@ -76,8 +67,13 @@ class BaseView : public gin_helper::TrackableObject<BaseView>
   void SetFocusable(bool focusable);
   bool IsFocusable() const;
   void SetBackgroundColor(const std::string& color_name);
-  bool IsContainer() const;
+  v8::Local<v8::Value> GetParentView() const;
+  v8::Local<v8::Value> GetParentWindow() const;
 
+  virtual void ResetChildView(BaseView* view);
+  virtual void ResetChildViews();
+
+ private:
   scoped_refptr<NativeView> view_;
 
   // Reference to JS wrapper to prevent garbage collection.

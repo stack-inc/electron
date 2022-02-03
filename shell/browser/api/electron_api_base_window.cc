@@ -321,6 +321,17 @@ void BaseWindow::OnWindowMessage(UINT message, WPARAM w_param, LPARAM l_param) {
 }
 #endif
 
+void BaseWindow::OnChildViewDetached(NativeView* view) {
+  auto* api_view = TrackableObject::FromWrappedClass(isolate(), view);
+  if (api_view) {
+    auto get_that_view = base_views_.find(api_view->GetID());
+    if (get_that_view != base_views_.end()) {
+      (*get_that_view).second.Reset();
+      base_views_.erase(get_that_view);
+    }
+  }
+}
+
 void BaseWindow::SetContentView(gin::Handle<View> view) {
   ResetBrowserViews();
   ResetBaseViews();
@@ -328,21 +339,12 @@ void BaseWindow::SetContentView(gin::Handle<View> view) {
   window_->SetContentView(view->view());
 }
 
-void BaseWindow::SetContainerView(gin::Handle<ContainerView> view) {
+void BaseWindow::SetContentBaseView(gin::Handle<BaseView> view) {
   ResetBrowserViews();
   ResetBaseViews();
-  // If we're reparenting a ContainerView, ensure that it's detached from
-  // its previous owner window/container.
-  auto* owner_window = view->view()->GetWindow();
-  auto* owner_view = view->view()->GetParent();
-  if (owner_window) {
-    owner_window->RemoveChildView(view->view());
-    view->view()->SetWindow(nullptr);
-  } else if (owner_view) {
-    owner_view->DetachChildView(view->view());
-    view->view()->SetParent(nullptr);
-  }
-  content_view_.Reset(isolate(), view.ToV8());
+  if (!view->EnsureDetachFromParent())
+    return;
+  content_base_view_.Reset(isolate(), view.ToV8());
   window_->SetContentView(view->view());
 }
 
@@ -851,18 +853,8 @@ void BaseWindow::AddChildView(v8::Local<v8::Value> value) {
   if (value->IsObject() && gin::ConvertFromV8(isolate(), value, &base_view)) {
     auto get_that_view = base_views_.find(base_view->GetID());
     if (get_that_view == base_views_.end()) {
-      // If we're reparenting a BaseView, ensure that it's detached from
-      // its previous owner window/view.
-      auto* owner_window = base_view->view()->GetWindow();
-      auto* owner_view = base_view->view()->GetParent();
-      if (owner_view) {
-        owner_view->DetachChildView(base_view->view());
-        base_view->view()->SetParent(nullptr);
-      } else if (owner_window && owner_window != window_.get()) {
-        owner_window->RemoveChildView(base_view->view());
-        base_view->view()->SetWindow(nullptr);
-      }
-
+      if (!base_view->EnsureDetachFromParent())
+        return;
       window_->AddChildView(base_view->view());
       base_view->view()->SetWindow(window_.get());
       base_views_[base_view->GetID()].Reset(isolate(), value);
@@ -1294,7 +1286,7 @@ void BaseWindow::BuildPrototype(v8::Isolate* isolate,
   gin_helper::Destroyable::MakeDestroyable(isolate, prototype);
   gin_helper::ObjectTemplateBuilder(isolate, prototype->PrototypeTemplate())
       .SetMethod("setContentView", &BaseWindow::SetContentView)
-      .SetMethod("setContainerView", &BaseWindow::SetContainerView)
+      .SetMethod("setContentBaseView", &BaseWindow::SetContentBaseView)
       .SetMethod("close", &BaseWindow::Close)
       .SetMethod("focus", &BaseWindow::Focus)
       .SetMethod("blur", &BaseWindow::Blur)

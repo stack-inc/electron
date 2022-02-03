@@ -40,11 +40,12 @@ void NativeView::OnViewBoundsChanged(views::View* observed_view) {
   gfx::Size old_size = bounds_.size();
   bounds_ = bounds;
   if (size != old_size)
-    OnSizeChanged();
+    NotifySizeChanged(old_size, size);
 }
 
 void NativeView::OnViewIsDeleting(views::View* observed_view) {
   view_ = nullptr;
+NotifyViewIsDeleting();
 }
 
 void NativeView::SetBounds(const gfx::Rect& bounds) {

@@ -6,9 +6,13 @@
 #define SHELL_BROWSER_UI_NATIVE_VIEW_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/supports_user_data.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
 #include "ui/views/view_observer.h"
@@ -25,10 +29,6 @@ namespace views {
 class View;
 }
 #endif
-
-namespace gfx {
-class Point;
-}  // namespace gfx
 
 namespace electron {
 
@@ -49,6 +49,15 @@ class NativeView : public base::RefCounted<NativeView>
 #endif
 {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    ~Observer() override {}
+
+    virtual void OnChildViewDetached(NativeView* observed_view, NativeView* view) {}
+    virtual void OnSizeChanged(NativeView* observed_view, gfx::Size old_size, gfx::Size new_size) {}
+    virtual void OnViewIsDeleting(NativeView* observed_view) {}
+  };
+
   NativeView();
 
   // Change position and size.
@@ -102,9 +111,6 @@ class NativeView : public base::RefCounted<NativeView>
   // Whether this class inherits from Container.
   virtual bool IsContainer() const;
 
-  // Internal: Notify that view's size has changed.
-  virtual void OnSizeChanged();
-
   virtual void DetachChildView(NativeView* view);
 
   virtual void TriggerBeforeunloadEvents();
@@ -113,10 +119,21 @@ class NativeView : public base::RefCounted<NativeView>
   virtual void UpdateDraggableRegions();
 #endif
 
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
   // Should delete the |view_| in destructor.
   void set_delete_view(bool should) { delete_view_ = should; }
 #endif
+
+  void NotifyChildViewDetached(NativeView* view);
+
+  // Notify that view's size has changed.
+  virtual void NotifySizeChanged(gfx::Size old_size, gfx::Size new_size);
+
+  // Notify that native view is destroyed.
+  void NotifyViewIsDeleting();
 
  protected:
   ~NativeView() override;
@@ -138,6 +155,8 @@ class NativeView : public base::RefCounted<NativeView>
 
  private:
   friend class base::RefCounted<NativeView>;
+
+  base::ObserverList<Observer> observers_;
 
   // Relationships.
   NativeView* parent_ = nullptr;

@@ -5,8 +5,6 @@
 #include "shell/browser/ui/native_scroll_view.h"
 
 #include "shell/browser/ui/cocoa/electron_native_view.h"
-#include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/size.h"
 
 @interface ElectronNativeScrollView
     : NSScrollView <ElectronNativeViewProtocol> {
@@ -32,6 +30,7 @@
 }
 
 - (void)dealloc {
+  [self shell]->NotifyViewIsDeleting();
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }

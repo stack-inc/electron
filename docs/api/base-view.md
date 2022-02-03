@@ -19,11 +19,13 @@ Creates the new base view.
 
 Objects created with `new BaseView` emit the following events:
 
-#### Event: 'size-changed'
+#### Event: 'size-changed' _Experimental_
 
 Returns:
 
-* `event` Event _Experimental_
+* `event` Event
+* `oldSize` [Size](structures/size.md) - Size the view was before.
+* `newSize` [Size](structures/size.md) - Size the view is being resized to.
 
 Emitted when the view's size has been changed.
 
@@ -119,10 +121,12 @@ Returns `Boolean` - Returns `true` if this view is focusable, enabled and drawn.
 
 Change the background color of the view.
 
-#### `view.getParent()` _Experimental_
+#### `view.getParentView()` _Experimental_
 
 Returns `BaseView || null` - The parent view, otherwise returns `null`.
 
-#### `view.getWindow()` _Experimental_
+#### `view.getParentWindow()` _Experimental_
 
 Returns `BrowserWindow || null` - The window that the view belongs to, otherwise returns `null`.
+
+Note: The view can belongs  to either a view or a window. 

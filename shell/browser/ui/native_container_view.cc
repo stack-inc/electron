@@ -10,11 +10,6 @@
 
 #include "base/logging.h"
 #include "shell/browser/browser.h"
-#include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/geometry/size.h"
-#include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/geometry/size_f.h"
 
 namespace electron {
 
@@ -33,7 +28,8 @@ bool NativeContainerView::IsContainer() const {
 }
 
 void NativeContainerView::DetachChildView(NativeView* view) {
-  RemoveChildView(view);
+  if (RemoveChildView(view))
+    NotifyChildViewDetached(view);
 }
 
 void NativeContainerView::TriggerBeforeunloadEvents() {
@@ -72,17 +68,18 @@ void NativeContainerView::AddChildViewAt(scoped_refptr<NativeView> view,
   children_.insert(children_.begin() + index, std::move(view));
 }
 
-void NativeContainerView::RemoveChildView(NativeView* view) {
+bool NativeContainerView::RemoveChildView(NativeView* view) {
   if (!GetNative() || !view)
-    return;
+    return false;
   const auto i(std::find(children_.begin(), children_.end(), view));
   if (i == children_.end())
-    return;
+    return false;
 
   view->SetParent(nullptr);
 
   PlatformRemoveChildView(view);
   children_.erase(i);
+  return true;
 }
 
 void NativeContainerView::SetTopChildView(NativeView* view) {

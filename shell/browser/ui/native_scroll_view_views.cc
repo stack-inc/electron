@@ -4,7 +4,6 @@
 
 #include "shell/browser/ui/native_scroll_view.h"
 
-#include "ui/gfx/geometry/size.h"
 #include "ui/views/controls/scroll_view.h"
 
 namespace electron {

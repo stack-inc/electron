@@ -111,7 +111,7 @@ class NativeWindowMac : public NativeWindow,
   void RemoveBrowserView(NativeBrowserView* browser_view) override;
   void SetTopBrowserView(NativeBrowserView* browser_view) override;
   void AddChildView(NativeView* view) override;
-  void RemoveChildView(NativeView* view) override;
+  bool RemoveChildView(NativeView* view) override;
   void SetTopChildView(NativeView* view) override;
   void SetParentWindow(NativeWindow* parent) override;
   content::DesktopMediaID GetDesktopMediaID() const override;

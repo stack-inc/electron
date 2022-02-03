@@ -9,10 +9,6 @@
 
 #include "shell/browser/ui/native_view.h"
 
-namespace gfx {
-class Size;
-}
-
 namespace electron {
 
 class NativeContainerView : public NativeView {
@@ -30,7 +26,7 @@ class NativeContainerView : public NativeView {
   // Add/Remove children.
   void AddChildView(scoped_refptr<NativeView> view);
   void AddChildViewAt(scoped_refptr<NativeView> view, int index);
-  void RemoveChildView(NativeView* view);
+  bool RemoveChildView(NativeView* view);
   void SetTopChildView(NativeView* view);
 
   // Get children.

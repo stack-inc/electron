@@ -6,7 +6,6 @@
 
 #include "gin/handle.h"
 #include "shell/browser/browser.h"
-#include "shell/browser/javascript_environment.h"
 #include "shell/browser/native_window.h"
 #include "shell/common/gin_helper/dictionary.h"
 #include "shell/common/gin_helper/object_template_builder.h"
@@ -24,32 +23,48 @@ ContainerView::ContainerView(gin::Arguments* args,
 
 ContainerView::~ContainerView() = default;
 
+void ContainerView::ResetChildView(BaseView* view) {
+  auto get_that_view = base_views_.find(view->GetID());
+  if (get_that_view != base_views_.end()) {
+    (*get_that_view).second.Reset();
+    base_views_.erase(get_that_view);
+  }
+}
+
+void ContainerView::ResetChildViews() {
+  v8::HandleScope scope(isolate());
+
+  for (auto& item : base_views_) {
+    gin::Handle<BaseView> base_view;
+    if (gin::ConvertFromV8(isolate(),
+                           v8::Local<v8::Value>::New(isolate(), item.second),
+                           &base_view) &&
+        !base_view.IsEmpty()) {
+      // There's a chance that the BaseView may have been reparented - only
+      // reset if the owner view is *this* view.
+      auto* parent_view = base_view->view()->GetParent();
+      if (parent_view && parent_view == container_)
+        base_view->view()->SetParent(nullptr);
+    }
+
+    item.second.Reset();
+  }
+
+  base_views_.clear();
+}
+
 void ContainerView::AddChildView(v8::Local<v8::Value> value) {
   if (!container_)
     return;
 
-  v8::Isolate* isolate = JavascriptEnvironment::GetIsolate();
-  v8::Locker locker(isolate);
-  v8::HandleScope handle_scope(isolate);
-
   gin::Handle<BaseView> base_view;
-  if (value->IsObject() && gin::ConvertFromV8(isolate, value, &base_view)) {
+  if (value->IsObject() && gin::ConvertFromV8(isolate(), value, &base_view)) {
     auto get_that_view = base_views_.find(base_view->GetID());
     if (get_that_view == base_views_.end()) {
-      // If we're reparenting a BaseView, ensure that it's detached from
-      // its previous owner window/view.
-      auto* owner_window = base_view->view()->GetWindow();
-      auto* owner_view = base_view->view()->GetParent();
-      if (owner_view && owner_view != container_) {
-        owner_view->DetachChildView(base_view->view());
-        base_view->view()->SetParent(nullptr);
-      } else if (owner_window) {
-        owner_window->RemoveChildView(base_view->view());
-        base_view->view()->SetWindow(nullptr);
-      }
-
+      if (!base_view->EnsureDetachFromParent())
+        return;
       container_->AddChildView(base_view->view());
-      base_views_[base_view->GetID()].Reset(isolate, value);
+      base_views_[base_view->GetID()].Reset(isolate(), value);
     }
   }
 }
@@ -58,16 +73,12 @@ void ContainerView::RemoveChildView(v8::Local<v8::Value> value) {
   if (!container_)
     return;
 
-  v8::Isolate* isolate = JavascriptEnvironment::GetIsolate();
-  v8::Locker locker(isolate);
-  v8::HandleScope handle_scope(isolate);
-
   gin::Handle<BaseView> base_view;
-  if (value->IsObject() && gin::ConvertFromV8(isolate, value, &base_view)) {
+  if (value->IsObject() && gin::ConvertFromV8(isolate(), value, &base_view)) {
     auto get_that_view = base_views_.find(base_view->GetID());
     if (get_that_view != base_views_.end()) {
       container_->RemoveChildView(base_view->view());
-      (*get_that_view).second.Reset(isolate, value);
+      (*get_that_view).second.Reset(isolate(), value);
       base_views_.erase(get_that_view);
     }
   }
@@ -78,12 +89,8 @@ void ContainerView::SetTopChildView(v8::Local<v8::Value> value,
   if (!container_)
     return;
 
-  v8::Isolate* isolate = JavascriptEnvironment::GetIsolate();
-  v8::Locker locker(isolate);
-  v8::HandleScope handle_scope(isolate);
-
   gin::Handle<BaseView> base_view;
-  if (value->IsObject() && gin::ConvertFromV8(isolate, value, &base_view)) {
+  if (value->IsObject() && gin::ConvertFromV8(isolate(), value, &base_view)) {
     auto* owner_view = base_view->view()->GetParent();
     auto get_that_view = base_views_.find(base_view->GetID());
     if (get_that_view == base_views_.end() ||
@@ -97,14 +104,11 @@ void ContainerView::SetTopChildView(v8::Local<v8::Value> value,
 }
 
 std::vector<v8::Local<v8::Value>> ContainerView::GetViews() const {
-  v8::Isolate* isolate = JavascriptEnvironment::GetIsolate();
-  v8::Locker locker(isolate);
-  v8::HandleScope handle_scope(isolate);
-
   std::vector<v8::Local<v8::Value>> ret;
 
   for (auto const& views_iter : base_views_) {
-    ret.push_back(v8::Local<v8::Value>::New(isolate, views_iter.second));
+    if (!views_iter.second.IsEmpty())
+      ret.push_back(v8::Local<v8::Value>::New(isolate(), views_iter.second));
   }
 
   return ret;

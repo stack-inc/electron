@@ -103,8 +103,8 @@ NativeWindow::NativeWindow(const gin_helper::Dictionary& options,
 }
 
 NativeWindow::~NativeWindow() {
-  if (native_content_view_.get())
-    native_content_view_->BecomeContentView(nullptr);
+  if (content_base_view_.get())
+    content_base_view_->BecomeContentView(nullptr);
   // It's possible that the windows gets destroyed before it's closed, in that
   // case we need to ensure the Widget delegate gets destroyed and
   // OnWindowClosed message is still notified.
@@ -227,15 +227,15 @@ void NativeWindow::InitFromOptions(const gin_helper::Dictionary& options) {
 void NativeWindow::SetContentView(scoped_refptr<NativeView> view) {
   if (!view)
     return;
-  if (native_content_view_)
-    native_content_view_->BecomeContentView(nullptr);
+  if (content_base_view_)
+    content_base_view_->BecomeContentView(nullptr);
   PlatformSetContentView(view.get());
-  native_content_view_ = std::move(view);
-  native_content_view_->BecomeContentView(this);
+  content_base_view_ = std::move(view);
+  content_base_view_->BecomeContentView(this);
 }
 
 NativeView* NativeWindow::GetContentView() const {
-  return native_content_view_.get();
+  return content_base_view_.get();
 }
 
 bool NativeWindow::IsClosed() const {
@@ -674,6 +674,17 @@ void NativeWindow::NotifyWindowMessage(UINT message,
     observer.OnWindowMessage(message, w_param, l_param);
 }
 #endif
+
+bool NativeWindow::DetachChildView(NativeView* view) {
+  if (view == content_base_view_.get())
+    return false;
+
+  if (RemoveChildView(view)) {
+    for (NativeWindowObserver& observer : observers_)
+      observer.OnChildViewDetached(view);
+  }
+  return true;
+}
 
 views::Widget* NativeWindow::GetWidget() {
   return widget();

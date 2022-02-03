@@ -1278,13 +1278,13 @@ void NativeWindowMac::AddChildView(NativeView* view) {
   [CATransaction commit];
 }
 
-void NativeWindowMac::RemoveChildView(NativeView* view) {
+bool NativeWindowMac::RemoveChildView(NativeView* view) {
   [CATransaction begin];
   [CATransaction setDisableActions:YES];
 
   if (!view) {
     [CATransaction commit];
-    return;
+    return false;
   }
 
   [view->GetNative() removeFromSuperview];
@@ -1292,6 +1292,8 @@ void NativeWindowMac::RemoveChildView(NativeView* view) {
   view->SetWindow(nullptr);
 
   [CATransaction commit];
+
+  return true;
 }
 
 void NativeWindowMac::SetTopChildView(NativeView* view) {
