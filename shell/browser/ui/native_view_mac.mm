@@ -1,7 +1,3 @@
-// Copyright (c) 2022 GitHub, Inc.
-// Use of this source code is governed by the MIT license that can be
-// found in the LICENSE file.
-
 #include "shell/browser/ui/native_view.h"
 
 #include "base/mac/foundation_util.h"
@@ -12,36 +8,32 @@
 
 namespace electron {
 
-void NativeView::TakeOverView(NATIVEVIEW view) {
+void NativeView::SetNativeView(NATIVEVIEW view) {
   view_ = view;
 
   if (!IsNativeView(view))
     return;
 
-  // Install events handle for the view's class.
   Class cl = [view class];
   if (!NativeViewMethodsInstalled(cl)) {
     InstallNativeViewMethods(cl);
   }
 
-  // Initialize private bits of the view.
   NativeViewPrivate* priv = [view nativeViewPrivate];
   priv->shell = this;
 
-  // Set the |focusable| property to the parent class's default one.
   SEL cmd = @selector(acceptsFirstResponder);
   auto super_impl = reinterpret_cast<BOOL (*)(NSView*, SEL)>(
       [[view superclass] instanceMethodForSelector:cmd]);
   priv->focusable = super_impl(view, cmd);
 }
 
-void NativeView::PlatformInit() {
-  TakeOverView([[ElectronNativeView alloc] init]);
+void NativeView::InitView() {
+  SetNativeView([[ElectronNativeView alloc] init]);
 }
 
-void NativeView::PlatformDestroy() {
+void NativeView::DestroyView() {
   if (IsNativeView(view_)) {
-    // The view may be referenced after this class gets destroyed.
     NativeViewPrivate* priv = [view_ nativeViewPrivate];
     priv->shell = nullptr;
   }
@@ -51,7 +43,6 @@ void NativeView::PlatformDestroy() {
 void NativeView::SetBounds(const gfx::Rect& bounds) {
   NSRect frame = bounds.ToCGRect();
   [view_ setFrame:frame];
-  // Calling setFrame manually does not trigger resizeSubviewsWithOldSize.
   [view_ resizeSubviewsWithOldSize:frame.size];
 }
 
@@ -69,7 +60,7 @@ gfx::Point NativeView::OffsetFromWindow() const {
   return gfx::Point(point.x, point.y);
 }
 
-void NativeView::PlatformSetVisible(bool visible) {
+void NativeView::SetVisibleImpl(bool visible) {
   [view_ setHidden:!visible];
 }
 

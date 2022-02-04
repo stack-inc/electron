@@ -1,7 +1,3 @@
-// Copyright (c) 2022 GitHub, Inc.
-// Use of this source code is governed by the MIT license that can be
-// found in the LICENSE file.
-
 #include "shell/browser/ui/native_scroll_view.h"
 
 #include "ui/views/controls/scroll_view.h"
@@ -23,11 +19,11 @@ ScrollBarMode GetScrollBarMode(views::ScrollView::ScrollBarMode mode) {
 
 }  // namespace
 
-void NativeScrollView::PlatformInit() {
-  TakeOverView(new views::ScrollView());
+void NativeScrollView::InitScrollView() {
+  SetNativeView(new views::ScrollView());
 }
 
-void NativeScrollView::PlatformSetContentView(NativeView* view) {
+void NativeScrollView::SetContentViewImpl(NativeView* view) {
   if (!GetNative() || !view)
     return;
   auto* scroll = static_cast<views::ScrollView*>(GetNative());
@@ -36,7 +32,7 @@ void NativeScrollView::PlatformSetContentView(NativeView* view) {
   scroll->SetContents(std::move(content_view));
 }
 
-void NativeScrollView::PlatformDetachChildView() {
+void NativeScrollView::DetachChildViewImpl() {
   if (!GetNative())
     return;
   auto* scroll = static_cast<views::ScrollView*>(GetNative());

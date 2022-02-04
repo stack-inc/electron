@@ -53,14 +53,6 @@ Objects created with `new ContainerView` have the following instance methods:
 
 * `view` [BaseView](base-view.md)
 
-#### `view.setTopChildView(view)` _Experimental_
-
-* `view` [BaseView](base-view.md)
-
-Raises `view` above other `BaseView`s attached
-to `view`.
-Throws an error if `containerView` is not attached to `view`.
-
 #### `view.getViews()` _Experimental_
 
 Returns `BaseView[]` - an array of all BaseViews that have been attached

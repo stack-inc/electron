@@ -1,27 +1,16 @@
-// Copyright (c) 2022 GitHub, Inc.
-// Use of this source code is governed by the MIT license that can be
-// found in the LICENSE file.
-
 #include "shell/browser/ui/native_container_view.h"
 
 #include <algorithm>
 #include <limits>
 #include <utility>
 
-#include "base/logging.h"
-#include "shell/browser/browser.h"
-
 namespace electron {
 
 NativeContainerView::NativeContainerView() {
-  PlatformInit();
+  InitContainerView();
 }
 
-NativeContainerView::NativeContainerView(const char* an_empty_constructor) {}
-
-NativeContainerView::~NativeContainerView() {
-  PlatformDestroy();
-}
+NativeContainerView::~NativeContainerView() = default;
 
 bool NativeContainerView::IsContainer() const {
   return true;
@@ -45,27 +34,13 @@ void NativeContainerView::SetWindowForChildren(NativeWindow* window) {
 void NativeContainerView::AddChildView(scoped_refptr<NativeView> view) {
   if (!GetNative() || !view)
     return;
-  if (view->GetParent() == this)
+  if (view == this || view->GetParent())
     return;
-  AddChildViewAt(std::move(view), ChildCount());
-}
-
-void NativeContainerView::AddChildViewAt(scoped_refptr<NativeView> view,
-                                         int index) {
-  if (!GetNative() || !view)
-    return;
-  if (view == this || index < 0 || index > ChildCount())
-    return;
-
-  if (view->GetParent()) {
-    LOG(ERROR) << "The view already has a parent.";
-    return;
-  }
 
   view->SetParent(this);
 
-  PlatformAddChildView(view.get());
-  children_.insert(children_.begin() + index, std::move(view));
+  AddChildViewImpl(view.get());
+  children_.insert(children_.begin() + ChildCount(), std::move(view));
 }
 
 bool NativeContainerView::RemoveChildView(NativeView* view) {
@@ -77,21 +52,9 @@ bool NativeContainerView::RemoveChildView(NativeView* view) {
 
   view->SetParent(nullptr);
 
-  PlatformRemoveChildView(view);
+  RemoveChildViewImpl(view);
   children_.erase(i);
   return true;
-}
-
-void NativeContainerView::SetTopChildView(NativeView* view) {
-  if (!GetNative() || !view || view == this)
-    return;
-  const auto i(std::find(children_.begin(), children_.end(), view));
-  if (i == children_.end())
-    return;
-
-  PlatformSetTopView(view);
-  auto view_it = children_.erase(i);
-  children_.insert(children_.begin() + children_.size(), std::move(*view_it));
 }
 
 }  // namespace electron

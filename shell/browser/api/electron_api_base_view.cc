@@ -1,7 +1,3 @@
-// Copyright (c) 2022 GitHub, Inc.
-// Use of this source code is governed by the MIT license that can be
-// found in the LICENSE file.
-
 #include "shell/browser/api/electron_api_base_view.h"
 
 #include "gin/handle.h"

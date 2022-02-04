@@ -1,7 +1,3 @@
-// Copyright (c) 2022 GitHub, Inc.
-// Use of this source code is governed by the MIT license that can be
-// found in the LICENSE file.
-
 #include "shell/browser/ui/native_container_view.h"
 
 #include <utility>
@@ -11,30 +7,22 @@
 
 namespace electron {
 
-void NativeContainerView::PlatformInit() {
-  TakeOverView(new views::View());
+void NativeContainerView::InitContainerView() {
+  SetNativeView(new views::View());
 }
 
-void NativeContainerView::PlatformDestroy() {}
-
-void NativeContainerView::PlatformAddChildView(NativeView* view) {
+void NativeContainerView::AddChildViewImpl(NativeView* view) {
   if (!GetNative())
     return;
   view->set_delete_view(false);
   GetNative()->AddChildView(view->GetNative());
 }
 
-void NativeContainerView::PlatformRemoveChildView(NativeView* view) {
+void NativeContainerView::RemoveChildViewImpl(NativeView* view) {
   if (!GetNative())
     return;
   view->set_delete_view(true);
   GetNative()->RemoveChildView(view->GetNative());
-}
-
-void NativeContainerView::PlatformSetTopView(NativeView* view) {
-  if (!GetNative())
-    return;
-  GetNative()->ReorderChildView(view->GetNative(), -1);
 }
 
 }  // namespace electron

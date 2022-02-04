@@ -1,7 +1,3 @@
-// Copyright (c) 2022 GitHub, Inc.
-// Use of this source code is governed by the MIT license that can be
-// found in the LICENSE file.
-
 #include "shell/browser/ui/native_scroll_view.h"
 
 #include <utility>
@@ -12,11 +8,8 @@
 namespace electron {
 
 NativeScrollView::NativeScrollView() {
-  PlatformInit();
+  InitScrollView();
   SetContentView(new NativeContainerView);
-#if 0
-  on_scroll.SetDelegate(this, kOnScroll);
-#endif
 }
 
 NativeScrollView::~NativeScrollView() = default;
@@ -24,7 +17,7 @@ NativeScrollView::~NativeScrollView() = default;
 void NativeScrollView::SetContentView(scoped_refptr<NativeView> view) {
   if (content_view_)
     content_view_->SetParent(nullptr);
-  PlatformSetContentView(view.get());
+  SetContentViewImpl(view.get());
   content_view_ = std::move(view);
   content_view_->SetParent(this);
 }
@@ -40,7 +33,7 @@ gfx::Size NativeScrollView::GetContentSize() const {
 void NativeScrollView::DetachChildView(NativeView* view) {
   if (!view || content_view_.get() != view)
     return;
-  PlatformDetachChildView();
+  DetachChildViewImpl();
   content_view_->SetParent(nullptr);
   content_view_.reset();
   NotifyChildViewDetached(view);

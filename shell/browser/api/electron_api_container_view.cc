@@ -1,7 +1,3 @@
-// Copyright (c) 2022 GitHub, Inc.
-// Use of this source code is governed by the MIT license that can be
-// found in the LICENSE file.
-
 #include "shell/browser/api/electron_api_container_view.h"
 
 #include "gin/handle.h"
@@ -84,25 +80,6 @@ void ContainerView::RemoveChildView(v8::Local<v8::Value> value) {
   }
 }
 
-void ContainerView::SetTopChildView(v8::Local<v8::Value> value,
-                                    gin_helper::ErrorThrower thrower) {
-  if (!container_)
-    return;
-
-  gin::Handle<BaseView> base_view;
-  if (value->IsObject() && gin::ConvertFromV8(isolate(), value, &base_view)) {
-    auto* owner_view = base_view->view()->GetParent();
-    auto get_that_view = base_views_.find(base_view->GetID());
-    if (get_that_view == base_views_.end() ||
-        (owner_view && owner_view != container_)) {
-      thrower.ThrowError("Given BaseView is not attached to the view");
-      return;
-    }
-
-    container_->SetTopChildView(base_view->view());
-  }
-}
-
 std::vector<v8::Local<v8::Value>> ContainerView::GetViews() const {
   std::vector<v8::Local<v8::Value>> ret;
 
@@ -132,7 +109,6 @@ void ContainerView::BuildPrototype(v8::Isolate* isolate,
   gin_helper::ObjectTemplateBuilder(isolate, prototype->PrototypeTemplate())
       .SetMethod("addChildView", &ContainerView::AddChildView)
       .SetMethod("removeChildView", &ContainerView::RemoveChildView)
-      .SetMethod("setTopChildView", &ContainerView::SetTopChildView)
       .SetMethod("getViews", &ContainerView::GetViews)
       .Build();
 }

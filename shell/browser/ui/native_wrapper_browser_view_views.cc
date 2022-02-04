@@ -1,7 +1,3 @@
-// Copyright (c) 2022 GitHub, Inc.
-// Use of this source code is governed by the MIT license that can be
-// found in the LICENSE file.
-
 #include "shell/browser/ui/native_wrapper_browser_view.h"
 
 #include "shell/browser/api/electron_api_browser_view.h"
@@ -10,11 +6,11 @@
 
 namespace electron {
 
-void NativeWrapperBrowserView::PlatformInit() {
-  TakeOverView(new views::View());
+void NativeWrapperBrowserView::InitWrapperBrowserView() {
+  SetNativeView(new views::View());
 }
 
-void NativeWrapperBrowserView::PlatformSetBrowserView() {
+void NativeWrapperBrowserView::SetBrowserViewImpl() {
   if (!GetNative())
     return;
   if (api_browser_view_ &&
@@ -24,7 +20,7 @@ void NativeWrapperBrowserView::PlatformSetBrowserView() {
   }
 }
 
-void NativeWrapperBrowserView::PlatformDetachBrowserView() {
+void NativeWrapperBrowserView::DetachBrowserViewImpl() {
   if (!GetNative())
     return;
   if (api_browser_view_ &&

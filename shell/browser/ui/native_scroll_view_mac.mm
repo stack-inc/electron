@@ -1,7 +1,3 @@
-// Copyright (c) 2022 GitHub, Inc.
-// Use of this source code is governed by the MIT license that can be
-// found in the LICENSE file.
-
 #include "shell/browser/ui/native_scroll_view.h"
 
 #include "shell/browser/ui/cocoa/electron_native_view.h"
@@ -11,11 +7,9 @@
  @private
   electron::NativeViewPrivate private_;
   electron::NativeScrollView* shell_;
-  BOOL subscribed_;
   NSSize content_size_;
 }
 - (id)initWithShell:(electron::NativeScrollView*)shell;
-- (void)setEventEnabled:(BOOL)enable;
 - (void)setContentSize:(NSSize)size;
 @end
 
@@ -24,43 +18,18 @@
 - (id)initWithShell:(electron::NativeScrollView*)shell {
   if ((self = [super init])) {
     shell_ = shell;
-    subscribed_ = NO;
   }
   return self;
 }
 
 - (void)dealloc {
-  [self shell]->NotifyViewIsDeleting();
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  if ([self shell])
+    [self shell]->NotifyViewIsDeleting();
   [super dealloc];
-}
-
-- (void)setEventEnabled:(BOOL)enable {
-  if (subscribed_ == enable)
-    return;
-  subscribed_ = enable;
-  NSView* contentView = self.contentView;
-  if (enable) {
-    [contentView setPostsBoundsChangedNotifications:YES];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(onScroll:)
-               name:NSViewBoundsDidChangeNotification
-             object:contentView];
-  } else {
-    [contentView setPostsBoundsChangedNotifications:NO];
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-  }
 }
 
 - (void)setContentSize:(NSSize)size {
   content_size_ = size;
-}
-
-- (void)onScroll:(NSNotification*)notification {
-#if 0
-  shell_->on_scroll.Emit(shell_);
-#endif
 }
 
 - (electron::NativeViewPrivate*)nativeViewPrivate {
@@ -71,8 +40,6 @@
 }
 
 - (void)resizeSubviewsWithOldSize:(NSSize)oldBoundsSize {
-  // Automatically resize the content view when ScrollView is larger than the
-  // content size.
   NSSize parent_size = [self frame].size;
   NSSize content_size = content_size_;
   if (content_size.width < parent_size.width)
@@ -87,7 +54,7 @@
 
 namespace electron {
 
-void NativeScrollView::PlatformInit() {
+void NativeScrollView::InitScrollView() {
   auto* scroll = [[ElectronNativeScrollView alloc] initWithShell:this];
   scroll.drawsBackground = NO;
   if (scroll.scrollerStyle == NSScrollerStyleOverlay) {
@@ -95,15 +62,15 @@ void NativeScrollView::PlatformInit() {
     scroll.hasVerticalScroller = YES;
   }
   [scroll.contentView setCopiesOnScroll:NO];
-  TakeOverView(scroll);
+  SetNativeView(scroll);
 }
 
-void NativeScrollView::PlatformSetContentView(NativeView* view) {
+void NativeScrollView::SetContentViewImpl(NativeView* view) {
   auto* scroll = static_cast<NSScrollView*>(GetNative());
   scroll.documentView = view->GetNative();
 }
 
-void NativeScrollView::PlatformDetachChildView() {
+void NativeScrollView::DetachChildViewImpl() {
   auto* scroll = static_cast<NSScrollView*>(GetNative());
   scroll.documentView = nil;
 }
@@ -201,14 +168,5 @@ void NativeScrollView::UpdateDraggableRegions() {
   if (content_view_.get())
     content_view_->UpdateDraggableRegions();
 }
-
-#if 0
-void NativeScrollView::OnConnect(int identifier) {
-  if (identifier == kOnScroll) {
-    auto* scroll = static_cast<ElectronNativeScrollView*>(GetNative());
-    [scroll setEventEnabled:YES];
-  }
-}
-#endif
 
 }  // namespace electron

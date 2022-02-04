@@ -1,7 +1,3 @@
-// Copyright (c) 2022 GitHub, Inc.
-// Use of this source code is governed by the MIT license that can be
-// found in the LICENSE file.
-
 #include "shell/browser/ui/native_view.h"
 
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -10,7 +6,7 @@
 
 namespace electron {
 
-void NativeView::TakeOverView(NATIVEVIEW view) {
+void NativeView::SetNativeView(NATIVEVIEW view) {
   if (view_) {
     view_->RemoveObserver(this);
     if (delete_view_)
@@ -20,11 +16,11 @@ void NativeView::TakeOverView(NATIVEVIEW view) {
   view_->AddObserver(this);
 }
 
-void NativeView::PlatformInit() {
-  TakeOverView(new views::View());
+void NativeView::InitView() {
+  SetNativeView(new views::View());
 }
 
-void NativeView::PlatformDestroy() {
+void NativeView::DestroyView() {
   if (!view_)
     return;
   view_->RemoveObserver(this);
@@ -75,7 +71,7 @@ gfx::Point NativeView::OffsetFromWindow() const {
   return point;
 }
 
-void NativeView::PlatformSetVisible(bool visible) {
+void NativeView::SetVisibleImpl(bool visible) {
   if (view_)
     view_->SetVisible(visible);
 }

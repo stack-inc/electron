@@ -1,7 +1,3 @@
-// Copyright (c) 2022 GitHub, Inc.
-// Use of this source code is governed by the MIT license that can be
-// found in the LICENSE file.
-
 #ifndef SHELL_BROWSER_UI_NATIVE_WRAPPER_BROWSER_VIEW_H_
 #define SHELL_BROWSER_UI_NATIVE_WRAPPER_BROWSER_VIEW_H_
 
@@ -35,9 +31,9 @@ class NativeWrapperBrowserView : public NativeView {
   // NativeView:
   void SetWindowForChildren(NativeWindow* window) override;
 
-  void PlatformInit();
-  void PlatformSetBrowserView();
-  void PlatformDetachBrowserView();
+  void InitWrapperBrowserView();
+  void SetBrowserViewImpl();
+  void DetachBrowserViewImpl();
 
  private:
   api::BrowserView* api_browser_view_ = nullptr;

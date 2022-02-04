@@ -1,7 +1,3 @@
-// Copyright (c) 2022 GitHub, Inc.
-// Use of this source code is governed by the MIT license that can be
-// found in the LICENSE file.
-
 #ifndef SHELL_BROWSER_API_ELECTRON_API_CONTAINER_VIEW_H_
 #define SHELL_BROWSER_API_ELECTRON_API_CONTAINER_VIEW_H_
 
@@ -33,8 +29,6 @@ class ContainerView : public BaseView {
 
   void AddChildView(v8::Local<v8::Value> value);
   void RemoveChildView(v8::Local<v8::Value> value);
-  void SetTopChildView(v8::Local<v8::Value> value,
-                       gin_helper::ErrorThrower thrower);
   std::vector<v8::Local<v8::Value>> GetViews() const;
 
  private:

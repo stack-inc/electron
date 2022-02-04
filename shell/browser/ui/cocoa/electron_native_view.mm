@@ -1,7 +1,3 @@
-// Copyright (c) 2022 GitHub, Inc.
-// Use of this source code is governed by the MIT license that can be
-// found in the LICENSE file.
-
 #include "shell/browser/ui/cocoa/electron_native_view.h"
 
 #include <objc/objc-runtime.h>
@@ -19,7 +15,8 @@ typedef struct CGContext* CGContextRef;
 @implementation ElectronNativeView
 
 - (void)dealloc {
-  [self shell]->NotifyViewIsDeleting();
+  if ([self shell])
+    [self shell]->NotifyViewIsDeleting();
   [super dealloc];
 }
 
@@ -37,9 +34,6 @@ typedef struct CGContext* CGContextRef;
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
-  electron::NativeView* shell = [self shell];
-  if (!shell)
-    return;
   if (!background_color_.has_value())
     return;
 
@@ -64,7 +58,6 @@ namespace electron {
 
 namespace {
 
-// Returns whether the view belongs to a frameless window.
 bool IsFramelessWindow(NSView* view) {
   if (![view window])
     return false;
@@ -72,8 +65,6 @@ bool IsFramelessWindow(NSView* view) {
     return false;
   return ![static_cast<ElectronNSWindow*>([view window]) shell]->has_frame();
 }
-
-// Following methods are overrided in ElectronNativeViewProtocol.
 
 bool NativeViewInjected(NSView* self, SEL _cmd) {
   return true;
@@ -86,9 +77,6 @@ NativeView* GetShell(NSView* self, SEL _cmd) {
 BOOL AcceptsFirstResponder(NSView* self, SEL _cmd) {
   return [self nativeViewPrivate]->focusable;
 }
-
-// Following methods are overrided in ElectronNativeViewProtocol to make sure
-// that content view of frameless always takes the size of its parent view.
 
 // This method is directly called by NSWindow during a window resize on OSX
 // 10.10.0, beta 2. We must override it to prevent the content view from
@@ -108,8 +96,6 @@ void SetFrameSize(NSView* self, SEL _cmd, NSSize size) {
     [self shell]->NotifySizeChanged(gfx::Size(old_size), gfx::Size(size));
 }
 
-// The contentView gets moved around during certain full-screen operations.
-// This is less than ideal, and should eventually be removed.
 void ViewDidMoveToSuperview(NSView* self, SEL _cmd) {
   if (!IsFramelessWindow(self) || ![self nativeViewPrivate]->is_content_view) {
     auto super_impl = reinterpret_cast<decltype(&ViewDidMoveToSuperview)>(

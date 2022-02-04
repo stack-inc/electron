@@ -1,7 +1,3 @@
-// Copyright (c) 2022 GitHub, Inc.
-// Use of this source code is governed by the MIT license that can be
-// found in the LICENSE file.
-
 #ifndef SHELL_BROWSER_UI_NATIVE_VIEW_H_
 #define SHELL_BROWSER_UI_NATIVE_VIEW_H_
 
@@ -138,12 +134,11 @@ class NativeView : public base::RefCounted<NativeView>
  protected:
   ~NativeView() override;
 
-  // Called by subclasses to take the ownership of |view|.
-  void TakeOverView(NATIVEVIEW view);
+  void SetNativeView(NATIVEVIEW view);
 
-  void PlatformInit();
-  void PlatformDestroy();
-  void PlatformSetVisible(bool visible);
+  void InitView();
+  void DestroyView();
+  void SetVisibleImpl(bool visible);
 
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
   // views::ViewObserver:

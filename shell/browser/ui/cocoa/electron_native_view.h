@@ -1,7 +1,3 @@
-// Copyright (c) 2022 GitHub, Inc.
-// Use of this source code is governed by the MIT license that can be
-// found in the LICENSE file.
-
 #ifndef SHELL_BROWSER_UI_COCOA_ELECTRON_NATIVE_VIEW_H_
 #define SHELL_BROWSER_UI_COCOA_ELECTRON_NATIVE_VIEW_H_
 
@@ -16,8 +12,7 @@ class NativeView;
 
 // A private class that holds views specific private data.
 // Object-C does not support multi-inheiritance, so it is impossible to add
-// common data members for UI elements. Our workaround is to manually add
-// this class as member for each view.
+// common data members for UI elements.
 struct NativeViewPrivate {
   NativeViewPrivate();
   ~NativeViewPrivate();
@@ -25,8 +20,8 @@ struct NativeViewPrivate {
   NativeView* shell = nullptr;
   bool focusable = true;
   bool is_content_view = false;
-  bool wants_layer = false;           // default value for wantsLayer
-  bool wants_layer_infected = false;  // infects the wantsLayer property
+  bool wants_layer = false;
+  bool wants_layer_infected = false;
 };
 
 }  // namespace electron

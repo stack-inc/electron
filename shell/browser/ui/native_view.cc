@@ -1,7 +1,3 @@
-// Copyright (c) 2022 GitHub, Inc.
-// Use of this source code is governed by the MIT license that can be
-// found in the LICENSE file.
-
 #include "shell/browser/ui/native_view.h"
 
 #include "shell/browser/native_window.h"
@@ -9,17 +5,17 @@
 namespace electron {
 
 NativeView::NativeView() : view_(nullptr) {
-  PlatformInit();
+  InitView();
 }
 
 NativeView::~NativeView() {
-  PlatformDestroy();
+  DestroyView();
 }
 
 void NativeView::SetVisible(bool visible) {
   if (visible == IsVisible())
     return;
-  PlatformSetVisible(visible);
+  SetVisibleImpl(visible);
 }
 
 void NativeView::SetParent(NativeView* parent) {

@@ -1,7 +1,3 @@
-// Copyright (c) 2022 GitHub, Inc.
-// Use of this source code is governed by the MIT license that can be
-// found in the LICENSE file.
-
 #ifndef SHELL_BROWSER_UI_NATIVE_SCROLL_VIEW_H_
 #define SHELL_BROWSER_UI_NATIVE_SCROLL_VIEW_H_
 
@@ -68,28 +64,15 @@ class NativeScrollView : public NativeView {
   bool GetDrawOverflowIndicator() const;
 #endif
 
-#if 0
-  // Events.
-  Signal<bool(Scroll*)> on_scroll;
-#endif
-
  protected:
   ~NativeScrollView() override;
 
   // NativeView:
   void SetWindowForChildren(NativeWindow* window) override;
 
-  // Following platform implementations should only be called by wrappers.
-  void PlatformInit();
-  void PlatformSetContentView(NativeView* container);
-  void PlatformDetachChildView();
-
-  enum { kOnScroll };
-
-#if 0
-  // SignalDelegate:
-  void OnConnect(int identifier) override;
-#endif
+  void InitScrollView();
+  void SetContentViewImpl(NativeView* container);
+  void DetachChildViewImpl();
 
  private:
   scoped_refptr<NativeView> content_view_;
