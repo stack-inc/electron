@@ -40,14 +40,17 @@ void BaseView::InitWith(v8::Isolate* isolate, v8::Local<v8::Object> wrapper) {
   self_ref_.Reset(isolate, wrapper);
 }
 
-void BaseView::OnChildViewDetached(NativeView* observed_view, NativeView* view) {
+void BaseView::OnChildViewDetached(NativeView* observed_view,
+                                   NativeView* view) {
   auto* api_view = TrackableObject::FromWrappedClass(isolate(), view);
   if (api_view)
     ResetChildView(api_view);
 }
 
-void BaseView::OnSizeChanged(NativeView* observed_view, gfx::Size old_size, gfx::Size new_size) {
-Emit("size-changed", old_size, new_size);
+void BaseView::OnSizeChanged(NativeView* observed_view,
+                             gfx::Size old_size,
+                             gfx::Size new_size) {
+  Emit("size-changed", old_size, new_size);
 }
 
 void BaseView::OnViewIsDeleting(NativeView* observed_view) {
@@ -124,7 +127,8 @@ int32_t BaseView::GetID() const {
 v8::Local<v8::Value> BaseView::GetParentView() const {
   NativeView* parent_view = view_->GetParent();
   if (parent_view) {
-    auto* existing_view = TrackableObject::FromWrappedClass(isolate(), parent_view);
+    auto* existing_view =
+        TrackableObject::FromWrappedClass(isolate(), parent_view);
     if (existing_view)
       return existing_view->GetWrapper();
   }
@@ -134,7 +138,8 @@ v8::Local<v8::Value> BaseView::GetParentView() const {
 v8::Local<v8::Value> BaseView::GetParentWindow() const {
   NativeWindow* parent_window = view_->GetWindow();
   if (!view_->GetParent() && parent_window) {
-    auto* existing_window = TrackableObject::FromWrappedClass(isolate(), parent_window);
+    auto* existing_window =
+        TrackableObject::FromWrappedClass(isolate(), parent_window);
     if (existing_window)
       return existing_window->GetWrapper();
   }

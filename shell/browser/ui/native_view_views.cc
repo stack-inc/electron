@@ -41,7 +41,7 @@ void NativeView::OnViewBoundsChanged(views::View* observed_view) {
 
 void NativeView::OnViewIsDeleting(views::View* observed_view) {
   view_ = nullptr;
-NotifyViewIsDeleting();
+  NotifyViewIsDeleting();
 }
 
 void NativeView::SetBounds(const gfx::Rect& bounds) {

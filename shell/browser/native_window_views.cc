@@ -426,7 +426,7 @@ void NativeWindowViews::SetContentView(views::View* view) {
   root_view_->Layout();
 }
 
-void NativeWindowViews::PlatformSetContentView(NativeView* view) {
+void NativeWindowViews::SetContentViewImpl(NativeView* view) {
   SetContentView(view->GetNative());
 }
 
@@ -1250,9 +1250,8 @@ void NativeWindowViews::AddChildView(NativeView* view) {
     return;
 
   add_base_view(view);
-  view->SetWindow(this);
   content_view()->AddChildView(view->GetNative());
-  content_view()->Layout();
+  view->SetWindow(this);
 }
 
 bool NativeWindowViews::RemoveChildView(NativeView* view) {
@@ -1262,10 +1261,9 @@ bool NativeWindowViews::RemoveChildView(NativeView* view) {
   if (!view)
     return false;
 
-  content_view()->RemoveChildView(view->GetNative());
-  content_view()->Layout();
-  remove_base_view(view);
   view->SetWindow(nullptr);
+  content_view()->RemoveChildView(view->GetNative());
+  remove_base_view(view);
   return true;
 }
 
@@ -1278,9 +1276,8 @@ void NativeWindowViews::SetTopChildView(NativeView* view) {
 
   remove_base_view(view);
   add_base_view(view);
-  view->SetWindow(this);
   content_view()->ReorderChildView(view->GetNative(), -1);
-  content_view()->Layout();
+  view->SetWindow(this);
 }
 
 void NativeWindowViews::SetParentWindow(NativeWindow* parent) {

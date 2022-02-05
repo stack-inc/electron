@@ -11,7 +11,7 @@ It extends [`BaseView`](base-view.md).
 
 ## Class: ScrollView  extends `BaseView`
 
-> Create and control views.
+> Create and control scroll views.
 
 Process: [Main](../glossary.md#main-process)
 
@@ -22,16 +22,9 @@ Process: [Main](../glossary.md#main-process)
 const path = require("path");
 const { app, BrowserView, BaseWindow, ContainerView, ScrollView, WrapperBrowserView } = require("electron");
 
-const APP_WIDTH = 600;
+const WEBVIEW_WIDTH = 600;
 const GAP = 30;
-
-const APPS = [
-  "https://bitbucket.org",
-  "https://github.com",
-  "https://youtube.com",
-  "https://figma.com/",
-  "https://thenextweb.com/",
-  "https://engadget.com/",
+const URLS = [
   "https://theverge.com/",
   "https://mashable.com",
   "https://www.businessinsider.com",
@@ -45,46 +38,37 @@ const APPS = [
 global.win = null;
 
 app.whenReady().then(() => {
-  // Create window.
   win = new BaseWindow({ autoHideMenuBar: true, width: 1400, height: 700 });
 
   // The content view.
   const contentView = new ContainerView();
   contentView.setBackgroundColor("#1F2937");
+  win.setContentBaseView(contentView);
   contentView.setBounds({x: 0, y: 0, width: 1378, height: 600});
-
-  win.setContainerView(contentView);
 
   // Scroll
   const scroll = new ScrollView();
-  scroll.setBounds({x: 0, y: 0, width: 1377, height: 600});
   scroll.setHorizontalScrollBarMode("enabled");
   scroll.setVerticalScrollBarMode("disabled");
-
   contentView.addChildView(scroll);
+  scroll.setBounds({x: 0, y: 0, width: 1377, height: 600});
 
   // Scroll content
   const scrollContent = new ContainerView();
-  scrollContent.setBounds({x: 0, y: 0, width: APPS.length * (APP_WIDTH + GAP), height: 600});
   scroll.setContentView(scrollContent);
+  scrollContent.setBounds({x: 0, y: 0, width: URLS.length * (WEBVIEW_WIDTH + GAP), height: 600});
 
-  // Webview
-  const addWebview = function (scrollContent, url, i) {
+  for (var i = 1; i <= URLS.length; i++) {
     const browserView = new BrowserView();
-    browserView.webContents.loadURL(url);
     browserView.setBackgroundColor("#ffffff");
     const wrapperBrowserView = new WrapperBrowserView({ 'browserView': browserView });
-    wrapperBrowserView.setBounds({x: 0, y: 0, width: 600, height: 540});
     const webContentView = new ContainerView();
-    webContentView.setBounds({x: i*(APP_WIDTH + GAP)+GAP, y: 30, width: 600, height: 540});
     webContentView.addChildView(wrapperBrowserView);
+    wrapperBrowserView.setBounds({x: 0, y: 0, width: 600, height: 540});
     scrollContent.addChildView(webContentView);
-  };
-
-  var i = 0;
-  APPS.forEach((app) => {
-    addWebview(scrollContent, app, i++);
-  });
+    webContentView.setBounds({x: i*(WEBVIEW_WIDTH + GAP)+GAP, y: 30, width: 600, height: 540});
+    browserView.webContents.loadURL(URLS[i-1]);
+  }
 });
 ```
 
@@ -178,13 +162,6 @@ Returns `String` - The scroll view’s horizontal scrolling elasticity mode.
 * `elasticity` String - Can be one of the following values: `automatic`, `none`, `allowed`. Default is `automatic`.
 
 The scroll view’s vertical scrolling elasticity mode.
-A scroll view can scroll its contents past its bounds to achieve an elastic effect. 
-When set to `automatic`, scrolling the vertical axis beyond its document bounds
-only occurs if any of the following are true: the vertical scroller is visible,
-the content height is greater than view height, or the horizontal scroller hidden.
-* `automatic` - Automatically determine whether to allow elasticity on this axis.
-* `none` - Disallow scrolling beyond document bounds on this axis.
-*`allowed` - Allow content to be scrolled past its bounds on this axis in an elastic fashion.
 
 #### `view.getVerticalScrollElasticity()` _macOS_ _Experimental_
 
@@ -213,6 +190,14 @@ Returns [`Point`](structures/point.md)
 
 Returns Boolean - The scroller style used by the scroll view.
 
+#### `view.clipHeightTo(minHeight, maxHeight)` _Windows_ _Experimental_
+
+* `minHeight` Integer - The min height for the bounded scroll view.
+* `maxHeight` Integer - The max height for the bounded scroll view.
+
+Turns this scroll view into a bounded scroll view, with a fixed height.
+By default, a ScrollView will stretch to fill its outer container.
+
 #### `view.getMinHeight()` _Windows_ _Experimental_
 
 Returns `Integer` - The min height for the bounded scroll view.
@@ -224,14 +209,6 @@ This is negative value if the view is not bounded.
 Returns `Integer` - The max height for the bounded scroll view.
 
 This is negative value if the view is not bounded.
-
-#### `view.clipHeightTo(minHeight, maxHeight)` _Windows_ _Experimental_
-
-* `minHeight` Integer - The min height for the bounded scroll view.
-* `maxHeight` Integer - The max height for the bounded scroll view.
-
-Turns this scroll view into a bounded scroll view, with a fixed height.
-By default, a ScrollView will stretch to fill its outer container.
 
 #### `view.getVisibleRect()` _Windows_ _Experimental_
 

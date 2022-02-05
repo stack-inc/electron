@@ -37,8 +37,8 @@ using NATIVEVIEW = views::View*;
 class NativeWindow;
 
 // The base class for all kinds of views.
-class NativeView : public base::RefCounted<NativeView>
-                 , public base::SupportsUserData
+class NativeView : public base::RefCounted<NativeView>,
+                   public base::SupportsUserData
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
     ,
                    public views::ViewObserver
@@ -49,8 +49,11 @@ class NativeView : public base::RefCounted<NativeView>
    public:
     ~Observer() override {}
 
-    virtual void OnChildViewDetached(NativeView* observed_view, NativeView* view) {}
-    virtual void OnSizeChanged(NativeView* observed_view, gfx::Size old_size, gfx::Size new_size) {}
+    virtual void OnChildViewDetached(NativeView* observed_view,
+                                     NativeView* view) {}
+    virtual void OnSizeChanged(NativeView* observed_view,
+                               gfx::Size old_size,
+                               gfx::Size new_size) {}
     virtual void OnViewIsDeleting(NativeView* observed_view) {}
   };
 

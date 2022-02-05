@@ -46,8 +46,11 @@ class BaseView : public gin_helper::TrackableObject<BaseView>,
   void InitWith(v8::Isolate* isolate, v8::Local<v8::Object> wrapper) override;
 
   // NativeView::Observer:
-  void OnChildViewDetached(NativeView* observed_view, NativeView* view) override;
-  void OnSizeChanged(NativeView* observed_view, gfx::Size old_size, gfx::Size new_size) override;
+  void OnChildViewDetached(NativeView* observed_view,
+                           NativeView* view) override;
+  void OnSizeChanged(NativeView* observed_view,
+                     gfx::Size old_size,
+                     gfx::Size new_size) override;
   void OnViewIsDeleting(NativeView* observed_view) override;
 
   bool IsContainer() const;

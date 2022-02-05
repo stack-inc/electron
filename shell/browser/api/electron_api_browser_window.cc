@@ -436,6 +436,35 @@ void BrowserWindow::ResetBrowserViews() {
 #endif
 }
 
+void BrowserWindow::AddChildView(v8::Local<v8::Value> value) {
+  BaseWindow::AddChildView(value);
+#if defined(OS_MAC)
+  UpdateDraggableRegions(draggable_regions_);
+#endif
+}
+
+void BrowserWindow::RemoveChildView(v8::Local<v8::Value> value) {
+  BaseWindow::RemoveChildView(value);
+#if defined(OS_MAC)
+  UpdateDraggableRegions(draggable_regions_);
+#endif
+}
+
+void BrowserWindow::SetTopChildView(v8::Local<v8::Value> value,
+                                    gin_helper::Arguments* args) {
+  BaseWindow::SetTopChildView(value, args);
+#if defined(OS_MAC)
+  UpdateDraggableRegions(draggable_regions_);
+#endif
+}
+
+void BrowserWindow::ResetBaseViews() {
+  BaseWindow::ResetBaseViews();
+#if defined(OS_MAC)
+  UpdateDraggableRegions(draggable_regions_);
+#endif
+}
+
 void BrowserWindow::OnDevToolsResized() {
   UpdateDraggableRegions(draggable_regions_);
 }

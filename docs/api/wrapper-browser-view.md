@@ -9,23 +9,10 @@ It extends [`BaseView`](base-view.md).
 
 Process: [Main](../glossary.md#main-process)
 
-### Example
-
-```javascript
-// In the main process.
-const { WrapperBrowserView, BrowserWindow } = require('electron')
-
-const win = new BrowserWindow({ width: 800, height: 600 })
-
-const view = new WrapperBrowserView()
-win.addChildView(view)
-view.setBounds({ x: 0, y: 0, width: 300, height: 300 })
-```
-
 ### `new WrapperBrowserView([options])` _Experimental_
 
 * `options` Object (optional)
-  * `browserView` [BrowserView](browser-view.md) (optional) - 
+  * `browserView` [BrowserView](browser-view.md) (optional)
 
 If `browserView` is not set then new `BrowserView` is created.
 

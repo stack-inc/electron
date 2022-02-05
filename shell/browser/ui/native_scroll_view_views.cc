@@ -98,14 +98,12 @@ ScrollBarMode NativeScrollView::GetVerticalScrollBarMode() const {
   return GetScrollBarMode(scroll->GetVerticalScrollBarMode());
 }
 
-#if 0
-void NativeScrollView::OnConnect(int identifier) {
-  if (identifier == kOnScroll) {
-    auto* scroll = static_cast<ElectronNativeScrollView*>(GetNative());
-    [scroll setEventEnabled:YES];
-  }
+void NativeScrollView::ClipHeightTo(int min_height, int max_height) {
+  if (!GetNative())
+    return;
+  auto* scroll = static_cast<views::ScrollView*>(GetNative());
+  scroll->ClipHeightTo(min_height, max_height);
 }
-#endif
 
 int NativeScrollView::GetMinHeight() const {
   if (!GetNative())
@@ -119,13 +117,6 @@ int NativeScrollView::GetMaxHeight() const {
     return 0;
   auto* scroll = static_cast<views::ScrollView*>(GetNative());
   return scroll->GetMaxHeight();
-}
-
-void NativeScrollView::ClipHeightTo(int min_height, int max_height) {
-  if (!GetNative())
-    return;
-  auto* scroll = static_cast<views::ScrollView*>(GetNative());
-  scroll->ClipHeightTo(min_height, max_height);
 }
 
 gfx::Rect NativeScrollView::GetVisibleRect() const {

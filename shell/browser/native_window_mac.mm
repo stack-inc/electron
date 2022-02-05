@@ -466,7 +466,7 @@ void NativeWindowMac::SetContentView(views::View* view) {
   root_view->Layout();
 }
 
-void NativeWindowMac::PlatformSetContentView(NativeView* view) {
+void NativeWindowMac::SetContentViewImpl(NativeView* view) {
   if (GetContentView()) {
     [GetContentView()->GetNative() removeFromSuperview];
     if (IsNativeView(GetContentView()->GetNative())) {
@@ -1268,12 +1268,12 @@ void NativeWindowMac::AddChildView(NativeView* view) {
   }
 
   add_base_view(view);
-  view->SetWindow(this);
   auto* native_view = view->GetNative();
   [[window_ contentView] addSubview:native_view
                          positioned:NSWindowAbove
                          relativeTo:nil];
   native_view.hidden = NO;
+  view->SetWindow(this);
 
   [CATransaction commit];
 }
@@ -1287,9 +1287,9 @@ bool NativeWindowMac::RemoveChildView(NativeView* view) {
     return false;
   }
 
+  view->SetWindow(nullptr);
   [view->GetNative() removeFromSuperview];
   remove_base_view(view);
-  view->SetWindow(nullptr);
 
   [CATransaction commit];
 
@@ -1307,12 +1307,12 @@ void NativeWindowMac::SetTopChildView(NativeView* view) {
 
   remove_base_view(view);
   add_base_view(view);
-  view->SetWindow(this);
   auto* native_view = view->GetNative();
   [[window_ contentView] addSubview:native_view
                          positioned:NSWindowAbove
                          relativeTo:nil];
   native_view.hidden = NO;
+  view->SetWindow(this);
 
   [CATransaction commit];
 }

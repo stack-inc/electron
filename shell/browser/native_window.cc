@@ -229,7 +229,7 @@ void NativeWindow::SetContentView(scoped_refptr<NativeView> view) {
     return;
   if (content_base_view_)
     content_base_view_->BecomeContentView(nullptr);
-  PlatformSetContentView(view.get());
+  SetContentViewImpl(view.get());
   content_base_view_ = std::move(view);
   content_base_view_->BecomeContentView(this);
 }

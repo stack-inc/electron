@@ -69,7 +69,7 @@ class NativeWindow : public base::SupportsUserData,
   NativeView* GetContentView() const;
 
   virtual void SetContentView(views::View* view) = 0;
-  virtual void PlatformSetContentView(NativeView* view) = 0;
+  virtual void SetContentViewImpl(NativeView* view) = 0;
 
   virtual void Close() = 0;
   virtual void CloseImmediately() = 0;

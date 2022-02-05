@@ -6,22 +6,9 @@ It extends [`BaseView`](base-view.md).
 
 ## Class: ContainerView extends `BaseView`
 
-> Create and control views.
+> Create and control hierarchy of views.
 
 Process: [Main](../glossary.md#main-process)
-
-### Example
-
-```javascript
-// In the main process.
-const { ContainerView, BrowserWindow } = require('electron')
-
-const win = new BrowserWindow({ width: 800, height: 600 })
-
-const view = new ContainerView()
-win.addChildView(view)
-view.setBounds({ x: 0, y: 0, width: 300, height: 300 })
-```
 
 ### `new ContainerView()` _Experimental_
 

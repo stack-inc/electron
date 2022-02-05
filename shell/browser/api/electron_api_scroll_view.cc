@@ -72,7 +72,8 @@ void ScrollView::ResetChildViews() {
 
 void ScrollView::SetContentView(v8::Local<v8::Value> value) {
   gin::Handle<BaseView> content_view;
-  if (value->IsObject() && gin::ConvertFromV8(isolate(), value, &content_view)) {
+  if (value->IsObject() &&
+      gin::ConvertFromV8(isolate(), value, &content_view)) {
     if (content_view->GetID() != content_view_id_) {
       if (!content_view->EnsureDetachFromParent())
         return;
@@ -116,13 +117,11 @@ std::string ScrollView::GetVerticalScrollBarMode() const {
 
 #if defined(OS_MAC)
 void ScrollView::SetHorizontalScrollElasticity(std::string elasticity) {
-  scroll_->SetHorizontalScrollElasticity(
-        ConvertToScrollElasticity(elasticity));
+  scroll_->SetHorizontalScrollElasticity(ConvertToScrollElasticity(elasticity));
 }
 
 std::string ScrollView::GetHorizontalScrollElasticity() const {
-  return ConvertFromScrollElasticity(
-        scroll_->GetHorizontalScrollElasticity());
+  return ConvertFromScrollElasticity(scroll_->GetHorizontalScrollElasticity());
 }
 
 void ScrollView::SetVerticalScrollElasticity(std::string elasticity) {
@@ -155,16 +154,16 @@ bool ScrollView::IsOverlayScrollbar() const {
 #endif
 
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
+void ScrollView::ClipHeightTo(int min_height, int max_height) {
+  scroll_->ClipHeightTo(min_height, max_height);
+}
+
 int ScrollView::GetMinHeight() const {
   return scroll_->GetMinHeight();
 }
 
 int ScrollView::GetMaxHeight() const {
   return scroll_->GetMaxHeight();
-}
-
-void ScrollView::ClipHeightTo(int min_height, int max_height) {
-  scroll_->ClipHeightTo(min_height, max_height);
 }
 
 gfx::Rect ScrollView::GetVisibleRect() const {
@@ -233,9 +232,9 @@ void ScrollView::BuildPrototype(v8::Isolate* isolate,
       .SetMethod("isOverlayScrollbar", &ScrollView::IsOverlayScrollbar)
 #endif
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
+      .SetMethod("clipHeightTo", &ScrollView::ClipHeightTo)
       .SetMethod("getMinHeight", &ScrollView::GetMinHeight)
       .SetMethod("getMaxHeight", &ScrollView::GetMaxHeight)
-      .SetMethod("clipHeightTo", &ScrollView::ClipHeightTo)
       .SetMethod("getVisibleRect", &ScrollView::GetVisibleRect)
       .SetMethod("setAllowKeyboardScrolling",
                  &ScrollView::SetAllowKeyboardScrolling)

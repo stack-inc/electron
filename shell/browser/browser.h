@@ -37,8 +37,6 @@ namespace gin_helper {
 class Arguments;
 }
 
-typedef struct YGConfig* YGConfigRef;
-
 namespace electron {
 
 class ElectronMenuModel;

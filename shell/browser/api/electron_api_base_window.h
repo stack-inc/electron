@@ -25,7 +25,6 @@ namespace electron {
 namespace api {
 
 class BaseView;
-class ContainerView;
 class View;
 
 class BaseWindow : public gin_helper::TrackableObject<BaseWindow>,

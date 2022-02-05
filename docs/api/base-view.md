@@ -73,7 +73,7 @@ Returns the position and size of the view, relative to its parent.
 
 #### `view.offsetFromView(from)` _Experimental_
 
-* `from` [BaseView](base-view.md)
+* `from` `BaseView`
 
 Returns [`Point`](structures/point.md) - Offset from `from` view.
 

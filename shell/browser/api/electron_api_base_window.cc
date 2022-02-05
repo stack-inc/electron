@@ -10,12 +10,11 @@
 
 #include "electron/buildflags/buildflags.h"
 #include "gin/dictionary.h"
+#include "shell/browser/api/electron_api_base_view.h"
 #include "shell/browser/api/electron_api_browser_view.h"
-#include "shell/browser/api/electron_api_container_view.h"
 #include "shell/browser/api/electron_api_menu.h"
 #include "shell/browser/api/electron_api_view.h"
 #include "shell/browser/api/electron_api_web_contents.h"
-#include "shell/browser/browser.h"
 #include "shell/browser/javascript_environment.h"
 #include "shell/common/color_util.h"
 #include "shell/common/gin_converters/callback_converter.h"
@@ -856,7 +855,6 @@ void BaseWindow::AddChildView(v8::Local<v8::Value> value) {
       if (!base_view->EnsureDetachFromParent())
         return;
       window_->AddChildView(base_view->view());
-      base_view->view()->SetWindow(window_.get());
       base_views_[base_view->GetID()].Reset(isolate(), value);
     }
   }
@@ -868,7 +866,6 @@ void BaseWindow::RemoveChildView(v8::Local<v8::Value> value) {
     auto get_that_view = base_views_.find(base_view->GetID());
     if (get_that_view != base_views_.end()) {
       window_->RemoveChildView(base_view->view());
-      base_view->view()->SetWindow(nullptr);
       (*get_that_view).second.Reset(isolate(), value);
       base_views_.erase(get_that_view);
     }

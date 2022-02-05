@@ -54,9 +54,9 @@ class NativeScrollView : public NativeView {
 #endif
 
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
+  void ClipHeightTo(int min_height, int max_height);
   int GetMinHeight() const;
   int GetMaxHeight() const;
-  void ClipHeightTo(int min_height, int max_height);
   gfx::Rect GetVisibleRect() const;
   void SetAllowKeyboardScrolling(bool allow);
   bool GetAllowKeyboardScrolling() const;
