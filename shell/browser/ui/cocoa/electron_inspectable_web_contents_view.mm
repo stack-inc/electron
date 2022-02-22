@@ -4,6 +4,8 @@
 
 #include "shell/browser/ui/cocoa/electron_inspectable_web_contents_view.h"
 
+#import <QuartzCore/QuartzCore.h>
+
 #include "content/public/browser/render_widget_host_view.h"
 #include "shell/browser/ui/cocoa/event_dispatching_window.h"
 #include "shell/browser/ui/inspectable_web_contents.h"
@@ -259,6 +261,81 @@
 
 - (void)setTitle:(NSString*)title {
   [devtools_window_ setTitle:title];
+}
+
+const NSSize unitSize = {1.0, 1.0};
+
+// This method makes the scaling of the receiver equal to the window's
+// base coordinate system.
+- (void)resetScaling {
+  [self scaleUnitSquareToSize:[self convertSize:unitSize fromView:nil]];
+}
+
+// This method sets the scale in absolute terms.
+- (void)setScale:(NSSize)newScale {
+  [self resetScaling];  // First, match our scaling to the window's coordinate
+                        // system
+  //[self scaleUnitSquareToSize:newScale]; // Then, set the scale.
+  //[self setNeedsDisplay:YES];
+
+  // Set the scale of the view to 2
+  NSSize doubleSize = NSMakeSize(2, 2);
+  [self scaleUnitSquareToSize:doubleSize];
+  [self setNeedsDisplay:YES];
+
+  // Set the frame to the scaled frame
+  self.frame =
+      NSMakeRect(self.frame.origin.x, self.frame.origin.y,
+                 2 * self.frame.size.width, 2 * self.frame.size.height);
+
+  // Create the scale animation
+  CABasicAnimation* animation = [CABasicAnimation animation];
+  CGFloat duration = 5;
+  animation.duration = duration;
+  animation.fromValue = @(CATransform3DMakeScale(1.0, 1.0, 1.0));
+  animation.toValue = @(CATransform3DMakeScale(2.0, 2.0, 1.0));
+
+  // Trigger the scale animation
+  [self.layer addAnimation:animation forKey:@"transform"];
+  //[self setWantsLayer:YES];     // the order of setLayer and setWantsLayer is
+  //crucial!
+
+  // Add a simultaneous translation animation to keep the
+  // view center static during the zoom animation
+  [NSAnimationContext
+      runAnimationGroup:^(NSAnimationContext* context) {
+        // Match the configuration of the scale animation
+        context.duration = duration;
+        context.timingFunction = [CAMediaTimingFunction
+            functionWithName:kCAMediaTimingFunctionLinear];
+
+        // Translate the frame
+        // CGFloat x = self.frame.size.width / 2;
+        // CGFloat y = self.frame.size.height / 2;
+
+        // Trigger the animation
+        // self.animator.frame.origin = NSMakePoint(x, y);
+        self.animator.frame = CGRectOffset(self.frame, 200, 0);
+      }
+      completionHandler:^{
+      }];
+}
+
+// This method returns the scale of the receiver's coordinate system, relative
+// to the window's base coordinate system.
+- (NSSize)scale {
+  return [self convertSize:unitSize toView:nil];
+}
+
+// Use these if you'd rather work with percentages.
+- (float)scalePercent {
+  return [self scale].width * 100;
+}
+
+- (void)setScalePercent:(float)scale {
+  scale = scale / 100.0;
+  [self setScale:NSMakeSize(scale, scale)];
+  [self setNeedsDisplay:YES];
 }
 
 - (void)viewDidBecomeFirstResponder:(NSNotification*)notification {

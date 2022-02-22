@@ -62,4 +62,12 @@ void InspectableWebContentsViewMac::SetTitle(const std::u16string& title) {
   [view_ setTitle:base::SysUTF16ToNSString(title)];
 }
 
+void InspectableWebContentsViewMac::SetScale(float width, float height) {
+  [view_ setScale:NSMakeSize(width, height)];
+}
+
+void InspectableWebContentsViewMac::SetScalePercent(float scale) {
+  [view_ setScalePercent:scale];
+}
+
 }  // namespace electron

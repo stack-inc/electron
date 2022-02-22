@@ -292,6 +292,41 @@ void NativeBrowserViewMac::SetBackgroundColor(SkColor color) {
   view.layer.backgroundColor = skia::CGColorCreateFromSkColor(color);
 }
 
+void NativeBrowserViewMac::SetViewBounds(const gfx::Rect& bounds) {
+  auto* iwc_view = GetInspectableWebContentsView();
+  if (!iwc_view)
+    return;
+  auto* view = iwc_view->GetNativeView().GetNativeNSView();
+  view.bounds =
+      NSMakeRect(bounds.x(), bounds.y(),
+                 bounds.width(), bounds.height());
+  [view setNeedsDisplay:YES];
+}
+
+gfx::Rect NativeBrowserViewMac::GetViewBounds() {
+  auto* iwc_view = GetInspectableWebContentsView();
+  if (!iwc_view)
+    return gfx::Rect();
+  NSView* view = iwc_view->GetNativeView().GetNativeNSView();
+  return gfx::Rect(
+      view.bounds.origin.x, view.bounds.origin.y,
+      view.bounds.size.width, view.bounds.size.height);
+}
+
+void NativeBrowserViewMac::SetScale(float width, float height) {
+  auto* iwc_view = GetInspectableWebContentsView();
+  if (!iwc_view)
+    return;
+  iwc_view->SetScale(width, height);
+}
+
+void NativeBrowserViewMac::SetScalePercent(float scale) {
+  auto* iwc_view = GetInspectableWebContentsView();
+  if (!iwc_view)
+    return;
+  iwc_view->SetScalePercent(scale);
+}
+
 void NativeBrowserViewMac::UpdateDraggableRegions(
     const std::vector<gfx::Rect>& drag_exclude_rects) {
   if (!inspectable_web_contents_)

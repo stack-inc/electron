@@ -50,6 +50,13 @@ using electron::InspectableWebContentsViewMac;
     (const DevToolsContentsResizingStrategy&)strategy;
 - (void)setTitle:(NSString*)title;
 
+- (NSSize) scale;
+- (void) setScale:(NSSize) newScale;
+- (void) resetScaling;
+
+- (float) scalePercent;
+- (void) setScalePercent:(float) scale;
+
 @end
 
 #endif  // ELECTRON_SHELL_BROWSER_UI_COCOA_ELECTRON_INSPECTABLE_WEB_CONTENTS_VIEW_H_

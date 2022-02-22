@@ -53,6 +53,12 @@ class NativeBrowserView : public content::WebContentsObserver {
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
   virtual gfx::Rect GetBounds() = 0;
   virtual void SetBackgroundColor(SkColor color) = 0;
+#if defined (OS_MAC)
+  virtual void SetViewBounds(const gfx::Rect& bounds) = 0;
+  virtual gfx::Rect GetViewBounds() = 0;
+  virtual void SetScale(float width, float height) = 0;
+  virtual void SetScalePercent(float scale) = 0;
+#endif
 
   virtual void UpdateDraggableRegions(
       const std::vector<gfx::Rect>& drag_exclude_rects) {}

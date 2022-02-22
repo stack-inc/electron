@@ -53,6 +53,10 @@ class InspectableWebContentsView {
   virtual void SetContentsResizingStrategy(
       const DevToolsContentsResizingStrategy& strategy) = 0;
   virtual void SetTitle(const std::u16string& title) = 0;
+#if defined(OS_MAC)
+  virtual void SetScale(float width, float height) = 0;
+  virtual void SetScalePercent(float scale) = 0;
+#endif
 
  private:
   InspectableWebContentsViewDelegate* delegate_ = nullptr;  // weak references.

@@ -172,6 +172,24 @@ void BrowserView::SetBackgroundColor(const std::string& color_name) {
   }
 }
 
+#if defined(OS_MAC)
+void BrowserView::SetViewBounds(const gfx::Rect& bounds) {
+  view_->SetViewBounds(bounds);
+}
+
+gfx::Rect BrowserView::GetViewBounds() {
+  return view_->GetViewBounds();
+}
+
+void BrowserView::SetScale(float width, float height) {
+  view_->SetScale(width, height);
+}
+
+void BrowserView::SetScalePercent(float scale) {
+  view_->SetScalePercent(scale);
+}
+#endif
+
 v8::Local<v8::Value> BrowserView::GetWebContents(v8::Isolate* isolate) {
   if (web_contents_.IsEmpty()) {
     return v8::Null(isolate);
@@ -199,6 +217,12 @@ v8::Local<v8::ObjectTemplate> BrowserView::FillObjectTemplate(
       .SetMethod("setBounds", &BrowserView::SetBounds)
       .SetMethod("getBounds", &BrowserView::GetBounds)
       .SetMethod("setBackgroundColor", &BrowserView::SetBackgroundColor)
+#if defined(OS_MAC)
+      .SetMethod("setViewBounds", &BrowserView::SetViewBounds)
+      .SetMethod("getViewBounds", &BrowserView::GetViewBounds)
+      .SetMethod("setScale", &BrowserView::SetScale)
+      .SetMethod("setScalePercent", &BrowserView::SetScalePercent)
+#endif
       .SetProperty("webContents", &BrowserView::GetWebContents)
 #if defined(OS_MAC)
       .SetProperty("clickThrough", &BrowserView::IsClickThrough,

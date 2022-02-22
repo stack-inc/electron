@@ -85,6 +85,12 @@ friend class WrapperBrowserView;
   void SetBounds(const gfx::Rect& bounds);
   gfx::Rect GetBounds();
   void SetBackgroundColor(const std::string& color_name);
+#if defined(OS_MAC)
+  void SetViewBounds(const gfx::Rect& bounds);
+  gfx::Rect GetViewBounds();
+  void SetScale(float width, float height);
+  void SetScalePercent(float scale);
+#endif
   v8::Local<v8::Value> GetWebContents(v8::Isolate*);
 #if defined(OS_MAC)
   void SetClickThrough(bool clickThrough);
