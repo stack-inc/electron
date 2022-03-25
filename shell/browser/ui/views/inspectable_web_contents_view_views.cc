@@ -216,7 +216,6 @@ void InspectableWebContentsViewViews::SetTitle(const std::u16string& title) {
 void InspectableWebContentsViewViews::ShowThumbnail(gfx::Image thumbnail) {
   if (!thumbnail_view_) {
     thumbnail_view_ = new views::ImageView();
-    RemoveChildView(contents_web_view_);
     AddChildView(thumbnail_view_);
     Layout();
   }
@@ -228,14 +227,12 @@ void InspectableWebContentsViewViews::HideThumbnail() {
     RemoveChildView(thumbnail_view_);
     delete thumbnail_view_;
     thumbnail_view_ = nullptr;
-    AddChildView(contents_web_view_);
     Layout();
   }
 }
 
 void InspectableWebContentsViewViews::Layout() {
   if (!devtools_web_view_->GetVisible()) {
-    if (!thumbnail_view_)
     contents_web_view_->SetBoundsRect(GetVisibleBounds());
     if (thumbnail_view_)
       thumbnail_view_->SetBoundsRect(GetVisibleBounds());
@@ -254,7 +251,6 @@ void InspectableWebContentsViewViews::Layout() {
   new_contents_bounds.set_x(GetMirroredXForRect(new_contents_bounds));
 
   devtools_web_view_->SetBoundsRect(new_devtools_bounds);
-  if (!thumbnail_view_)
   contents_web_view_->SetBoundsRect(new_contents_bounds);
   if (thumbnail_view_)
     thumbnail_view_->SetBoundsRect(new_contents_bounds);
