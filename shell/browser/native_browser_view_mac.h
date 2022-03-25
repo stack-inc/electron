@@ -34,6 +34,8 @@ class NativeBrowserViewMac : public NativeBrowserView {
   void SetOpacity(const double opacity,
                   const gin_helper::Dictionary& options) override;
   double GetOpacity() override;
+  void SetVisible(bool visible) override;
+  bool GetVisible() override;
 
   void UpdateDraggableRegions(
       const std::vector<mojom::DraggableRegionPtr>& regions) override;

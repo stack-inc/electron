@@ -36,6 +36,7 @@
   devtools_docked_ = NO;
   devtools_is_first_responder_ = NO;
   attached_to_window_ = NO;
+  thumbnail_visible_ = NO;
 
   if (inspectableWebContentsView_->inspectable_web_contents()->IsGuest()) {
     fake_view_.reset([[NSView alloc] init]);
@@ -218,6 +219,10 @@
     DCHECK_EQ(1u, [[self subviews] count]);
     NSView* contents = [[self subviews] objectAtIndex:0];
     [contents setFrame:[self bounds]];
+    if (thumbnail_visible_) {
+      NSView* thumbnail = [[self subviews] objectAtIndex:1];
+      [thumbnail setFrame:[self bounds]];
+    }
     return;
   }
 
@@ -259,6 +264,17 @@
 
 - (void)setTitle:(NSString*)title {
   [devtools_window_ setTitle:title];
+}
+
+- (void)showThumbnail:(NSImage*)thumbnail {
+  NSImageView* thumbnailView = [[[NSImageView alloc] init] autorelease];
+  [thumbnailView setImage:thumbnail];
+  [self addSubview:thumbnailView positioned:NSWindowAbove relativeTo:nil];
+  thumbnail_visible_ = YES;
+  [self adjustSubviews];
+}
+
+- (void)hideThumbnail {
 }
 
 - (void)viewDidBecomeFirstResponder:(NSNotification*)notification {

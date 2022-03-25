@@ -20,6 +20,7 @@
 #include "shell/common/gin_helper/constructible.h"
 #include "shell/common/gin_helper/error_thrower.h"
 #include "shell/common/gin_helper/pinnable.h"
+#include "ui/gfx/image/image.h"
 
 namespace gfx {
 class Rect;
@@ -93,11 +94,15 @@ friend class WrapperBrowserView;
   float GetScaleY();
   void SetOpacity(const double opacity, gin::Arguments* args);
   double GetOpacity();
+  void Hide(bool freeze, gfx::Image thumbnail);
+  void Show();
   v8::Local<v8::Value> GetWebContents(v8::Isolate*);
 #if defined(OS_MAC)
   void SetClickThrough(bool clickThrough);
   bool IsClickThrough() const;
 #endif
+  void SetVisible(bool visible);
+  bool GetVisible();
 
   v8::Global<v8::Value> web_contents_;
   class WebContents* api_web_contents_ = nullptr;
@@ -105,6 +110,8 @@ friend class WrapperBrowserView;
   std::unique_ptr<NativeBrowserView> view_;
   base::WeakPtr<NativeWindow> owner_window_;
   scoped_refptr<NativeWrapperBrowserView> owner_view_;
+
+  bool page_frozen_ = false;
 
   int32_t id_;
 };
