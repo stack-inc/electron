@@ -1,6 +1,10 @@
 #include "shell/browser/ui/native_scroll_view.h"
 
+#include "ui/base/ui_base_features.h"
+#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/scroll_view.h"
+
+#include "electron/shell/browser/ui/views/scroll_view_scroll_with_layers.h"
 
 namespace electron {
 
@@ -20,6 +24,11 @@ ScrollBarMode GetScrollBarMode(views::ScrollView::ScrollBarMode mode) {
 }  // namespace
 
 void NativeScrollView::InitScrollView() {
+  if (base::FeatureList::IsEnabled(::features::kUiCompositorScrollWithLayers)) {
+    SetNativeView(new ScrollViewScrollWithLayers());
+    return;
+  }
+
   SetNativeView(new views::ScrollView());
 }
 
