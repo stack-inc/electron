@@ -171,6 +171,10 @@ void WebContentsPreferences::Clear() {
 #if BUILDFLAG(ENABLE_BUILTIN_SPELLCHECKER)
   spellcheck_ = true;
 #endif
+
+  /***** stack *****/
+  optimize_for_scroll_ = false;
+  /*****************/
 }
 
 void WebContentsPreferences::SetFromDictionary(
@@ -283,6 +287,10 @@ void WebContentsPreferences::Merge(
 #if BUILDFLAG(ENABLE_BUILTIN_SPELLCHECKER)
   web_preferences.Get(options::kSpellcheck, &spellcheck_);
 #endif
+
+  /***** stack *****/
+  web_preferences.Get(options::kOptimizeForScroll, &optimize_for_scroll_);
+  /*****************/
 
   SaveLastPreferences();
 }

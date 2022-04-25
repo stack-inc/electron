@@ -196,6 +196,10 @@ const char kEnablePreferredSizeMode[] = "enablePreferredSizeMode";
 
 const char ktitleBarOverlay[] = "titleBarOverlay";
 
+/***** stack *****/
+const char kOptimizeForScroll[] = "optimizeForScroll";
+/*****************/
+
 }  // namespace options
 
 namespace switches {
