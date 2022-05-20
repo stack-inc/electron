@@ -96,6 +96,14 @@ Returns:
 
 Emitted when the mouse capture on view has been released.
 
+#### Event: 'bounds-changed' _Experimental_
+
+Returns:
+
+* `event` Event
+
+Emitted when the view's bounds has been changed.
+
 #### Event: 'size-changed' _Experimental_
 
 Returns:
@@ -326,6 +334,14 @@ Release mouse capture if the view has mouse capture.
 #### `view.hasCapture()` _macOS_ _Experimental_
 
 Returns `boolean` - Whether the view has mouse capture.
+
+#### `view.setChangingBoundsEventEnabled(enable)` _macOS_ _Experimental_
+
+* `enable` boolean - Enables `bounds-changed` event.
+
+#### `view.IsChangingBoundsEventEnabled()` _macOS_ _Experimental_
+
+Returns `boolean` - Whether `bounds-changed` event is enabled.
 
 #### `view.enableMouseEvents()` _macOS_ _Experimental_
 

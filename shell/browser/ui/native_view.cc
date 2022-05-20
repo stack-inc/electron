@@ -159,6 +159,11 @@ void NativeView::NotifyScrollWheel(NativeView* view,
 }
 #endif  // defined(OS_MAC)
 
+void NativeView::NotifyBoundsChanged() {
+  for (Observer& observer : observers_)
+    observer.OnBoundsChanged(this);
+}
+
 void NativeView::NotifySizeChanged(gfx::Size old_size, gfx::Size new_size) {
   for (Observer& observer : observers_)
     observer.OnSizeChanged(this, old_size, new_size);

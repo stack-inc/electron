@@ -134,6 +134,7 @@ class NativeView : public base::RefCounted<NativeView>,
                                std::string phase,
                                std::string momentum_phase) {}
 #endif  // defined(OS_MAC)
+    virtual void OnBoundsChanged(NativeView* observed_view) {}
     virtual void OnSizeChanged(NativeView* observed_view,
                                gfx::Size old_size,
                                gfx::Size new_size) {}
@@ -191,6 +192,8 @@ class NativeView : public base::RefCounted<NativeView>,
   void ReleaseCapture();
   bool HasCapture() const;
 
+  void SetChangingBoundsEventEnabled(bool enable);
+  bool IsChangingBoundsEventEnabled();
   void EnableMouseEvents();
   void SetMouseTrackingEnabled(bool enable);
   bool IsMouseTrackingEnabled();
@@ -292,6 +295,9 @@ class NativeView : public base::RefCounted<NativeView>,
                          std::string phase,
                          std::string momentum_phase);
 #endif  // defined(OS_MAC)
+
+  // Notify that view's size has changed.
+  virtual void NotifyBoundsChanged();
 
   // Notify that view's size has changed.
   virtual void NotifySizeChanged(gfx::Size old_size, gfx::Size new_size);

@@ -65,6 +65,7 @@ class BaseView : public gin_helper::TrackableObject<BaseView>,
                     const NativeMouseEvent& event) override;
   void OnCaptureLost(NativeView* observed_view) override;
 #endif  // defined(OS_MAC)
+  void OnBoundsChanged(NativeView* observed_view) override;
   void OnSizeChanged(NativeView* observed_view,
                      gfx::Size old_size,
                      gfx::Size new_size) override;
@@ -104,6 +105,8 @@ class BaseView : public gin_helper::TrackableObject<BaseView>,
   void SetCapture();
   void ReleaseCapture();
   bool HasCapture() const;
+  void SetChangingBoundsEventEnabled(bool enable);
+  bool IsChangingBoundsEventEnabled();
   void EnableMouseEvents();
   void SetMouseTrackingEnabled(bool enable);
   bool IsMouseTrackingEnabled();

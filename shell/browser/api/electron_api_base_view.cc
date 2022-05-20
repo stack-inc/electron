@@ -217,6 +217,10 @@ void BaseView::OnCaptureLost(NativeView* observed_view) {
 }
 #endif  // defined(OS_MAC)
 
+void BaseView::OnBoundsChanged(NativeView* observed_view) {
+  Emit("bounds-changed");
+}
+
 void BaseView::OnSizeChanged(NativeView* observed_view,
                              gfx::Size old_size,
                              gfx::Size new_size) {
@@ -368,6 +372,14 @@ void BaseView::ReleaseCapture() {
 
 bool BaseView::HasCapture() const {
   return view_->HasCapture();
+}
+
+void BaseView::SetChangingBoundsEventEnabled(bool enable) {
+  view_->SetChangingBoundsEventEnabled(enable);
+}
+
+bool BaseView::IsChangingBoundsEventEnabled() {
+  return view_->IsChangingBoundsEventEnabled();
 }
 
 void BaseView::EnableMouseEvents() {
@@ -524,6 +536,10 @@ void BaseView::BuildPrototype(v8::Isolate* isolate,
       .SetMethod("setCapture", &BaseView::SetCapture)
       .SetMethod("releaseCapture", &BaseView::ReleaseCapture)
       .SetMethod("hasCapture", &BaseView::HasCapture)
+      .SetMethod("setChangingBoundsEventEnabled",
+                 &BaseView::SetChangingBoundsEventEnabled)
+      .SetMethod("isChangingBoundsEventEnabled",
+                 &BaseView::IsChangingBoundsEventEnabled)
       .SetMethod("enableMouseEvents", &BaseView::EnableMouseEvents)
       .SetMethod("setMouseTrackingEnabled", &BaseView::SetMouseTrackingEnabled)
       .SetMethod("isMouseTrackingEnabled", &BaseView::IsMouseTrackingEnabled)

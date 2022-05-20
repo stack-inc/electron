@@ -122,9 +122,6 @@ void NativeView::DestroyView() {
 void NativeView::SetBounds(const gfx::Rect& bounds,
                            const gin_helper::Dictionary& options) {
   SetBoundsForView(view_, bounds, options);
-  NSRect frame = bounds.ToCGRect();
-  // Calling setFrame manually does not trigger resizeSubviewsWithOldSize.
-  [view_ resizeSubviewsWithOldSize:frame.size];
 }
 
 gfx::Rect NativeView::GetBounds() const {
@@ -293,6 +290,18 @@ void NativeView::ReleaseCapture() {
 
 bool NativeView::HasCapture() const {
   return g_captured_view == this;
+}
+
+void NativeView::SetChangingBoundsEventEnabled(bool enable) {
+  if (enable)
+    [view_ enableChangingBoundsEvent];
+  else
+    [view_ disableChangingBoundsEvent];
+}
+
+bool NativeView::IsChangingBoundsEventEnabled() {
+  NativeViewPrivate* priv = [view_ nativeViewPrivate];
+  return priv->changing_bounds_event_enabled;
 }
 
 void NativeView::EnableMouseEvents() {

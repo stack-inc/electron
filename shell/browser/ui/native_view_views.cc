@@ -31,6 +31,7 @@ void NativeView::DestroyView() {
 void NativeView::OnViewBoundsChanged(views::View* observed_view) {
   if (!view_)
     return;
+  NotifyBoundsChanged();
   gfx::Rect bounds = view_->bounds();
   gfx::Size size = bounds.size();
   gfx::Size old_size = bounds_.size();

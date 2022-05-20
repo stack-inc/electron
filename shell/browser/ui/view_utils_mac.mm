@@ -69,7 +69,10 @@ void SetBoundsForView(NSView* view,
   }
 
   if (!animation) {
-    view.frame = frame;
+    [view setFrame:frame];
+    [view setNeedsDisplay:YES];
+    // Calling setFrame manually does not trigger resizeSubviewsWithOldSize.
+    [view resizeSubviewsWithOldSize:frame.size];
     return;
   }
 

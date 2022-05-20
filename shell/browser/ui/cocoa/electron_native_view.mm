@@ -17,6 +17,8 @@ typedef struct CGContext* CGContextRef;
 - (void)dealloc {
   if ([self shell])
     [self shell]->NotifyViewIsDeleting();
+  if ([self changingBoundsEventEnabled])
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }
 
@@ -63,6 +65,10 @@ typedef struct CGContext* CGContextRef;
   }
 }
 
+- (void)onFrameDidChange:(NSNotification*)notification {
+  [self shell]->NotifyBoundsChanged();
+}
+
 @end
 
 @implementation ElectronNativeVibrantView
@@ -70,6 +76,8 @@ typedef struct CGContext* CGContextRef;
 - (void)dealloc {
   if ([self shell])
     [self shell]->NotifyViewIsDeleting();
+  if ([self changingBoundsEventEnabled])
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }
 
@@ -95,6 +103,10 @@ typedef struct CGContext* CGContextRef;
   }
 }
 
+- (void)onFrameDidChange:(NSNotification*)notification {
+  [self shell]->NotifyBoundsChanged();
+}
+
 @end
 
 #define kRMBlurredViewDefaultTintColor \
@@ -111,6 +123,8 @@ typedef struct CGContext* CGContextRef;
 - (void)dealloc {
   if ([self shell])
     [self shell]->NotifyViewIsDeleting();
+  if ([self changingBoundsEventEnabled])
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }
 
@@ -239,6 +253,10 @@ typedef struct CGContext* CGContextRef;
   [self.layer setNeedsDisplay];
 }
 
+- (void)onFrameDidChange:(NSNotification*)notification {
+  [self shell]->NotifyBoundsChanged();
+}
+
 @end
 
 namespace electron {
@@ -281,6 +299,32 @@ NativeView* GetShell(NSView* self, SEL _cmd) {
 
 BOOL AcceptsFirstResponder(NSView* self, SEL _cmd) {
   return [self nativeViewPrivate]->focusable;
+}
+
+void EnableChangingBoundsEvent(NSView* self, SEL _cmd) {
+  NativeViewPrivate* priv = [self nativeViewPrivate];
+  if (!priv->changing_bounds_event_enabled) {
+    [self setPostsFrameChangedNotifications:YES];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(onFrameDidChange:)
+               name:NSViewFrameDidChangeNotification
+             object:self];
+    priv->changing_bounds_event_enabled = true;
+  }
+}
+
+void DisableChangingBoundsEvent(NSView* self, SEL _cmd) {
+  NativeViewPrivate* priv = [self nativeViewPrivate];
+  if (priv->changing_bounds_event_enabled) {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    priv->changing_bounds_event_enabled = false;
+  }
+}
+
+bool ChangingBoundsEventEnabled(NSView* self, SEL _cmd) {
+  NativeViewPrivate* priv = [self nativeViewPrivate];
+  return priv->changing_bounds_event_enabled;
 }
 
 void EnableTracking(NSView* self, SEL _cmd) {
@@ -385,6 +429,12 @@ void InstallNativeViewMethods(Class cl) {
   class_addMethod(cl, @selector(shell), (IMP)GetShell, "^v@:");
   class_addMethod(cl, @selector(acceptsFirstResponder),
                   (IMP)AcceptsFirstResponder, "B@:");
+  class_addMethod(cl, @selector(enableChangingBoundsEvent),
+                  (IMP)EnableChangingBoundsEvent, "v@:");
+  class_addMethod(cl, @selector(disableChangingBoundsEvent),
+                  (IMP)DisableChangingBoundsEvent, "v@:");
+  class_addMethod(cl, @selector(changingBoundsEventEnabled),
+                  (IMP)ChangingBoundsEventEnabled, "B@:");
   class_addMethod(cl, @selector(enableTracking), (IMP)EnableTracking, "v@:");
   class_addMethod(cl, @selector(disableTracking), (IMP)DisableTracking, "v@:");
   class_addMethod(cl, @selector(updateTrackingAreas), (IMP)UpdateTrackingAreas,

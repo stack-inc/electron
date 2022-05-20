@@ -28,6 +28,7 @@ struct NativeViewPrivate {
   bool is_content_view = false;
   bool wants_layer = false;
   bool wants_layer_infected = false;
+  bool changing_bounds_event_enabled = false;
   base::scoped_nsobject<NSTrackingArea> tracking_area;
   std::unique_ptr<MouseCapture> mouse_capture;
 };
@@ -73,11 +74,11 @@ struct NativeViewPrivate {
 @property(strong, nonatomic) NSColor* _tintColor;
 
 //* To get more vibrant colors, a filter to increase the saturation of the
-//colors can be applied. The default value is 2.5.
+// colors can be applied. The default value is 2.5.
 @property(assign, nonatomic) float _saturationFactor;
 
 //* The blur radius defines the strength of the Gaussian Blur filter. The
-//default value is 20.0.
+// default value is 20.0.
 @property(assign, nonatomic) float _blurRadius;
 
 @end
@@ -85,6 +86,9 @@ struct NativeViewPrivate {
 // Extended methods of ElectronNativeViewProtocol.
 @interface NSView (ElectronNativeViewMethods) <ElectronNativeViewProtocol>
 - (electron::NativeView*)shell;
+- (void)enableChangingBoundsEvent;
+- (void)disableChangingBoundsEvent;
+- (BOOL)changingBoundsEventEnabled;
 - (void)enableTracking;
 - (void)disableTracking;
 @end
