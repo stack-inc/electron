@@ -5,8 +5,10 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "shell/common/gin_converters/gfx_converter.h"
 #include "shell/common/gin_helper/dictionary.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -42,8 +44,11 @@ void SetBoundsForView(NSView* view,
   std::string tfunction_name;
   float cx1 = 0.0, cy1 = 0.0, cx2 = 1.0, cy2 = 1.0;
   bool use_control_points = false;
+  int version = 0;
+  gfx::Rect from_bounds;
   if (options.Get("duration", &duration))
     animation = true;
+VLOG(0) << "duration: " << duration;
   if (options.Get("timingFunction", &tfunction_name)) {
     animation = true;
     tfunction_name = base::ToLowerASCII(tfunction_name);
@@ -59,14 +64,32 @@ void SetBoundsForView(NSView* view,
     timing_control_points.Get("y2", &cy2);
   }
 
-  NSRect frame = bounds.ToCGRect();
+  options.Get("version", &version);
+VLOG(0) << "version: " << version;
+
+  NSRect fromFrame = view.frame;
   auto* superview = view.superview;
+VLOG(0) << "bounds: [" << bounds.x() << ", " << bounds.y() << ", " << bounds.width() << ", " << bounds.height() << "]";
+  if (options.Get("fromBounds", &from_bounds)) {
+VLOG(0) << "fromBounds: [" << from_bounds.x() << ", " << from_bounds.y() << ", " << from_bounds.width() << ", " << from_bounds.height() << "]";
+    fromFrame = from_bounds.ToCGRect();
+    if (superview && ![superview isFlipped]) {
+      const auto superview_height = superview.frame.size.height;
+      fromFrame =
+          NSMakeRect(from_bounds.x(), superview_height - from_bounds.y() - from_bounds.height(),
+                     from_bounds.width(), from_bounds.height());
+    }
+  }
+VLOG(0) << "fromFrame: [" << fromFrame.origin.x << ", " << fromFrame.origin.y << ", " << fromFrame.size.width << ", " << fromFrame.size.height << "]";
+
+  NSRect frame = bounds.ToCGRect();
   if (superview && ![superview isFlipped]) {
     const auto superview_height = superview.frame.size.height;
     frame =
         NSMakeRect(bounds.x(), superview_height - bounds.y() - bounds.height(),
                    bounds.width(), bounds.height());
   }
+VLOG(0) << "frame: [" << frame.origin.x << ", " << frame.origin.y << ", " << frame.size.width << ", " << frame.size.height << "]";
 
   if (!animation) {
     [view setFrame:frame];
@@ -98,6 +121,8 @@ void SetBoundsForView(NSView* view,
         [[CAMediaTimingFunction alloc] initWithControlPoints:cx1:cy1:cx2:cy2];
   }
 
+if (version == 0) {
+VLOG(0) << "animation version 0";
   [NSAnimationContext
       runAnimationGroup:^(NSAnimationContext* context) {
         context.duration = duration;
@@ -107,6 +132,90 @@ void SetBoundsForView(NSView* view,
       }
       completionHandler:^{
       }];
+} else {
+VLOG(0) << "animation version != 0";
+    CABasicAnimation* positionAnimation = [CABasicAnimation animationWithKeyPath:@"position"];
+    positionAnimation.duration = duration;
+    positionAnimation.timingFunction = timing_function;
+    positionAnimation.fromValue = @(fromFrame.origin);
+    positionAnimation.toValue = @(frame.origin);
+
+if (fromFrame.size.width == frame.size.width && fromFrame.size.height == frame.size.height) {
+VLOG(0) << "animated only position";
+    [view.layer addAnimation:positionAnimation forKey:@"position"];
+if (version == 1) {
+view.layer.position = frame.origin;
+} else {
+[view setFrame:frame];
+}
+} else if (version == 1) {
+    CABasicAnimation* sizeAnimation = [CABasicAnimation animationWithKeyPath:@"bounds.size"];
+    sizeAnimation.duration = duration;
+    sizeAnimation.timingFunction = timing_function;
+    sizeAnimation.fromValue = @(fromFrame.size);
+    sizeAnimation.toValue = @(frame.size);
+CAAnimationGroup *group = [CAAnimationGroup animation];
+group.duration = duration;
+group.timingFunction = timing_function;
+group.animations = @[positionAnimation, sizeAnimation];
+    [view.layer addAnimation:group forKey:@"allMyAnimations"];
+view.layer.position = frame.origin;
+view.layer.bounds.size = frame.size;
+} else if (version == 2) {
+    CABasicAnimation* sizeAnimation = [CABasicAnimation animationWithKeyPath:@"bounds.size"];
+    sizeAnimation.duration = duration;
+    sizeAnimation.timingFunction = timing_function;
+    sizeAnimation.fromValue = @(fromFrame.size);
+    sizeAnimation.toValue = @(frame.size);
+CAAnimationGroup *group = [CAAnimationGroup animation];
+group.duration = duration;
+group.timingFunction = timing_function;
+group.animations = @[positionAnimation, sizeAnimation];
+    [view.layer addAnimation:group forKey:@"allMyAnimations"];
+[view setFrame:frame];
+} else if (version == 3) {
+    CABasicAnimation* boundsAnimation = [CABasicAnimation animationWithKeyPath:@"bounds"];
+    boundsAnimation.duration = duration;
+    boundsAnimation.timingFunction = timing_function;
+    NSRect from_rect = NSMakeRect( view.frame.origin.x, view.frame.origin.y, fromFrame.size.width, fromFrame.size.height );
+    boundsAnimation.fromValue    = [NSValue valueWithRect: from_rect ];
+    NSRect to_rect     = NSMakeRect( view.frame.origin.x, view.frame.origin.y, frame.size.width, frame.size.height );
+    boundsAnimation.toValue         = [NSValue valueWithRect: to_rect ];
+CAAnimationGroup *group = [CAAnimationGroup animation];
+group.duration = duration;
+group.timingFunction = timing_function;
+group.animations = @[positionAnimation, boundsAnimation];
+    [view.layer addAnimation:group forKey:@"allMyAnimations"];
+view.layer.position = frame.origin;
+view.layer.bounds = to_rect;
+} else if (version == 4) {
+    CABasicAnimation* boundsAnimation = [CABasicAnimation animationWithKeyPath:@"bounds"];
+    boundsAnimation.duration = duration;
+    boundsAnimation.timingFunction = timing_function;
+    NSRect from_rect = NSMakeRect( view.frame.origin.x, view.frame.origin.y, fromFrame.size.width, fromFrame.size.height );
+    boundsAnimation.fromValue    = [NSValue valueWithRect: from_rect ];
+    NSRect to_rect     = NSMakeRect( view.frame.origin.x, view.frame.origin.y, frame.size.width, frame.size.height );
+    boundsAnimation.toValue         = [NSValue valueWithRect: to_rect ];
+CAAnimationGroup *group = [CAAnimationGroup animation];
+group.duration = duration;
+group.timingFunction = timing_function;
+group.animations = @[positionAnimation, boundsAnimation];
+    [view.layer addAnimation:group forKey:@"allMyAnimations"];
+[view setFrame:frame];
+} else {
+    [view.layer addAnimation:positionAnimation forKey:@"position"];
+view.layer.position = frame.origin;
+  [NSAnimationContext
+      runAnimationGroup:^(NSAnimationContext* context) {
+        context.duration = duration;
+        context.timingFunction = timing_function;
+        // Trigger the animation
+        view.animator.frame = frame;
+      }
+      completionHandler:^{
+      }];
+}
+}
 }
 
 void ResetScalingForView(NSView* view) {
