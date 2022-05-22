@@ -68,28 +68,34 @@ VLOG(0) << "@duration: " << duration;
 VLOG(0) << "@version: " << version;
 
   NSRect fromFrame = view.frame;
+  auto* superview = view.superview;
 VLOG(0) << "@fromFrame: [" << fromFrame.origin.x << ", " << fromFrame.origin.y << ", " << fromFrame.size.width << ", " << fromFrame.size.height << "]";
   if (options.Get("fromBounds", &from_bounds)) {
 VLOG(0) << "@fromBounds: [" << from_bounds.x() << ", " << from_bounds.y() << ", " << from_bounds.width() << ", " << from_bounds.height() << "]";
     fromFrame = from_bounds.ToCGRect();
-    if (![view isFlipped]) {
-  const auto superview_height =
-      (view.superview) ? view.superview.frame.size.height : 0;
+    if (superview && ![superview isFlipped]) {
+      const auto superview_height = superview.frame.size.height;
 VLOG(0) << "@view is not flipped - superview_height: " << superview_height;
-      fromFrame.origin.y = superview_height - from_bounds.y() - from_bounds.height();
+      fromFrame =
+          NSMakeRect(from_bounds.x(), superview_height - from_bounds.y() - from_bounds.height(),
+                     from_bounds.width(), from_bounds.height());
 VLOG(0) << "@fromFrame (for not flipped view): [" << fromFrame.origin.x << ", " << fromFrame.origin.y << ", " << fromFrame.size.width << ", " << fromFrame.size.height << "]";
     }
-  }
+  } else {
+    if (superview && ![superview isFlipped]) {
+      const auto superview_height = superview.frame.size.height;
+VLOG(0) << "@view is not flipped - superview_height: " << superview_height;
+}
+}
 
 VLOG(0) << "@bounds: [" << bounds.x() << ", " << bounds.y() << ", " << bounds.width() << ", " << bounds.height() << "]";
   NSRect frame = bounds.ToCGRect();
 VLOG(0) << "@frame: [" << frame.origin.x << ", " << frame.origin.y << ", " << frame.size.width << ", " << frame.size.height << "]";
-    if (![view isFlipped]) {
-  const auto superview_height =
-      (view.superview) ? view.superview.frame.size.height : 0;
+  if (superview && ![superview isFlipped]) {
+    const auto superview_height = superview.frame.size.height;
 VLOG(0) << "@view is not flipped - superview_height: " << superview_height;
       frame.origin.y = superview_height - bounds.y() - bounds.height();
-VLOG(0) << "@frame (for not flipped view): [" << fromFrame.origin.x << ", " << fromFrame.origin.y << ", " << fromFrame.size.width << ", " << fromFrame.size.height << "]";
+VLOG(0) << "@frame (for not flipped view): [" << frame.origin.x << ", " << frame.origin.y << ", " << frame.size.width << ", " << frame.size.height << "]";
     }
 
   if (!animation) {
@@ -150,20 +156,6 @@ view.layer.position = frame.origin;
 [view setFrame:frame];
 }
 } else if (version == 1) {
-VLOG(0) << "@animated position and size; setting layer properties";
-    CABasicAnimation* sizeAnimation = [CABasicAnimation animationWithKeyPath:@"bounds.size"];
-    sizeAnimation.duration = duration;
-    sizeAnimation.timingFunction = timing_function;
-    sizeAnimation.fromValue = @(fromFrame.size);
-    sizeAnimation.toValue = @(frame.size);
-CAAnimationGroup *group = [CAAnimationGroup animation];
-group.duration = duration;
-group.timingFunction = timing_function;
-group.animations = @[positionAnimation, sizeAnimation];
-    [view.layer addAnimation:group forKey:@"allMyAnimations"];
-view.layer.position = frame.origin;
-view.layer.bounds.size = frame.size;
-} else if (version == 2) {
 VLOG(0) << "@animated position and size; setting setFrame for view";
     CABasicAnimation* sizeAnimation = [CABasicAnimation animationWithKeyPath:@"bounds.size"];
     sizeAnimation.duration = duration;
@@ -176,23 +168,7 @@ group.timingFunction = timing_function;
 group.animations = @[positionAnimation, sizeAnimation];
     [view.layer addAnimation:group forKey:@"allMyAnimations"];
 [view setFrame:frame];
-} else if (version == 3) {
-VLOG(0) << "@animated position and bounds; setting layer properties";
-    CABasicAnimation* boundsAnimation = [CABasicAnimation animationWithKeyPath:@"bounds"];
-    boundsAnimation.duration = duration;
-    boundsAnimation.timingFunction = timing_function;
-    NSRect from_rect = NSMakeRect( view.layer.bounds.origin.x, view.layer.bounds.origin.y, fromFrame.size.width, fromFrame.size.height );
-    boundsAnimation.fromValue    = [NSValue valueWithRect: from_rect ];
-    NSRect to_rect     = NSMakeRect( view.layer.bounds.origin.x, view.layer.bounds.origin.y, frame.size.width, frame.size.height );
-    boundsAnimation.toValue         = [NSValue valueWithRect: to_rect ];
-CAAnimationGroup *group = [CAAnimationGroup animation];
-group.duration = duration;
-group.timingFunction = timing_function;
-group.animations = @[positionAnimation, boundsAnimation];
-    [view.layer addAnimation:group forKey:@"allMyAnimations"];
-view.layer.position = frame.origin;
-view.layer.bounds = to_rect;
-} else if (version == 4) {
+} else if (version == 2) {
 VLOG(0) << "@animated position and bounds; setting setFrame for view";
     CABasicAnimation* boundsAnimation = [CABasicAnimation animationWithKeyPath:@"bounds"];
     boundsAnimation.duration = duration;

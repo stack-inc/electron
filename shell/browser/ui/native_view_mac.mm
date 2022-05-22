@@ -125,7 +125,6 @@ void NativeView::SetBounds(const gfx::Rect& bounds,
 }
 
 gfx::Rect NativeView::GetBounds() const {
-#if 0
   auto* superview = view_.superview;
   if (superview && ![superview isFlipped]) {
     const int superview_height = superview.frame.size.height;
@@ -134,7 +133,6 @@ gfx::Rect NativeView::GetBounds() const {
         superview_height - view_.frame.origin.y - view_.frame.size.height,
         view_.frame.size.width, view_.frame.size.height);
   }
-#endif
   return ToNearestRect(gfx::RectF(view_.frame));
 }
 
